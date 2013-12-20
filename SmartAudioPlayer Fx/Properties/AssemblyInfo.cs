@@ -12,7 +12,7 @@ using System.Windows;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("intre.")]
 [assembly: AssemblyProduct("SmartAudioPlayer")]
-[assembly: AssemblyCopyright("Copyright (C) 2010 MinagiSyu, intre.")]
+[assembly: AssemblyCopyright("Copyright (C) 2011 MinagiSyu, intre.")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -51,10 +51,9 @@ using System.Windows;
 // すべての値を指定するか、下のように '*' を使ってビルドおよびリビジョン番号を 
 // 既定値にすることができます:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("3.2.0.0")]
+[assembly: AssemblyVersion("3.2.0.3")]
 
+// internalクラスを"SAPFxLib.Test"に公開する(デバッグ時のみ)
 #if DEBUG
-
-[assembly: InternalsVisibleTo("SmartAudioPlayerFx.Test, PublicKey=00240000048000009400000006020000002400005253413100040000010001000b6fcd17f102b4b9b23cf3d052b85a7ecdde13dee1fb1f1ca880c41b8af0fe1de071fcd2c024d44f1d09e51596a3d1c6dc6d49fe6708b9c2412df20a75378ccaa07f78615251211beea4d237939f8eef147c422b2a9ca5b15d1e17f64471e84e77f672ff63359ccb5640911c3c86f68bc50463e907d498a0b29bee0b14e8dcb5")]
-
+[assembly: InternalsVisibleTo("SmartAudioPlayerFx.Test, PublicKey=00240000048000009400000006020000002400005253413100040000010001002b87623faa4edbde4128bce447f59ac8a10ffc3b2eb8328e6cbd85f59bac337c43638819cee5c4683b7b8c7526253d18dc18420904dd4583f8f4a108e2eab9186a044c6e051fe32555af055637ca667b8aba041365c6a6e4a899a5d99b2fd273b298995b0058598f5828dc3d797e379054f6d49d80928b6649f58df0a75877ea")]
 #endif

@@ -30,6 +30,7 @@ namespace Quala.Windows.Forms
 			_selectedPath = string.Empty;
 			_showNewFolderButton = true;
 			_rootFolder = Environment.SpecialFolder.Desktop;
+			UseNewDialog = true;
 		}
 
 		/// <summary>
@@ -70,78 +71,36 @@ namespace Quala.Windows.Forms
 			set { _rootFolder = value; }
 		}
 
+		/// <summary>
+		/// Vista以降の新しいダイアログを使用する？
+		/// (vistaのフォルダ選択にはバグっぽい動作あり)
+		/// </summary>
+		public bool UseNewDialog
+		{
+			get;
+			set;
+		}
+
 		protected override bool RunDialog(IntPtr hwndOwner)
 		{
-			if(Environment.OSVersion.Version.Major >= 6)
+			if(Environment.OSVersion.Version.Major >= 6 && UseNewDialog)
 			{
-			/*	IFileOpenDialog dialog = null;
-				IShellItem shiDefaultFolder = null;
-				try
-				{
-					dialog = (IFileOpenDialog)Activator
-						.CreateInstance(Type.GetTypeFromCLSID(CLSID.FileOpenDialog));
-					dialog.SetTitle(_discription);
-					dialog.SetOptions(
-						FILEOPENDIALOGOPTIONS.PICKFOLDERS |
-						FILEOPENDIALOGOPTIONS.FILEMUSTEXIST |
-						FILEOPENDIALOGOPTIONS.PATHMUSTEXIST);
-
-					try
-					{
-						shiDefaultFolder = API.GetShellItemFromPath(_selectedPath);
-						dialog.SetDefaultFolder(shiDefaultFolder);
-						dialog.SetFolder(shiDefaultFolder);
-					}
-					catch(Exception e) { }	// 例外は無視。
-
-					dialog.Show(hwndOwner);
-
-
-					IShellItem ppsi;
-					dialog.GetResult(out ppsi);
-					IntPtr name;
-					ppsi.GetDisplayName(SIGDN.FILESYSPATH, out name);
-					var name2 = Marshal.PtrToStringAuto(name);
-					Marshal.FreeCoTaskMem(name);
-					_selectedPath = name2;
-					return true;
-				}
-				catch(COMException e)
-				{
-					// キャンセルが押された
-					if(e.ErrorCode == unchecked((int)0x800704C7)) // ERROR_CANCELLED
-					{
-						return false;
-					}
-
-					// それ以外は別の方法を試してみる
-				}
-				finally
-				{
-					if(shiDefaultFolder != null)
-					{
-						var refCount = Marshal.ReleaseComObject(shiDefaultFolder);
-						shiDefaultFolder = null;
-					}
-					if(dialog != null)
-					{
-						var refCount = Marshal.ReleaseComObject(dialog);
-						dialog = null;
-					}
-				}*/
-
 				using (var dialog = new CommonOpenFileDialog())
 				{
 					dialog.AllowNonFileSystemItems = false;
 					dialog.AllowPropertyEditing = false;
 					dialog.DefaultDirectory = _selectedPath;
+					dialog.EnsureFileExists = true;
 					dialog.EnsurePathExists = true;
 					dialog.EnsureReadOnly = true;
+					dialog.EnsureValidNames = true;
 					dialog.InitialDirectory = _selectedPath;
 					dialog.IsFolderPicker = true;
 					dialog.Multiselect = false;
 					dialog.NavigateToShortcut = true;
 					dialog.RestoreDirectory = false;
+					dialog.ShowHiddenItems = false;
+					dialog.ShowPlacesList = true;
 					dialog.Title = _discription;
 					if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
 					{

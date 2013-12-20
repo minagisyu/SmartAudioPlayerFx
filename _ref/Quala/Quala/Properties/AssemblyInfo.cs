@@ -11,7 +11,7 @@ using System.Windows.Markup;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("intre.")]
 [assembly: AssemblyProduct("Quala")]
-[assembly: AssemblyCopyright("Copyright (C) 2010 MinagiSyu, intre.")]
+[assembly: AssemblyCopyright("Copyright (C) 2011 MinagiSyu, intre.")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
