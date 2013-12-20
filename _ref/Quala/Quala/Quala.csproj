@@ -1,0 +1,252 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{7174DC4A-19B1-4A42-BA04-AB3BEA2C1572}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Quala</RootNamespace>
+    <AssemblyName>Quala</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>quala.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.WindowsAPICodePack, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\!!_Interop_dll_\Microsoft.WindowsAPICodePack.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.WindowsAPICodePack.Shell, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\!!_Interop_dll_\Microsoft.WindowsAPICodePack.Shell.dll</HintPath>
+    </Reference>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.CoreEx, Version=1.0.2521.104, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\!!_Interop_dll_\System.CoreEx.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Data.SQLite, Version=1.0.65.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\!!_Interop_dll_\System.Data.SQLite.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Interactive, Version=1.0.2521.104, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\!!_Interop_dll_\System.Interactive.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Reactive, Version=1.0.2521.104, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\!!_Interop_dll_\System.Reactive.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xaml" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+    <Reference Include="WindowsBase" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Collections.Specialized\ConcurrentObservableCollection.cs" />
+    <Compile Include="Collections.Specialized\IniConfig.cs" />
+    <Compile Include="Collections.Specialized\LockableBase.cs" />
+    <Compile Include="Collections.Specialized\LockableCollection.cs" />
+    <Compile Include="Collections.Specialized\PriorityQueue.cs" />
+    <Compile Include="ComponentModel\NotifyWrapper.cs" />
+    <Compile Include="Data\SimpleDB.cs" />
+    <Compile Include="Interop.Win32\API.cs" />
+    <Compile Include="Interop.Win32\API_adv.cs" />
+    <Compile Include="Interop.Win32\API_comctl.cs" />
+    <Compile Include="Interop.Win32\API_dwmapi.cs" />
+    <Compile Include="Interop.Win32\API_gdi.cs" />
+    <Compile Include="Interop.Win32\API_kernel.cs" />
+    <Compile Include="Interop.Win32\API_msacm.cs" />
+    <Compile Include="Interop.Win32\API_shell.cs" />
+    <Compile Include="Interop.Win32\API_user.cs" />
+    <Compile Include="Interop.Win32\API_windowsX.cs" />
+    <Compile Include="Interop.Win32\API_winmm.cs" />
+    <Compile Include="Interop.Win32\COM\COMDefinitions.cs" />
+    <Compile Include="Interop.Win32\COM\IAsyncReader.cs" />
+    <Compile Include="Interop.Win32\COM\IBaseFilter.cs" />
+    <Compile Include="Interop.Win32\COM\IBasicAudio.cs" />
+    <Compile Include="Interop.Win32\COM\IBasicVideo.cs" />
+    <Compile Include="Interop.Win32\COM\IBasicVideo2.cs" />
+    <Compile Include="Interop.Win32\COM\IBindCtx.cs" />
+    <Compile Include="Interop.Win32\COM\IContextMenu.cs" />
+    <Compile Include="Interop.Win32\COM\IDeskBand.cs" />
+    <Compile Include="Interop.Win32\COM\IDockingWindow.cs" />
+    <Compile Include="Interop.Win32\COM\IEnumFilters.cs" />
+    <Compile Include="Interop.Win32\COM\IEnumIDList.cs" />
+    <Compile Include="Interop.Win32\COM\IEnumMediaTypes.cs" />
+    <Compile Include="Interop.Win32\COM\IEnumMoniker.cs" />
+    <Compile Include="Interop.Win32\COM\IEnumPins.cs" />
+    <Compile Include="Interop.Win32\COM\IEnumShellItems.cs" />
+    <Compile Include="Interop.Win32\COM\IEnumString.cs" />
+    <Compile Include="Interop.Win32\COM\IFileDialog.cs" />
+    <Compile Include="Interop.Win32\COM\IFileDialogEvents.cs" />
+    <Compile Include="Interop.Win32\COM\IFileOpenDialog.cs" />
+    <Compile Include="Interop.Win32\COM\IFilterGraph.cs" />
+    <Compile Include="Interop.Win32\COM\IGraphBuilder.cs" />
+    <Compile Include="Interop.Win32\COM\IInputObject.cs" />
+    <Compile Include="Interop.Win32\COM\IInputObjectSite.cs" />
+    <Compile Include="Interop.Win32\COM\IMediaControl.cs" />
+    <Compile Include="Interop.Win32\COM\IMediaEvent.cs" />
+    <Compile Include="Interop.Win32\COM\IMediaEventEx.cs" />
+    <Compile Include="Interop.Win32\COM\IMediaEventSink.cs" />
+    <Compile Include="Interop.Win32\COM\IMediaFilter.cs" />
+    <Compile Include="Interop.Win32\COM\IMediaPosition.cs" />
+    <Compile Include="Interop.Win32\COM\IMediaSample.cs" />
+    <Compile Include="Interop.Win32\COM\IMediaSeeking.cs" />
+    <Compile Include="Interop.Win32\COM\IMemAllocator.cs" />
+    <Compile Include="Interop.Win32\COM\IModalWindow.cs" />
+    <Compile Include="Interop.Win32\COM\IMoniker.cs" />
+    <Compile Include="Interop.Win32\COM\INSSBuffer.cs" />
+    <Compile Include="Interop.Win32\COM\IObjectWithSite.cs" />
+    <Compile Include="Interop.Win32\COM\IOleWindow.cs" />
+    <Compile Include="Interop.Win32\COM\IPersist.cs" />
+    <Compile Include="Interop.Win32\COM\IPersistStream.cs" />
+    <Compile Include="Interop.Win32\COM\IPin.cs" />
+    <Compile Include="Interop.Win32\COM\IQualityControl.cs" />
+    <Compile Include="Interop.Win32\COM\IReferenceClock.cs" />
+    <Compile Include="Interop.Win32\COM\IRunningObjectTable.cs" />
+    <Compile Include="Interop.Win32\COM\ISequentialStream.cs" />
+    <Compile Include="Interop.Win32\COM\IShellFolder.cs" />
+    <Compile Include="Interop.Win32\COM\IShellItem.cs" />
+    <Compile Include="Interop.Win32\COM\IShellItemArray.cs" />
+    <Compile Include="Interop.Win32\COM\IShellItemFilter.cs" />
+    <Compile Include="Interop.Win32\COM\IStream.cs" />
+    <Compile Include="Interop.Win32\COM\IVideoWindow.cs" />
+    <Compile Include="Interop.Win32\COM\IWMMediaProps.cs" />
+    <Compile Include="Interop.Win32\COM\IWMOutputMediaProps.cs" />
+    <Compile Include="Interop.Win32\COM\IWMReader.cs" />
+    <Compile Include="Interop.Win32\COM\IWMReaderAdvanced.cs" />
+    <Compile Include="Interop.Win32\COM\IWMReaderAdvanced2.cs" />
+    <Compile Include="Interop.Win32\COM\IWMReaderAllocatorEx.cs" />
+    <Compile Include="Interop.Win32\COM\IWMReaderCallback.cs" />
+    <Compile Include="Interop.Win32\COM\IWMStatusCallback.cs" />
+    <Compile Include="Interop.Win32\COM\IWMSyncReader.cs" />
+    <Compile Include="Interop.Win32\COM\IWMSyncReader2.cs" />
+    <Compile Include="Interop.Win32\Win32Definitions.cs" />
+    <Compile Include="IO\FileCompressModeSetting.cs" />
+    <Compile Include="Make.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Runtime.Serialization\JsonSettingsHelper.cs" />
+    <Compile Include="Runtime.Serialization\SettingsHelper.cs" />
+    <Compile Include="Runtime.Serialization\XSerializer.cs" />
+    <Compile Include="Security.Cryptography\Crc32.cs" />
+    <Compile Include="Security.Cryptography\Crc64.cs" />
+    <Compile Include="Text\LogicalStringComparer.cs" />
+    <Compile Include="Threading\LowPriorityScope.cs" />
+    <Compile Include="Threading\SinglePumpThread.cs" />
+    <Compile Include="Tool.cs" />
+    <Compile Include="Windows.Controls\SliderEx.cs" />
+    <Compile Include="Windows.Forms\ContextMenuStripEx.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Windows.Forms\DisabledToolStripSeparator.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Windows.Forms\DraggablePanel.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Windows.Forms\FolderBrowseDialogEx.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Windows.Forms\FormEx.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Windows.Forms\WindowMessageHandling.cs" />
+    <Compile Include="Windows.Input\KeyboardHook.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Windows.Input\MouseHook.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Windows.Media\DirectShowPlayback.cs" />
+    <Compile Include="Windows.Mvvm\CommandReference.cs" />
+    <Compile Include="Windows.Mvvm\DelegateCommand.cs" />
+    <Compile Include="Windows.Mvvm\EventBehaviorFactory.cs" />
+    <Compile Include="Windows.Mvvm\ViewModel.cs" />
+    <Compile Include="Windows.Mvvm\ViewModelProperty.cs" />
+    <Compile Include="Windows\DynamicWindowBounds.cs" />
+    <Compile Include="Windows\GlassWindow.cs" />
+    <Compile Include="Windows\StateManager.cs" />
+    <Compile Include="Windows\WindowBehavior.cs" />
+    <Compile Include="Windows\WindowLocation.cs" />
+    <Compile Include="[Extensions]\[System.Windows.Controls.Primitives]\Ext_IItemsContainerGenerator.cs" />
+    <Compile Include="[Extensions]\Extension.cs" />
+    <Compile Include="[Extensions]\[System.Collections.Generic]\Ext_IEnumerable%28T%29.cs" />
+    <Compile Include="[Extensions]\[System.Collections.Generic]\Ext_List%28T%29.cs" />
+    <Compile Include="[Extensions]\[System.Collections.Specialized]\Ext_NotifyCollectionChangedEventHandler.cs" />
+    <Compile Include="[Extensions]\[System.ComponentModel]\Ext_INotifyPropertyChanged.cs" />
+    <Compile Include="[Extensions]\[System.ComponentModel]\Ext_PropertyChangedEventHandler.cs" />
+    <Compile Include="[Extensions]\[System.Drawing]\Ext_Rectangle.cs" />
+    <Compile Include="[Extensions]\[System.Drawing]\Ext_RectangleF.cs" />
+    <Compile Include="[Extensions]\[System.IO]\Ext_DirectoryInfo.cs" />
+    <Compile Include="[Extensions]\[System.Windows.Controls]\Ext_ItemsControl.cs" />
+    <Compile Include="[Extensions]\[System.Xml.Linq]\Ext_XAttribute.cs" />
+    <Compile Include="[Extensions]\[System.Xml.Linq]\Ext_XElement.cs" />
+    <Compile Include="[Extensions]\[System.]\Ext_Bool.cs" />
+    <Compile Include="[Extensions]\[System.]\Ext_Byte.cs" />
+    <Compile Include="[Extensions]\[System.]\Ext_Byte[].cs" />
+    <Compile Include="[Extensions]\[System.]\Ext_Double.cs" />
+    <Compile Include="[Extensions]\[System.]\Ext_EventHandler.cs" />
+    <Compile Include="[Extensions]\[System.]\Ext_IDisposable.cs" />
+    <Compile Include="[Extensions]\[System.]\Ext_IEnumerable.cs" />
+    <Compile Include="[Extensions]\[System.]\Ext_Int16.cs" />
+    <Compile Include="[Extensions]\[System.]\Ext_Int32.cs" />
+    <Compile Include="[Extensions]\[System.]\Ext_Int64.cs" />
+    <Compile Include="[Extensions]\[System.]\Ext_IntPtr.cs" />
+    <Compile Include="[Extensions]\[System.]\Ext_SByte.cs" />
+    <Compile Include="[Extensions]\[System.]\Ext_Single.cs" />
+    <Compile Include="[Extensions]\[System.]\Ext_String.cs" />
+    <Compile Include="[Extensions]\[System.]\Ext_UInt16.cs" />
+    <Compile Include="[Extensions]\[System.]\Ext_UInt32.cs" />
+    <Compile Include="[Extensions]\[System.]\Ext_UInt64.cs" />
+    <Compile Include="[Services]\LogService.cs" />
+    <Compile Include="[Services]\PreferenceService.cs" />
+    <Compile Include="[Services]\TimerService.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="quala.snk" />
+    <None Include="Windows.Mvvm\!!_memo__.txt" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
