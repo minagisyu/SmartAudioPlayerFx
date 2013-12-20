@@ -1,0 +1,188 @@
+﻿<Window
+	x:Class="SmartAudioPlayerFx.Views.MainWindow" x:ClassModifier="internal"
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+	xmlns:pb="clr-namespace:__Primitives__"
+	xmlns:v="clr-namespace:SmartAudioPlayerFx.Views"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	mc:Ignorable="d" d:DesignWidth="450" d:DesignHeight="40"
+	Title="SmartAudioPlayer Fx" MinWidth="300" MinHeight="20"
+	AllowsTransparency="True" Background="Transparent" WindowStyle="None"
+	ShowActivated="False" ShowInTaskbar="False" Topmost="True">
+    <i:Interaction.Behaviors>
+        <pb:UnvisibleResizeBorderBehavior Left="5" Right="5" />
+        <pb:WindowDragMoveBehavior x:Name="wdmbehavior" IsSnapped="True" />
+        <v:NoActivateBehavior />
+        <v:ToolWindowBehavior />
+    </i:Interaction.Behaviors>
+
+    <Grid x:Name="LayoutRoot" Height="24" VerticalAlignment="Top">
+        <Grid.InputBindings>
+            <MouseBinding Gesture="LeftDoubleClick" Command="{Binding PlayPauseCommand}" />
+        </Grid.InputBindings>
+        <!--  プレーヤー背景  -->
+        <Rectangle RadiusX="5" RadiusY="5" Fill="{StaticResource PlayerBackgroundBrush}" />
+        <!--  上下の線  -->
+        <Border Margin="30,2,15,1"
+				BorderThickness="0,1,0,1"
+				BorderBrush="{StaticResource PlayerBorderLineBrush}">
+            <!--  コントロール  -->
+            <Grid x:Name="playerView" Background="{StaticResource PlayerViewBackgroundBrush}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Button x:Name="timerButton"
+						Grid.Column="0"
+						Content="{StaticResource TimerImage}"
+						Style="{StaticResource ImageButtonStyle}"
+						Visibility="Collapsed" />
+                <Button x:Name="modeButton"
+						Grid.Column="1"
+						ToolTip="{Binding SelectModeTooltip.Value}"
+						Command="{Binding SelectModeToggleCommand}">
+                    <Button.Style>
+                        <Style BasedOn="{StaticResource ImageButtonStyle}" TargetType="Button">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding SelectMode.Value}" Value="Random">
+                                    <Setter Property="Content" Value="{StaticResource SelectModeImage_Random}" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding SelectMode.Value}" Value="Filename">
+                                    <Setter Property="Content" Value="{StaticResource SelectModeImage_Sequential}" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+                <Button x:Name="repeatButton"
+						Grid.Column="2"
+						Content="{StaticResource RepeatImage}"
+						ToolTip="{Binding RepeatTooltip.Value}"
+						Command="{Binding RepeatToggleCommand}">
+                    <Button.Style>
+                        <Style BasedOn="{StaticResource ImageButtonStyle}" TargetType="Button">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsRepeat.Value}" Value="True">
+                                    <Setter Property="Opacity" Value="1.0" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding IsRepeat.Value}" Value="False">
+                                    <Setter Property="Opacity" Value="0.5" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+                <Button x:Name="stateButton"
+						Grid.Column="3"
+						ToolTip="{Binding StateTooltip.Value}"
+						Command="{Binding StateToggleCommand}">
+                    <Button.Style>
+                        <Style BasedOn="{StaticResource ImageButtonStyle}" TargetType="Button">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsPaused.Value}" Value="True">
+                                    <Setter Property="Content" Value="{StaticResource StateImage_Pause}" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding IsPaused.Value}" Value="False">
+                                    <Setter Property="Content" Value="{StaticResource StateImage_Play}" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+                <Button x:Name="titleButton"
+						Grid.Column="4"
+						Content="{Binding Title.Value}"
+						ToolTip="{Binding TitleTooltip.Value}"
+						ToolTipService.IsEnabled="{Binding TitleTooltipEnabled.Value}"
+						Style="{StaticResource TextButtonStyle}">
+                    <Button.InputBindings>
+                        <MouseBinding Gesture="RightClick" Command="{Binding TitleSkipCommand}" />
+                    </Button.InputBindings>
+                </Button>
+                <Expander x:Name="seekExpander"
+						  Grid.Column="5"
+						  Style="{StaticResource RightSlideExpander}">
+                    <Expander.Header>
+                        <TextBlock Margin="0,1,2,0"
+								   VerticalAlignment="Center"
+								   FontSize="12"
+								   Text="{Binding PositionString.Value}" />
+                    </Expander.Header>
+                    <Expander.Content>
+                        <!-- [MEMO] Slider.IsMoveToPointEnabled=Trueにすると
+						Thumb意外の部分でマウスイベントを受信出来なくなる...-->
+                        <pb:SliderEx
+							x:Name="seekSlider"
+							Focusable="False"
+							IsMoveToPointEnabled="True"
+							Maximum="{Binding DurationTicks.Value}"
+							Style="{StaticResource MiniSlider}"
+							Value="{Binding PositionTicks.Value, Mode=OneWay}">
+                            <i:Interaction.Behaviors>
+                                <v:SliderTooltipAutoAdjastBehavior />
+                            </i:Interaction.Behaviors>
+                        </pb:SliderEx>
+                    </Expander.Content>
+                </Expander>
+                <Expander x:Name="volumeExpander" Grid.Column="6">
+                    <Expander.Content>
+                        <pb:SliderEx
+							x:Name="volumeSlider"
+							Focusable="False"
+							IsMoveToPointEnabled="True"
+							Maximum="1"
+							Minimum="0"
+							Style="{StaticResource MiniSlider}"
+							ToolTip="{Binding VolumeTooltip.Value}"
+							Value="{Binding Volume.Value}">
+                            <i:Interaction.Behaviors>
+                                <v:SliderTooltipAutoAdjastBehavior />
+                            </i:Interaction.Behaviors>
+                        </pb:SliderEx>
+                    </Expander.Content>
+                    <Expander.Style>
+                        <Style BasedOn="{StaticResource RightSlideExpander}" TargetType="Expander">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding VolumeLevel.Value}" Value="Mute">
+                                    <Setter Property="Header">
+                                        <Setter.Value>
+                                            <Image Height="14" Source="{StaticResource VolumeImage_Mute}" />
+                                        </Setter.Value>
+                                    </Setter>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding VolumeLevel.Value}" Value="Low">
+                                    <Setter Property="Header">
+                                        <Setter.Value>
+                                            <Image Height="14" Source="{StaticResource VolumeImage_Low}" />
+                                        </Setter.Value>
+                                    </Setter>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding VolumeLevel.Value}" Value="Mid">
+                                    <Setter Property="Header">
+                                        <Setter.Value>
+                                            <Image Height="14" Source="{StaticResource VolumeImage_Mid}" />
+                                        </Setter.Value>
+                                    </Setter>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding VolumeLevel.Value}" Value="Hi">
+                                    <Setter Property="Header">
+                                        <Setter.Value>
+                                            <Image Height="14" Source="{StaticResource VolumeImage_Hi}" />
+                                        </Setter.Value>
+                                    </Setter>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Expander.Style>
+                </Expander>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>
