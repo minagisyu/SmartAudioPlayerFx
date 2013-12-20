@@ -1,0 +1,115 @@
+﻿// Reactive ExtensionsのFromEventをT4 Templateで自動生成する
+// http://neue.cc/2010/08/19_272.html
+// **生成される名前空間を変更してます
+
+<#@ assembly Name="System.Core.dll" #>
+<#@ assembly Name="System.Windows.Forms.dll" #>
+<#@ assembly Name="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0\Profile\Client\System.Xaml.dll" #>
+<#@ assembly Name="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0\Profile\Client\PresentationCore.dll" #>
+<#@ assembly Name="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0\Profile\Client\PresentationFramework.dll" #>
+<#@ import namespace="System" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Reflection" #>
+<#@ import namespace="System.Text.RegularExpressions" #>
+<#
+    // 設定：ここに生成したいクラス(のTypeをFullNameで)を足してください(以下の4つは例)
+    // クラスによってはassemblyの増減が必要です、WPF/Silverlightなどはフルパス直書きしてください
+    var types = new[] {
+        typeof(System.Collections.ObjectModel.ObservableCollection<>),
+        typeof(System.Windows.Forms.Button),
+        typeof(System.Windows.Controls.Primitives.TextBoxBase),
+        typeof(System.Windows.Controls.Primitives.ButtonBase)
+    };
+#>
+using System;
+using System.Linq;
+using System.Collections.Generic;
+ 
+<# foreach(var x in GenerateTemplates(types)) {#>
+ 
+//namespace <#= x.Namespace #>
+namespace Quala.RxExtensions
+{
+    <# foreach(var ct in x.ClassTemplates) {#>
+ 
+    internal static class <#= ct.Classname #>EventExtensions
+    {
+        <# foreach(var ev in ct.EventTemplates) {#>
+ 
+        public static IObservable<IEvent<<#= ev.Args #>>> <#= ev.Name #>AsObservable<#= ct.GenericArgs #>(this <#= ct.Classname #><#= ct.GenericArgs #> source)
+        {
+            return Observable.FromEvent<<#= ev.Handler + (ev.IsGeneric ? "<" + ev.Args + ">" : "") #>, <#= ev.Args #>>(
+                h => <#= ev.IsGeneric ? "h" : "new " + ev.Handler + "(h)" #>,
+                h => source.<#= ev.Name #> += h,
+                h => source.<#= ev.Name #> -= h);
+	    }
+        <# } #>
+    }
+    <# }#>
+}
+<# }#>
+<#+
+    IEnumerable<T> TraverseNode<T>(T root, Func<T, T> selector)
+    {
+        var current = root;
+        while (current != null)
+        {
+            yield return current;
+            current = selector(current);
+        }
+    }
+ 
+    IEnumerable<ObservableTemplate> GenerateTemplates(Type[] types)
+    {
+        return types.SelectMany(t => TraverseNode(t, x => x.BaseType))
+            .Distinct()
+            .GroupBy(t => t.Namespace)
+            .Select(g => new ObservableTemplate
+            {
+                Namespace = g.Key,
+                ClassTemplates = g.Select(t => new ClassTemplate(t))
+                    .Where(t => t.EventTemplates.Any())
+                    .ToArray()
+            })
+            .Where(a => a.ClassTemplates.Any())
+            .OrderBy(a => a.Namespace);
+    }
+ 
+    class ObservableTemplate
+    {
+        public string Namespace;
+        public ClassTemplate[] ClassTemplates;
+    }
+ 
+    class ClassTemplate
+    {
+        public string Classname, GenericArgs;
+        public EventTemplate[] EventTemplates;
+ 
+        public ClassTemplate(Type type)
+        {
+            Classname = Regex.Replace(type.Name, "`.*$", "");
+            GenericArgs = type.IsGenericType
+                ? "<" + string.Join(",", type.GetGenericArguments().Select((_, i) => "T" + (i + 1))) + ">"
+                : "";
+            EventTemplates = type.GetEvents(BindingFlags.Public | BindingFlags.InvokeMethod | BindingFlags.DeclaredOnly | BindingFlags.Instance)
+                .Select(ei => new { EventInfo = ei, Args = ei.EventHandlerType.GetMethod("Invoke").GetParameters().Last().ParameterType })
+                .Where(a => a.Args == typeof(EventArgs) || a.Args.IsSubclassOf(typeof(EventArgs)))
+                .Select(a => new EventTemplate
+                {
+                    Name = a.EventInfo.Name,
+                    Handler = Regex.Replace(a.EventInfo.EventHandlerType.FullName, "`.*$", ""),
+                    Args = a.Args.FullName,
+                    IsGeneric = a.EventInfo.EventHandlerType.IsGenericType
+                })
+                .ToArray();
+        }
+    }
+ 
+    class EventTemplate
+    {
+        public string Name, Args, Handler;
+        public bool IsGeneric;
+    }
+#>

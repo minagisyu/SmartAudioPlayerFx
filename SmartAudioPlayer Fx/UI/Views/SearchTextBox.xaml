@@ -1,0 +1,52 @@
+﻿<UserControl
+	x:Class="SmartAudioPlayerFx.UI.Views.SearchTextBox" x:ClassModifier="internal"
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+	mc:Ignorable="d" 
+	d:DesignHeight="29" d:DesignWidth="310"
+	GotFocus="UserControl_GotFocus"
+	LostFocus="UserControl_LostFocus"
+	Background="Transparent"
+	>
+	<Border x:Name="main_border" BorderThickness="1" BorderBrush="LightGray">
+		<Grid>
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="Auto" />
+				<ColumnDefinition />
+				<ColumnDefinition Width="Auto" />
+			</Grid.ColumnDefinitions>
+			
+			<Image
+				Name="searchMenuImage"
+				Grid.Column="0"
+				Margin="3,0,0,0"
+				Source="/Resources/検索：メニュー.png"
+				Width="17" MouseLeftButtonDown="searchMenuImage_MouseLeftButtonDown" />
+
+			<TextBox
+				Name="searchText"
+				Grid.Column="1"
+				Margin="0,0,0,0"
+				BorderThickness="0"
+				VerticalAlignment="Center"
+				MaxLines="1"
+				Background="Transparent"
+				TextChanged="searchText_TextChanged"
+				/>
+			
+			<Image
+				Name="searchTextDelete"
+				Grid.Column="2"
+				Source="/Resources/検索：削除-デフォルト.png"
+				Width="17"
+				MouseEnter="searchTextDelete_MouseEnter"
+				MouseLeave="searchTextDelete_MouseLeave"
+				MouseLeftButtonUp="searchTextDelete_MouseLeftButtonUp"
+				Visibility="Collapsed"
+				/>
+
+		</Grid>
+	</Border>
+</UserControl>
