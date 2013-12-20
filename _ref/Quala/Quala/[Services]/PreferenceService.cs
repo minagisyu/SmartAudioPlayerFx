@@ -37,7 +37,7 @@ namespace Quala
 		public static void ResetBaseDir(bool forced_appdata_dir = false)
 		{
 			// exeと同じフォルダに書き込めるかテスト
-			var asm = Assembly.GetEntryAssembly();
+			var asm = Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly();
 			var dir = Path.GetDirectoryName(asm.Location);
 			if (forced_appdata_dir == false && IsGotWriteAccessPermission(dir))
 			{
@@ -64,9 +64,15 @@ namespace Quala
 			return path;
 		}
 
-		public static void Save(XElement element, params string[] name)
+		/// <summary>
+		/// 指定ファイルへ保存。
+		/// インデント有効と文字チェック無効設定。
+		/// </summary>
+		/// <param name="element"></param>
+		/// <param name="filepaths"></param>
+		public static void Save(XElement element, params string[] filepaths)
 		{
-			var path = CreateFullPath(name);
+			var path = CreateFullPath(filepaths);
 			using (var stream = File.Open(path, FileMode.Create, FileAccess.Write))
 			using (var writer = XmlTextWriter.Create(stream, new XmlWriterSettings() { CheckCharacters = false, Indent = true, }))
 			{
@@ -78,76 +84,27 @@ namespace Quala
 			}
 		}
 
-		public static XElement Load(params string[] name)
+		/// <summary>
+		/// 指定ファイルからロードします。
+		/// ファイルが無い、読み込みエラー、ルート要素名がnameと違う場合は空のXElement(name)が返ります。
+		/// </summary>
+		/// <param name="name"></param>
+		/// <param name="filepaths"></param>
+		/// <returns></returns>
+		public static XElement Load(XName name, params string[] filepaths)
 		{
-			var path = CreateFullPath(name);
+			var path = CreateFullPath(filepaths);
 			if (File.Exists(path) == false)
-				return null;
+				return new XElement(name);
 
 			using (var stream = File.OpenRead(path))
 			using (var reader = XmlTextReader.Create(stream, new XmlReaderSettings() { CheckCharacters = false, }))
 			{
-				return XElement.Load(reader);
+				var element = XElement.Load(reader);
+				return (element != null && element.Name.Equals(name)) ? element : new XElement(name);
 			}
 		}
 
-		#region XElement系拡張メソッド
-
-		[Obsolete("use XElement.SetAttributeValue() or XElement.SetElementValue()")]
-		public static XElement AddValue<T>(this XElement element, string name, T value)
-		{
-			if (value != null)
-				element.Add(new XAttribute(name, value));
-			return element;
-		}
-
-		public static XElement AddValues<T>(this XElement element, string name, IEnumerable<T> values, Action<XElement, T> action)
-		{
-			if (values != null && action != null)
-			{
-				var p_element = new XElement(name);
-				element.Add(p_element);
-				foreach (var v in values)
-				{
-					var item = new XElement("Item");
-					action(item, v);
-					p_element.Add(item);
-				}
-			}
-			return element;
-		}
-
-		public static T GetOrDefaultValue<T>(this XElement element, string name, T defaultValue)
-		{
-			// チェック
-			if (element == null) return defaultValue;
-
-			// 属性チェック
-			var attr = element.Attribute(name);
-			if (attr == null || string.IsNullOrEmpty(attr.Value)) return defaultValue;
-
-			// 変換チェック
-			var conv = TypeDescriptor.GetConverter(typeof(T));
-			if (conv.CanConvertFrom(typeof(string)) == false)
-				return defaultValue;
-
-			// 変換
-			return (T)conv.ConvertFromString(attr.Value);
-		}
-
-		public static IEnumerable<T> GetArrayValues<T>(this XElement element, string name, Func<XElement, T> func)
-		{
-			// チェック
-			if (func == null || element == null) return new T[0];
-
-			// 要素チェック
-			var elm = element.Element(name);
-			if (elm == null) return new T[0];
-
-			return elm.Elements("Item").Select(el => func(el));
-		}
-
-		#endregion
 		#region 権限ヘルパー
 
 		// 書き込み権限があるか確認する

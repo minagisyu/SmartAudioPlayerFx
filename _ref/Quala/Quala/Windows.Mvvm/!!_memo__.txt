@@ -1,0 +1,13 @@
+﻿
+Quala.Windows.Mvvm
+
+MVVM(Model-View-ViewModel)関連クラス群。
+ViewModelを構成するのに必要な物はこの名前空間に。
+デリゲートコマンドとビヘイビア作成ヘルパクラスもこっち。
+
+だけど、ビヘイビアはQuala.Windowsの名前空間に。
+
+MVVM関連クラスはWPF Model-View-ViewModel Toolkitのプロジェクトテンプレートを取り込み
+…と思ったんだけど、kazukiのブログのMVVMInfraが使いやすそうだったのでそっちをパクりｗ
+プロパティに知能を持たせるってすごいアイディアだよねー。
+

@@ -153,7 +153,7 @@ namespace Quala.Interop.Win32
 		public static extern bool GetMessage(out MSG msg, IntPtr hWnd, uint msgFillterMin, uint msgFillterMax);
 
 		[DllImport(User32, CharSet = CharSet.Auto)]
-		public static extern bool GetMonitorInfo(HMONITOR hMonitor, out MONITORINFO lpmi);
+		public static extern bool GetMonitorInfo(HMONITOR hMonitor, ref MONITORINFO lpmi);
 
 		[DllImport(User32, CharSet = CharSet.Auto)]
 		public static extern int GetSystemMetrics(SM nIndex);
@@ -163,6 +163,9 @@ namespace Quala.Interop.Win32
 
 		[DllImport(User32, CharSet = CharSet.Auto)]
 		public static extern HWND GetParent(HWND hWnd);
+
+		[DllImport(User32, CharSet = CharSet.Auto)]
+		public static extern IntPtr GetTopWindow(HWND hWnd);
 
 		[DllImport(User32, CharSet = CharSet.Auto)]
 		public static extern HWND GetWindow(HWND hWnd, GW nCmd);
