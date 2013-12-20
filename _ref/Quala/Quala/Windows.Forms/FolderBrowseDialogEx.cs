@@ -143,7 +143,7 @@ namespace Quala.Windows.Forms
 					dialog.NavigateToShortcut = true;
 					dialog.RestoreDirectory = false;
 					dialog.Title = _discription;
-					if (dialog.ShowDialog() == CommonFileDialogResult.OK)
+					if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
 					{
 						_selectedPath = dialog.FileName;
 						return true;

@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 using Quala;
 using Quala.Data;
 
@@ -20,25 +18,23 @@ namespace SmartAudioPlayerFx.Player
 		const int CURRENT_DB_VERSION = 3;
 		static SimpleDB mediaDB;
 
-		/// <summary>
-		/// サービスを準備します(初期化)
-		/// </summary>
-		public static void PrepareService()
+		static MediaDBService()
 		{
-			LogService.AddDebugLog("MediaDBService", "Call PrepareService");
+			LogService.AddDebugLog("MediaDBService", "Call ctor.");
 			var filename = PreferenceService.CreateFullPath("data", "media.db");
 			mediaDB = new SimpleDB(filename);
 
 			// テーブル作成 (VACUUMする可能性があるのでトランザクションの外におくこと)
 			mediaDB.CreateTable<MediaItem>();
 			mediaDB.CreateTable<MetaData>();
+
 			// メタデータチェック
 			var meta = mediaDB.GetAll<MetaData>().ToDictionary(i => i.Key, i => i.Value);
-			if(meta.Any())
+			if (meta.Any())
 			{
 				// バージョン番号修正
 				string db_version;
-				if(!meta.TryGetValue("Version", out db_version) ||	// Versionが無い
+				if (!meta.TryGetValue("Version", out db_version) ||	// Versionが無い
 					string.IsNullOrWhiteSpace(db_version) ||		// 取得したら空文字だった
 					!char.IsDigit(db_version, 0))					// 数字以外の文字だった
 					meta["Version"] = CURRENT_DB_VERSION.ToString();
@@ -88,7 +84,7 @@ namespace SmartAudioPlayerFx.Player
 		/// <returns></returns>
 		public static IEnumerable<MediaItem> Insert(IEnumerable<MediaItem> items)
 		{
-			if (mediaDB == null) throw new InvalidOperationException("call first PrepareService()");
+			if (mediaDB == null) throw new InvalidOperationException("call first Start()");
 			var inserted_items = mediaDB.InsertOrIgnore(items);
 			inserted_items
 				.GroupBy(i => Path.GetDirectoryName(i.FilePath), StringComparer.CurrentCultureIgnoreCase)
@@ -105,8 +101,8 @@ namespace SmartAudioPlayerFx.Player
 		/// <param name="columns"></param>
 		public static int Update(MediaItem item, params Expression<Func<MediaItem, object>>[] columns)
 		{
-		//	LogService.AddDebugLog("MediaDBService", "Call Update: item.ID={0}, item.FilePath={1}", item.ID, item.FilePath);
-			if (mediaDB == null) throw new InvalidOperationException("call first PrepareService()");
+			LogService.AddDebugLog("MediaDBService", "Call Update: item.ID={0}, item.FilePath={1}", item.ID, item.FilePath);
+			if (mediaDB == null) throw new InvalidOperationException("call first Start()");
 			if (columns == null) throw new ArgumentNullException("columns");
 			if (item.ID == 0) throw new ArgumentException("item.ID == 0", "item");
 
@@ -131,7 +127,7 @@ namespace SmartAudioPlayerFx.Player
 		public static MediaItem GetOrCreate(string filepath)
 		{
 			LogService.AddDebugLog("MediaDBService", "Call GetOrCreate: filepath={0}", filepath);
-			if (mediaDB == null) throw new InvalidOperationException("call first PrepareService()");
+			if (mediaDB == null) throw new InvalidOperationException("call first Start()");
 			if (string.IsNullOrWhiteSpace(filepath)) throw new ArgumentException("filepath");
 
 			var exists = File.Exists(filepath);
@@ -186,7 +182,7 @@ namespace SmartAudioPlayerFx.Player
 		public static string[] RecentPlayItemsPath(int limit)
 		{
 			LogService.AddDebugLog("MediaDBService", "Call RecentPlayItems: limit={0}", limit);
-			if (mediaDB == null) throw new InvalidOperationException("call first PrepareService()");
+			if (mediaDB == null) throw new InvalidOperationException("call first Start()");
 			return mediaDB
 				.Query<MediaItem>("select FilePath from media where LastPlay > 0 order by LastPlay desc limit ?", limit)
 				.Select(i => i.FilePath)
@@ -201,7 +197,7 @@ namespace SmartAudioPlayerFx.Player
 		public static string PreviousPlayItem(MediaItem item)
 		{
 			LogService.AddDebugLog("MediaDBService", "Call PreviousPlayItem: item.FilePath={0}", item.FilePath);
-			if (mediaDB == null) throw new InvalidOperationException("call first PrepareService()");
+			if (mediaDB == null) throw new InvalidOperationException("call first Start()");
 			return mediaDB
 				.Query<MediaItem>("select FilePath from media where FilePath != ? and LastPlay < ? and LastPlay > 0 order by LastPlay desc limit 1", item.FilePath, item.LastPlay)
 				.Select(i => i.FilePath)
@@ -219,7 +215,7 @@ namespace SmartAudioPlayerFx.Player
 		public static MediaItem[] GetFromFilePath_Ranged(string path, int index, int count)
 		{
 		//	LogService.AddDebugLog("MediaDBService", "Call GetFromFilePath_Ranged: path={0}, index={1}, count={2}", path, index, count);
-			if (mediaDB == null) throw new InvalidOperationException("call first PrepareService()");
+			if (mediaDB == null) throw new InvalidOperationException("call first Start()");
 			return mediaDB
 				.Query<MediaItem>("select * from media where FilePath like ? order by ID limit " + count + " offset " + index, path + "%")
 				.ToArray();
@@ -236,7 +232,7 @@ namespace SmartAudioPlayerFx.Player
 		public static MediaItem[] GetFromFilePath_ExistsOnly_Ranged(string path, int index, int count)
 		{
 		//	LogService.AddDebugLog("MediaDBService", "Call GetFromFilePath_ExistsOnly_Ranged: path={0}, index={1}, count={2}", path, index, count);
-			if (mediaDB == null) throw new InvalidOperationException("call first PrepareService()");
+			if (mediaDB == null) throw new InvalidOperationException("call first Start()");
 			return mediaDB
 				.Query<MediaItem>("select * from media where IsNotExist=0 AND FilePath like ? order by ID limit " + count + " offset " + index, path + "%")
 				.ToArray();
@@ -250,7 +246,7 @@ namespace SmartAudioPlayerFx.Player
 		public static void Recycle(bool run_vacuum)
 		{
 			LogService.AddDebugLog("MediaDBService", "Call Recycle");
-			if (mediaDB == null) throw new InvalidOperationException("call first PrepareService()");
+			if (mediaDB == null) throw new InvalidOperationException("call first Start()");
 			var date = DateTime.UtcNow.AddDays(-2).Ticks.ToString();
 			mediaDB.Recycle<MediaItem>(
 				"IsNotExist=1",

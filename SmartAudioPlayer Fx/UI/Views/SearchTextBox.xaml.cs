@@ -4,6 +4,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Linq;
 
 namespace SmartAudioPlayerFx.UI.Views
 {
@@ -12,6 +13,14 @@ namespace SmartAudioPlayerFx.UI.Views
 		public SearchTextBox()
 		{
 			InitializeComponent();
+
+			// テキストボックスのテキスト全選択処理
+			// GotFocus後、PreviewMouseUpが飛んできてからSelectAll()を実行する
+			var gotfocus = Observable.FromEvent<RoutedEventArgs>(searchText, "GotFocus");
+			var mouseup = Observable.FromEvent<MouseButtonEventArgs>(searchText, "PreviewMouseUp");
+			gotfocus
+				.Zip(mouseup, (_, __) => RoutedEventArgs.Empty)
+				.Subscribe(_ => searchText.SelectAll());
 		}
 
 		void UserControl_GotFocus(object sender, RoutedEventArgs e)

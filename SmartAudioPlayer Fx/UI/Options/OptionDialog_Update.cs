@@ -3,6 +3,7 @@ using System.Drawing;
 using System.Windows.Forms;
 using Quala;
 using SmartAudioPlayerFx.Update;
+using System.Linq;
 
 namespace SmartAudioPlayerFx.UI.Options
 {
@@ -23,7 +24,13 @@ namespace SmartAudioPlayerFx.UI.Options
 		{
 			var button = sender as Button;
 			button.Enabled = false;
-			var ret = UpdateService.CheckUpdate() ?? false;
+			//
+			var ret = false;
+			UpdateService
+				.CheckUpdate()
+				.Run(
+					_ => ret = true,
+					ex => { });
 			if (ret && UpdateService.ShowUpdateMessage(ParentDialog.Handle))
 			{
 				App.Current.MainWindow.Close();

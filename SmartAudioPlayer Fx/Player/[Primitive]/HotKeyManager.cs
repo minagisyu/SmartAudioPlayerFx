@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Quala;
-using Quala.Windows.Input;
 using Quala.Interop.Win32;
-using System.Threading.Tasks;
-using System.Collections.Concurrent;
+using Quala.Windows.Input;
 
 namespace SmartAudioPlayerFx.Player
 {
