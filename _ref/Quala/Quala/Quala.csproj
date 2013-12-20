@@ -46,6 +46,7 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\!!_Interop_dll_\Microsoft.WindowsAPICodePack.Shell.dll</HintPath>
     </Reference>
+    <Reference Include="nunit.framework, Version=2.5.7.10213, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="System" />
@@ -165,6 +166,7 @@
     <Compile Include="Runtime.Serialization\XSerializer.cs" />
     <Compile Include="Security.Cryptography\Crc32.cs" />
     <Compile Include="Security.Cryptography\Crc64.cs" />
+    <Compile Include="Test.cs" />
     <Compile Include="Text\LogicalStringComparer.cs" />
     <Compile Include="Threading\LowPriorityScope.cs" />
     <Compile Include="Threading\SinglePumpThread.cs" />
@@ -240,6 +242,9 @@
   <ItemGroup>
     <None Include="quala.snk" />
     <None Include="Windows.Mvvm\!!_memo__.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
