@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
+using System.Concurrency;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Collections.Concurrent;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Quala
 {
@@ -15,14 +12,26 @@ namespace Quala
 	public static class LogService
 	{
 		public static int MaxLogs { get; set; }
-		static readonly ConcurrentQueue<Item> logs;
+		static readonly LinkedList<Item> logs;
+		static readonly Subject<Item> newlog_added;
 		public static event Action<Item> LogAdded;
 
 		static LogService()
 		{
 			MaxLogs = 1000;
-			logs = new ConcurrentQueue<Item>();
-			LogAdded += log => { Debugger.Log(0, log.Source, log + Environment.NewLine); };
+			logs = new LinkedList<Item>();
+			newlog_added = new Subject<Item>(Scheduler.ThreadPool);
+			newlog_added.Subscribe(item =>
+			{
+				Debugger.Log(0, item.Source, item + Environment.NewLine);
+				//
+				logs.AddLast(item);
+				if (logs.Count > MaxLogs)
+					logs.RemoveFirst();
+				//
+				if (LogAdded != null)
+					LogAdded(item);
+			});
 		}
 
 		#region AddLog
@@ -31,17 +40,7 @@ namespace Quala
 		static void AddLog(LogType logType, string source, string message)
 		{
 			var log = new Item() { Time = DateTime.Now, Type = logType, Source = source, Message = message, };
-			logs.Enqueue(log);
-			Task.Factory.StartNew(() =>
-			{
-				if (logs.Count > MaxLogs)
-				{
-					Item i;
-					logs.TryDequeue(out i);
-				}
-			});
-			if (log != null && LogAdded != null)
-				LogAdded(log);
+			newlog_added.OnNext(log);
 		}
 		// 情報ログ
 		public static void AddInfoLog(string source, string format, params object[] args)
@@ -63,13 +62,22 @@ namespace Quala
 		{
 			AddLog(LogType.ERROR, source, text + Environment.NewLine + ex);
 		}
+		// クリティカルエラーログ
+		public static void AddCriticalErrorLog(string source, string format, params object[] args)
+		{
+			AddLog(LogType.CRITICAL_ERROR, source, string.Format(format, args));
+		}
+		// クリティカルエラーログ(例外)
+		public static void AddCriticalErrorLog(string source, string text, Exception ex)
+		{
+			AddLog(LogType.CRITICAL_ERROR, source, text + Environment.NewLine + ex);
+		}
 		// テストログ
 		public static void AddTestLog(string source, string format, params object[] args)
 		{
 			AddLog(LogType.TEST, source, string.Format(format, args));
 		}
 		// デバッグログ
-		[Conditional("DEBUG")]
 		public static void AddDebugLog(string source, string format, params object[] args)
 		{
 			AddLog(LogType.DEBUG, source, string.Format(format, args));
@@ -113,12 +121,22 @@ namespace Quala
 		// ログタイプ
 		public enum LogType
 		{
-			INFO = 0,		// 一般情報
-			WARNING = 1,	// 警告
-			ERROR = 2,		// エラー
-			TEST = 3,		// テスト
-			DEBUG = 4,		// デバッグ
+			INFO = 0,			// 一般情報
+			WARNING = 1,		// 警告
+			ERROR = 2,			// エラー
+			CRITICAL_ERROR = 3,	// 重大なエラー
+			TEST = 4,			// テスト
+			DEBUG = 5,			// デバッグ
 		}
 
+		// ログイベント
+		public sealed class LogEventArgs : EventArgs
+		{
+			public Item Item { get; private set; }
+			public LogEventArgs(Item item)
+			{
+				this.Item = item;
+			}
+		}
 	}
 }

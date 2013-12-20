@@ -1,10 +1,10 @@
 ﻿using System;
+using System.Linq;
 using System.Text;
 using System.Xml.Linq;
 using Quala;
 using Quala.Windows.Mvvm;
 using SmartAudioPlayerFx.Player;
-using System.Linq;
 
 namespace SmartAudioPlayerFx.UI
 {
@@ -189,7 +189,8 @@ namespace SmartAudioPlayerFx.UI
 				OnPropertyChanged("DurationTicks");
 				OnPropertyChanged("SeekTooltip");
 			};
-			Observable.Timer(TimeSpan.Zero, TimeSpan.FromSeconds(1))
+			Observable
+				.Timer(TimeSpan.Zero, TimeSpan.FromSeconds(1))
 				.Subscribe(_ =>
 				{
 					OnPropertyChanged("PositionString");
