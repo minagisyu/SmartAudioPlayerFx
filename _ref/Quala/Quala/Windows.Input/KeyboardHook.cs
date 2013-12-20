@@ -56,14 +56,18 @@ namespace Quala.Windows.Input
 			{
 				if(KeyboardHooked != null)
 				{
-					_hookedEventArgs.message = message;
-					_hookedEventArgs.state = state;
-					_hookedEventArgs.Cancel = false;
-					KeyboardHooked(this, _hookedEventArgs);
-					if(_hookedEventArgs.Cancel)
+					try
 					{
-						return -1;
+						_hookedEventArgs.message = message;
+						_hookedEventArgs.state = state;
+						_hookedEventArgs.Cancel = false;
+						KeyboardHooked(this, _hookedEventArgs);
+						if (_hookedEventArgs.Cancel)
+						{
+							return -1;
+						}
 					}
+					catch (Exception) { }
 				}
 			}
 			return API.CallNextHookEx(IntPtr.Zero, code, message, ref state);

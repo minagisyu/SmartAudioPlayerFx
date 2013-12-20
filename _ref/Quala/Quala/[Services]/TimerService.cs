@@ -53,7 +53,7 @@ namespace Quala
 				IsDisposed = false;
 				if (run_now)
 					handler(this);
-				LogService.AddDebugLog("TimerService", "timer started, id: {0}", id);
+				LogService.AddDebugLog("timer started, id: {0}", id);
 			}
 
 			internal void Tick()
