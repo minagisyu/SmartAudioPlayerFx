@@ -1,13 +1,12 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Concurrency;
 using System.Data.SQLite;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace Quala.Data
 {
@@ -18,53 +17,33 @@ namespace Quala.Data
 	/// </summary>
 	public class SimpleDB : IDisposable
 	{
-		// thread... sqlite
-		// dispose -> close
-		// taskable, manual commit, xml import/export,
-		#region ctor
+		#region ctor 6 dispose
 
 		SQLiteConnection connection;
-		BlockingCollection<Action> tasks;
-		CancellationTokenSource taskCTS;
-		Task taskRunner;
+		Subject<Action> newTask;
+		IDisposable newTaskSubscription;
+		FileStream dbLock;
 
 		public SimpleDB(string filepath)
 		{
-			taskCTS = new CancellationTokenSource();
-			var ct = taskCTS.Token;
-			tasks = new BlockingCollection<Action>();
-			taskRunner = Task.Factory.StartNew(()=>
+			// タスク処理準備
+			newTask = new Subject<Action>(Scheduler.TaskPool);
+			newTaskSubscription = newTask.Subscribe(task =>
 			{
-				var csb = new SQLiteConnectionStringBuilder();
-				csb.DataSource = filepath;
-				connection = new SQLiteConnection(csb.ToString());
-				connection.Open();
-				__Execute("BEGIN");
-				// DBファイルが消されないように開っぱなしにする
-				using (var dbLock = File.Open(filepath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-				{
-					while (taskCTS.IsCancellationRequested == false)
-					{
-						try
-						{
-							var action = tasks.Take(ct);
-							if (action != null)
-							{
-								try { action(); }
-								catch (SQLiteException e)
-								{
-									LogService.AddErrorLog("SimpleDB", "SQLiteException", e);
-								}
-							}
-						}
-						catch (OperationCanceledException) { }
-					}
-				}
-			}, TaskCreationOptions.LongRunning);
-		}
+				try { task(); }
+				catch (SQLiteException e) { LogService.AddErrorLog("SimpleDB2", "SQLiteException", e); }
+			});
 
-		#endregion
-		#region IDisposable
+			// DBを開く
+			var csb = new SQLiteConnectionStringBuilder();
+			csb.DataSource = filepath;
+			connection = new SQLiteConnection(csb.ToString());
+			connection.Open();
+			__Execute("BEGIN");
+
+			// DBファイルが消されないように開っぱなしにする
+			dbLock = File.Open(filepath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+		}
 
 		~SimpleDB() { Dispose(false); }
 		public void Dispose() { Dispose(true); }
@@ -73,26 +52,20 @@ namespace Quala.Data
 		{
 			if (disposing)
 			{
-				if (taskCTS != null)
+				if (newTaskSubscription != null)
 				{
-					taskCTS.Dispose();
-					taskCTS = null;
-				}
-				if (taskRunner != null)
-				{
-					taskRunner.Wait();
-					taskRunner.Dispose();
-					taskRunner = null;
-				}
-				if (tasks != null)
-				{
-					tasks.Dispose();
-					tasks = null;
+					newTaskSubscription.Dispose();
+					newTaskSubscription = null;
 				}
 				if (connection != null)
 				{
 					connection.Dispose();
 					connection = null;
+				}
+				if (dbLock != null)
+				{
+					dbLock.Close();
+					dbLock = null;
 				}
 				GC.SuppressFinalize(this);
 			}
@@ -148,6 +121,7 @@ namespace Quala.Data
 				var query = "create table if not exists [" + map.TableName + "](" +
 					string.Join(",", map.Columns.Select(c => c.SqlDecl).ToArray()) + ")";
 				__Execute(query, connection);
+
 				// 不足しているカラムの作成
 				var mapColumns = map.Columns.ToDictionary(c => c.Name, StringComparer.InvariantCultureIgnoreCase);
 				__ExecuteReader("pragma table_info(" + map.TableName + ")")
@@ -157,6 +131,7 @@ namespace Quala.Data
 					mapColumns.Run(kv => __Execute("alter table [" + map.TableName + "] add column " + kv.Value.SqlDecl));
 					vacuum_require = true;
 				}
+
 				// インデックス作成 --- PrimaryKeyとUniqueには自動でインデックスが付くはず。
 				var index_count = (long)__ExecuteScaler("select COUNT(*) from sqlite_master where type='index'");
 				map.Columns
@@ -165,6 +140,7 @@ namespace Quala.Data
 				index_count -= (long)__ExecuteScaler("select COUNT(*) from sqlite_master where type='index'");
 				if (index_count != 0)
 					vacuum_require = true;
+
 				// 最適化の必要アリ？
 				if (vacuum_require)
 					__Execute("COMMIT; VACUUM; BEGIN;");
@@ -631,7 +607,7 @@ namespace Quala.Data
 		// 特定タスクを実行キューに登録する
 		void AddTask(Action action)
 		{
-			tasks.Add(action);
+			newTask.OnNext(action);
 		}
 
 		// 特定タスクを実行キューに登録し、実行され、処理が終わるまで待つ
@@ -639,7 +615,7 @@ namespace Quala.Data
 		{
 			using (var ev = new ManualResetEventSlim(false))
 			{
-				tasks.Add(()=>
+				newTask.OnNext(() =>
 				{
 					try { action(); }
 					finally { ev.Set(); }

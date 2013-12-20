@@ -272,8 +272,8 @@ namespace SmartAudioPlayerFx.UI.Views
 				ViewModel.MediaListSource.SetListFocus(prevListFocus);
 				return;
 			}
-			// 検索するまで0.3秒ウェイトをかけてみる
-			Observable.Timer(TimeSpan.FromMilliseconds(300))
+			// 検索するまでウェイトをかけてみる
+			Observable.Timer(TimeSpan.FromMilliseconds(100))
 				.ObserveOnDispatcher()
 				.Subscribe(delegate
 				{

@@ -7,15 +7,14 @@ using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media.Animation;
-using System.Xml.Linq;
 using Microsoft.Win32;
-using Quala;
 using Quala.Interop.Win32;
 using Quala.Windows;
 using Quala.Windows.Controls;
 using SmartAudioPlayerFx.Player;
 using Drawing = System.Drawing;
 using WinForms = System.Windows.Forms;
+using System.Linq;
 
 namespace SmartAudioPlayerFx.UI.Views
 {

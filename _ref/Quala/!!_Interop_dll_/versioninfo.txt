@@ -8,15 +8,13 @@
  - System.CoreEx.dll
  - System.Interractive.dll
  - System.Reactive.dll
- - 1.0.2617.0
+ - 1.0.2698.0
  - .NET 4.0
  - Ms-PL?
 
 * Windows API Code Pack
  - Microsoft.WindowsAPICodePack.dll
  - Microsoft.WindowsAPICodePack.Shell.dll
- - June 18 2009
- - .NET 4.0 Client Profileに変更してビルド
- - オレオレ署名してます
+ - v1.1
  - ライセンスはマイクロソフトのカスタムライセンス
 

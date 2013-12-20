@@ -74,18 +74,21 @@ HKEY_CURRENT_USER\Software\Microsoft\MediaPlayer\Player\Extensions
 
 □□ ライブラリについて □□□□□□□□□□□□□□□□□□□□□□□□□□
 
-mp3infp 2.54i/u4
+mp3infp 2.54i/u6
   ** http://win32lab.com/fsw/mp3infp/
   ** 掲示板で配布されている有志によるアップデート版を同梱しています
+
 DotNetZip Library 1.9
   ** http://dotnetzip.codeplex.com/
+
 System.Data.SQLite 1.0.66.0
   ** http://sqlite.phxsoftware.com/
-Reactive Extensions for .NET 1.0.2617.104
+
+Reactive Extensions for .NET 1.0.2698.0
   ** http://msdn.microsoft.com/en-us/devlabs/ee794896.aspx
-Windows® API Code Pack for Microsoft® .NET Framework 1.0.1
+
+Windows® API Code Pack for Microsoft® .NET Framework 1.1
   ** http://code.msdn.microsoft.com/WindowsAPICodePack
-  ** 自己署名をつけた.NET Framework 4 Client Profile向けビルドを同梱しています
 
 
 □□ ライセンス＆再配布について □□□□□□□□□□□□□□□□□□□□□□
@@ -98,6 +101,16 @@ SmartAudioPlayer FxとQuala.dllに関してはパブリックドメイン扱い�
 
 
 □ バージョン履歴 □□□□□□□□□□□□□□□□□□□□□□□□□□□□□
+
+3.2.0.0
+◆アプリケーション
+・mp3infp.dllを2.54i/u6(32bit版)に差し替え
+・Windows API Code Pack v1.1 公式ビルド版に差し替え
+・Reactive Extensions v1.0.2698.0に差し替え
+・ファイルスキャン後にアプリケーションが例外落ちする場合がある問題を修正
+・その他微修正
+◆メディアライブラリ ウィンドウ
+・コメント及びお気に入りスターにカーソルを当てたときにカーソルアイコンを変更するようにした
 
 3.1.0.7
 ◆アプリケーション
