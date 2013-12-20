@@ -30,9 +30,19 @@ namespace Quala
 		[DebuggerHidden]
 		public static IEnumerable<IEnumerable<T>> TakeWithSplit<T>(this IEnumerable<T> sequence, int count, CancellationToken token)
 		{
+			if (sequence == null) yield break;
+			if (count == 0) yield break;
+
+			var it = sequence.GetEnumerator();
+			if (it == null) yield break;
 			var items = new List<T>(count);
-			foreach (var i in sequence)
+			while (true)
 			{
+				try { if(it.MoveNext() == false) break; }
+				catch (NullReferenceException) { break; }
+				catch (AggregateException) { break; }
+
+				var i = it.Current;
 				items.Add(i);
 				if ((items.Count % count) == 0)
 				{
@@ -46,14 +56,5 @@ namespace Quala
 				yield return items.AsReadOnly();
 		}
 
-	/*	[DebuggerHidden]
-		public static void Run<T>(this IEnumerable<T> sequence, Action<T> action)
-		{
-			if (action == null)
-				throw new ArgumentNullException("action");
-			foreach (var i in sequence)
-				action(i);
-		}
-	*/
 	}
 }
