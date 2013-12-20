@@ -2,11 +2,13 @@
 	x:Class="SmartAudioPlayerFx.App" x:ClassModifier="internal"
 	xmlns="http://schemas.microsoft.com/netfx/2007/xaml/presentation"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-	ShutdownMode="OnMainWindowClose"
-	Startup="Application_Startup"
-	SessionEnding="Application_SessionEnding"
-	>
+	ShutdownMode="OnMainWindowClose">
 	<Application.Resources>
-		
+		<ResourceDictionary>
+			<ResourceDictionary.MergedDictionaries>
+				<ResourceDictionary Source="Views/MainWindowResources.xaml"/>
+				<ResourceDictionary Source="Views/MediaListWindowResources.xaml"/>
+			</ResourceDictionary.MergedDictionaries>
+		</ResourceDictionary>
 	</Application.Resources>
 </Application>
