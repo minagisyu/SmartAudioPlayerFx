@@ -1,11 +1,11 @@
-using System;
-using System.Runtime.InteropServices;
-using System.Security;
-using System.Text;
-using System.IO;
-
 namespace __Primitives__
 {
+	using System;
+	using System.Runtime.InteropServices;
+	using System.Security;
+	using System.Text;
+	using System.IO;
+
 	partial class WinAPI
 	{
 		const string Shell32 = "shell32.dll";

@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection;
-using System.Xml.Linq;
-
-namespace __Primitives__
+﻿namespace __Primitives__
 {
+	using System;
+	using System.Collections.Generic;
+
 	static class EnumerableExtension
 	{
 		// IEnumerable(T) から n 個ずつ要素を取得

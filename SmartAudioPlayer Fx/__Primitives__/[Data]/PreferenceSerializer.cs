@@ -1,14 +1,14 @@
-﻿using System;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Security.AccessControl;
-using System.Security.Principal;
-using System.Xml;
-using System.Xml.Linq;
-
-namespace __Primitives__
+﻿namespace __Primitives__
 {
+	using System;
+	using System.IO;
+	using System.Linq;
+	using System.Reflection;
+	using System.Security.AccessControl;
+	using System.Security.Principal;
+	using System.Xml;
+	using System.Xml.Linq;
+
 	/// <summary>
 	/// XElementを介した設定データ用シリアライザ＆ファイルIOメソッド
 	/// </summary>

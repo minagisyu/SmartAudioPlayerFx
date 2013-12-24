@@ -1,14 +1,14 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Windows.Forms;
-using SmartAudioPlayerFx.Data;
-using SmartAudioPlayerFx.Managers;
-using __Primitives__;
-
 namespace SmartAudioPlayerFx.Views.Options
 {
+	using System;
+	using System.Collections.Generic;
+	using System.IO;
+	using System.Linq;
+	using System.Windows.Forms;
+	using SmartAudioPlayerFx.Data;
+	using SmartAudioPlayerFx.Managers;
+	using __Primitives__;
+
 	sealed partial class OptionDialog_MediaList : OptionPage
 	{
 		public OptionDialog_MediaList()

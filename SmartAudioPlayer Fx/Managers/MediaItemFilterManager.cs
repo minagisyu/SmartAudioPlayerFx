@@ -139,7 +139,7 @@ namespace SmartAudioPlayerFx.Managers
 					.ToArray();
 				wordlist_cache = IgnoreWords
 					.Where(x => x.IsEnable)
-					.Select(x => MediaItem.StrConv_LowerHankakuKana(x.Word))
+					.Select(x => MediaItemExtension.StrConv_LowerHankakuKana(x.Word))
 					.ToArray();
 			}
 			if (PropertyChanged != null)

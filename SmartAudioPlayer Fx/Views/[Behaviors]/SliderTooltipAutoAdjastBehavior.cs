@@ -1,14 +1,14 @@
-﻿using System;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
-using System.Windows.Input;
-using System.Windows.Interactivity;
-using Drawing = System.Drawing;
-using WinForms = System.Windows.Forms;
-
-namespace SmartAudioPlayerFx.Views
+﻿namespace SmartAudioPlayerFx.Views
 {
+	using System;
+	using System.Windows;
+	using System.Windows.Controls;
+	using System.Windows.Controls.Primitives;
+	using System.Windows.Input;
+	using System.Windows.Interactivity;
+	using Drawing = System.Drawing;
+	using WinForms = System.Windows.Forms;
+
 	/// <summary>
 	/// SliderのTooltipの出現位置を自動的に調整する
 	/// </summary>

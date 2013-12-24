@@ -1,8 +1,8 @@
-using System;
-using System.Runtime.InteropServices;
-
 namespace __Primitives__
 {
+	using System;
+	using System.Runtime.InteropServices;
+
 	partial class WinAPI
 	{
 		const string Adv32 = "advapi32.dll";

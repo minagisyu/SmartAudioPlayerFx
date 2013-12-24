@@ -1,11 +1,11 @@
-﻿using System;
-using System.Windows;
-using System.Windows.Interactivity;
-using System.Windows.Interop;
-using __Primitives__;
-
-namespace SmartAudioPlayerFx.Views
+﻿namespace SmartAudioPlayerFx.Views
 {
+	using System;
+	using System.Windows;
+	using System.Windows.Interactivity;
+	using System.Windows.Interop;
+	using __Primitives__;
+
 	/// <summary>
 	/// WS_EX_TOOLWINDOWを設定するビヘイビア。
 	/// 初回変更のみの手抜き実装。

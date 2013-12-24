@@ -1,10 +1,10 @@
-﻿using System;
-using System.Reflection;
-using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
-
-namespace __Primitives__
+﻿namespace __Primitives__
 {
+	using System;
+	using System.Reflection;
+	using System.Windows.Controls;
+	using System.Windows.Controls.Primitives;
+
 	/// <summary>
 	/// Sliderのツールチップ・コンテンツを変換出来るように改造
 	/// </summary>

@@ -1,8 +1,8 @@
-using System;
-using System.Security;
-
 namespace __Primitives__
 {
+	using System;
+	using System.Security;
+
 	[SuppressUnmanagedCodeSecurity]
 	static partial class WinAPI
 	{

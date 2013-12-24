@@ -6,6 +6,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading;
+using System.Threading.Tasks;
 using __Primitives__;
 using Codeplex.Data;
 using SmartAudioPlayerFx.Data;
@@ -18,58 +19,30 @@ namespace SmartAudioPlayerFx.Managers
 	{
 		#region ctor / Dispose
 
-		FileStream dbFileLock;
+		readonly FileStream _dbFileLock;
+		readonly ThreadLocal<DbExecutor> _dbconn;
 
 		public MediaDBManager(string db_filename)
 		{
 			// ファイルが削除出来ないように開きっぱなしにする
-			dbFileLock = File.Open(db_filename, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite);
-			CreateTableAndCheckDBVersion();
+			_dbFileLock = File.Open(db_filename, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite);
+			_dbconn = new ThreadLocal<DbExecutor>(() => Open(), true);
+			CreateTableAndWriteMetadata();
 		}
 		public void Dispose()
 		{
-			if (dbFileLock != null)
+			_dbFileLock.Dispose();
+			lock (_dbconn)
 			{
-				dbFileLock.Dispose();
-				dbFileLock = null;
+				_dbconn.Values.ForEach(x => x.Dispose());
+				_dbconn.Dispose();
 			}
 		}
 
-		#endregion
-
-		DbExecutor Open()
+		void CreateTableAndWriteMetadata()
 		{
-			if (dbFileLock == null) return null;
-			var builder = new SQLiteConnectionStringBuilder() { DataSource = dbFileLock.Name, };
-			return new DbExecutor(new SQLiteConnection(builder.ConnectionString));
-		}
-		public void UseTransaction(Action<DBWriteAction> action)
-		{
-			UseTransaction<object>(dbaction =>
-			{
-				action(dbaction);
-				return null;
-			});
-		}
-		public TResult UseTransaction<TResult>(Func<DBWriteAction, TResult> action)
-		{
-			using (var executor = Open())
-			{
-				if (executor == null) return default(TResult);
-				var dbaction = new DBWriteAction(executor);
-				var result = action(dbaction);
-				dbaction.Commit();
-				return result;
-			}
-		}
-
-		void CreateTableAndCheckDBVersion()
-		{
-			using (var executor = Open())
-			{
-				CreateTable(executor);
-				CheckDBVersion(executor);
-			}
+			CreateTable(_dbconn.Value);
+			WriteMetadata(_dbconn.Value);
 		}
 		void CreateTable(DbExecutor executor)
 		{
@@ -83,51 +56,31 @@ namespace SmartAudioPlayerFx.Managers
 			executor.ExecuteNonQuery(@"create index if not exists media_FilePath on media (FilePath)");
 			executor.ExecuteNonQuery(@"create table if not exists meta (Key text primary key, Value text)");
 		}
-
-		const int CURRENT_DB_VERSION = 3;
-		void CheckDBVersion(DbExecutor executor)
+		void WriteMetadata(DbExecutor executor)
 		{
-			// Memo: SAPFx 3.2.0.1以前の実装ミス(新しいバージョンで例外)により
-			//       バージョンあげると動かなくなる(例外発生)のでチェックはほぼ意味を成さない...
-			var meta = executor.ExecuteReaderDynamic("select * from meta")
-				.Select(x => new { Key = x.Key, Value = x.Value, })
-				.ToDictionary(i => i.Key, i => i.Value);
-			if (meta.Any())
-			{
-				// バージョン番号修正
-				dynamic db_version;
-				if (!meta.TryGetValue("Version", out db_version) ||	// Versionが無い
-					string.IsNullOrWhiteSpace(db_version) ||		// 取得したら空文字だった
-					!char.IsDigit(db_version, 0))					// 数字以外の文字だった
-					meta["Version"] = CURRENT_DB_VERSION.ToString();
-			}
-			else
-			{
-				// メタ情報書き込み
-				// リフレクション経由で呼ばれるとGetEntryAssembly()==nullの場合があるので...
-				var asmName = (Assembly.GetEntryAssembly() ?? Assembly.GetCallingAssembly() ?? Assembly.GetExecutingAssembly()).GetName();
-				meta["Version"] = CURRENT_DB_VERSION.ToString();
-				meta["CreatedDate"] = DateTime.Now.ToString();
-				meta["CreatedBy"] = asmName.Name + ", Version=" + asmName.Version;
-				meta
-					.Select(v => new { Key = v.Key, Value = v.Value })
-					.ToList()
-					.ForEach(x => executor.Insert("meta", x));
-			}
-			//
-			int version = int.Parse(meta["Version"]);
-			if (version < CURRENT_DB_VERSION)
-			{
-				// 古いバージョンなのでxmlエクスポートして修正とか？
-				Logger.AddErrorLog(" - media db version " + meta["Version"] + ", not supported.");
-				throw new ApplicationException("db version not supported.");
-			}
-			else if (version > CURRENT_DB_VERSION)
-			{
-				// DBバージョンが新しい？
-				Logger.AddErrorLog(" - media db version " + meta["Version"] + ", futured version?");
-				throw new ApplicationException("db version futured?");
-			}
+			// Memo:
+			// SAPFx 3.2.0.1以前の実装ミス(新しいバージョンで例外)によりチェックは無意味なので廃止
+			// 互換性のためにメタ情報の書き込みだけやる
+
+			// リフレクション経由で呼ばれるとGetEntryAssembly()==nullの場合があるので他も試す
+			var asmName = (Assembly.GetEntryAssembly() ?? Assembly.GetCallingAssembly() ?? Assembly.GetExecutingAssembly()).GetName();
+
+			var insert_sql = @"insert or ignore into meta(Key,Value) values(@Key,@Value)";
+			executor.ExecuteNonQuery(insert_sql, new { Key = "Version", Value = "3" });	// CURRENT_DB_VERSION
+			executor.ExecuteNonQuery(insert_sql, new { Key = "CreatedDate", Value = DateTime.Now.ToString() });
+			executor.ExecuteNonQuery(insert_sql, new { Key = "CreatedBy", Value = (asmName.Name + ", Version=" + asmName.Version) });
+		}
+
+		#endregion
+
+		DbExecutor Open()
+		{
+			var builder = new SQLiteConnectionStringBuilder() { DataSource = _dbFileLock.Name, };
+			return new DbExecutor(new SQLiteConnection(builder.ConnectionString));
+		}
+		public DBWriteAction BeginTransaction()
+		{
+			return new DBWriteAction(Open());
 		}
 
 		/// <summary>
@@ -139,15 +92,12 @@ namespace SmartAudioPlayerFx.Managers
 		public MediaItem Get(string filepath)
 		{
 			if (string.IsNullOrWhiteSpace(filepath)) throw new ArgumentException("filepath");
-			if (Path.IsPathRooted(filepath) == false) throw new ArgumentException("filepath is not rooted", "filepath");
+			if (!Path.IsPathRooted(filepath)) throw new ArgumentException("filepath is not rooted", "filepath");
 
-			using (var executor = Open())
-			{
-				return executor.ExecuteReaderDynamic("select * from media where FilePath=@filepath",
-					new { filepath })
-					.Select(x => CreateMediaItemFromDynamic(x))
-					.FirstOrDefault();
-			}
+			return _dbconn.Value.ExecuteReaderDynamic("select * from media where FilePath=@filepath",
+				new { filepath })
+				.Select(x => CreateMediaItemFromDynamic(x))
+				.FirstOrDefault();
 		}
 		MediaItem CreateMediaItemFromDynamic(dynamic obj)
 		{
@@ -182,12 +132,9 @@ namespace SmartAudioPlayerFx.Managers
 		/// <returns></returns>
 		public long GetCountFromFilePath(string path)
 		{
-			using (var executor = Open())
-			{
-				return executor.ExecuteScalar<long>(
-					"select count(id) from media where FilePath like @path",
-					new { path = path + "%" });
-			}
+			return _dbconn.Value.ExecuteScalar<long>(
+				"select count(id) from media where FilePath like @path",
+				new { path = path + "%" });
 		}
 
 		/// <summary>
@@ -197,15 +144,12 @@ namespace SmartAudioPlayerFx.Managers
 		/// <returns></returns>
 		public IEnumerable<MediaItem> GetFromFilePath(string path)
 		{
-			using (var executor = Open())
+			var select_sql = "select * from media where FilePath like @path";
+			foreach (var x in _dbconn.Value
+				.ExecuteReaderDynamic(select_sql, new { path = path + "%" })
+				.Select(x => CreateMediaItemFromDynamic(x)))
 			{
-				var select_sql = "select * from media where FilePath like @path";
-				foreach (var x in executor
-					.ExecuteReaderDynamic(select_sql, new { path = path + "%" })
-					.Select(x => CreateMediaItemFromDynamic(x)))
-				{
-					yield return x;
-				}
+				yield return x;
 			}
 		}
 
@@ -216,15 +160,12 @@ namespace SmartAudioPlayerFx.Managers
 		/// <returns></returns>
 		public IEnumerable<MediaItem> GetFromFilePath_ExistsOnly(string path)
 		{
-			using (var executor = Open())
+			var select_sql = "select * from media where IsNotExist=0 AND FilePath like @path";
+			foreach (var x in _dbconn.Value
+				.ExecuteReaderDynamic(select_sql, new { path = path + "%" })
+				.Select(x => CreateMediaItemFromDynamic(x)))
 			{
-				var select_sql = "select * from media where IsNotExist=0 AND FilePath like @path";
-				foreach (var x in executor
-					.ExecuteReaderDynamic(select_sql, new { path = path + "%" })
-					.Select(x => CreateMediaItemFromDynamic(x)))
-				{
-					yield return x;
-				}
+				yield return x;
 			}
 		}
 
@@ -235,17 +176,14 @@ namespace SmartAudioPlayerFx.Managers
 		/// <param name="index"></param>
 		/// <param name="count"></param>
 		/// <returns></returns>
-		public IEnumerable<MediaItem> GetFromFilePath_Ranged(string path, int index, int count)
+		private IEnumerable<MediaItem> GetFromFilePath_Ranged(string path, int index, int count)
 		{
-			using (var executor = Open())
+			var select_sql = "select * from media where FilePath like @path limit @count offset @index";
+			foreach (var x in _dbconn.Value
+				.ExecuteReaderDynamic(select_sql, new { path = path + "%", count = count, index = index, })
+				.Select(x => CreateMediaItemFromDynamic(x)))
 			{
-				var select_sql = "select * from media where FilePath like @path limit @count offset @index";
-				foreach (var x in executor
-					.ExecuteReaderDynamic(select_sql, new { path = path + "%", count = count, index = index, })
-					.Select(x => CreateMediaItemFromDynamic(x)))
-				{
-					yield return x;
-				}
+				yield return x;
 			}
 		}
 
@@ -258,16 +196,13 @@ namespace SmartAudioPlayerFx.Managers
 		/// <returns></returns>
 		public IEnumerable<MediaItem> GetFromFilePath_ExistsOnly_Ranged(string path, int index, int count = -1)
 		{
-			using (var executor = Open())
+			var select_sql =
+				"select * from media where IsNotExist=0 AND FilePath like @path limit @count offset @index";
+			foreach (var x in _dbconn.Value
+				.ExecuteReaderDynamic(select_sql, new { path = path + "%", count = count, index = index, })
+				.Select(x => CreateMediaItemFromDynamic(x)))
 			{
-				var select_sql =
-					"select * from media where IsNotExist=0 AND FilePath like @path limit @count offset @index";
-				foreach (var x in executor
-					.ExecuteReaderDynamic(select_sql, new { path = path + "%", count = count, index = index, })
-					.Select(x => CreateMediaItemFromDynamic(x)))
-				{
-					yield return x;
-				}
+				yield return x;
 			}
 		}
 
@@ -278,16 +213,13 @@ namespace SmartAudioPlayerFx.Managers
 		/// <returns></returns>
 		public string PreviousPlayItem(MediaItem item)
 		{
-			using (var executor = Open())
-			{
-				var select_sql =
-					"select FilePath from media " +
-					"where FilePath != @FilePath " +
-					"and LastPlay < @LastPlay " +
-					"and LastPlay > 0 " +
-					"order by LastPlay desc limit 1";
-				return executor.ExecuteScalar<string>(select_sql, new { item.FilePath, item.LastPlay, });
-			}
+			var select_sql =
+				"select FilePath from media " +
+				"where FilePath != @FilePath " +
+				"and LastPlay < @LastPlay " +
+				"and LastPlay > 0 " +
+				"order by LastPlay desc limit 1";
+			return _dbconn.Value.ExecuteScalar<string>(select_sql, new { item.FilePath, item.LastPlay, });
 		}
 
 		/// <summary>
@@ -298,14 +230,11 @@ namespace SmartAudioPlayerFx.Managers
 		/// <returns></returns>
 		public IEnumerable<string> RecentPlayItemsPath(int limit)
 		{
-			using (var executor = Open())
+			var select_sql =
+				"select FilePath from media where LastPlay > 0 order by LastPlay desc limit @limit";
+			foreach (var x in _dbconn.Value.ExecuteReaderDynamic(select_sql, new { limit }))
 			{
-				var select_sql =
-					"select FilePath from media where LastPlay > 0 order by LastPlay desc limit @limit";
-				foreach (var x in executor.ExecuteReaderDynamic(select_sql, new { limit }))
-				{
-					yield return x.FilePath;
-				}
+				yield return x.FilePath;
 			}
 		}
 
@@ -319,25 +248,22 @@ namespace SmartAudioPlayerFx.Managers
 		public void Recycle(bool fullCollect)
 		{
 			// MEMO: Vacuumする可能性がある都合でトランザクションは使えない
-			using (var executor = Open())
+			if (fullCollect)
 			{
-				if (fullCollect)
+				_dbconn.Value.ExecuteNonQuery("delete from media where IsNotExist=1");
+				_dbconn.Value.ExecuteNonQuery("vacuum");
+			}
+			else
+			{
+				var all_items_count = _dbconn.Value.ExecuteScalar<long>("select count(id) from media");
+				var invalid_items_count = _dbconn.Value.ExecuteScalar<long>("select count(id) from media where IsNotExist=1");
+				// しきい値を超えたらリサイクル処理
+				if (((all_items_count / 100) * 30) < invalid_items_count)
 				{
-					executor.ExecuteNonQuery("delete from media where IsNotExist=1");
-					executor.ExecuteNonQuery("vacuum");
-				}
-				else
-				{
-					var all_items_count = executor.ExecuteScalar<long>("select count(id) from media");
-					var invalid_items_count = executor.ExecuteScalar<long>("select count(id) from media where IsNotExist=1");
-					// しきい値を超えたらリサイクル処理
-					if (((all_items_count / 100) * 30) < invalid_items_count)
-					{
-						var date = DateTime.UtcNow.AddDays(-2).Ticks;
-						executor.ExecuteNonQuery(
-							"delete from media where IsNotExist=1 and LastUpdate < @date",
-							new { date = date });
-					}
+					var date = DateTime.UtcNow.AddDays(-2).Ticks;
+					_dbconn.Value.ExecuteNonQuery(
+						"delete from media where IsNotExist=1 and LastUpdate < @date",
+						new { date = date });
 				}
 			}
 		}
@@ -345,38 +271,56 @@ namespace SmartAudioPlayerFx.Managers
 		/// <summary>
 		/// MediaDBへの操作
 		/// </summary>
-		public class DBWriteAction
+		public class DBWriteAction : IDisposable
 		{
-			readonly DbExecutor executor;
+			readonly DbExecutor _executor;
 
 			internal DBWriteAction(DbExecutor executor)
 			{
-				this.executor = executor;
+				this._executor = executor;
+
 				while (true)
 				{
 					try
 					{
 						// MEMO: BEGIN TRANSACTIONと同じだけど、明示的にDEFERREDとしておく。
-						executor.ExecuteNonQuery("begin deferred;");
+						_executor.ExecuteNonQuery("begin deferred;");
 						break;
 					}
 					catch (SQLiteException) { Thread.Sleep(100); }
 				}
 			}
-			internal void Commit()
+			public void Dispose()
+			{
+				_executor.Dispose();
+			}
+			public void Commit(bool restartTransaction = false)
 			{
 				while (true)
 				{
 					try
 					{
 						// MEMO: DbExecutorのIsorationLevelを指定する方法では例外が出るので手動で。
-						var result = executor.ExecuteNonQuery("commit;");
+						_executor.ExecuteNonQuery("commit;");
 						break;
 					}
 					catch (SQLiteException e)
 					{
 						Logger.AddDebugLog("DBWriter Commit Exception: {0}", e);
 						Thread.Sleep(100);
+					}
+				}
+				if (restartTransaction)
+				{
+					while (true)
+					{
+						try
+						{
+							// MEMO: BEGIN TRANSACTIONと同じだけど、明示的にDEFERREDとしておく。
+							_executor.ExecuteNonQuery("begin deferred;");
+							break;
+						}
+						catch (SQLiteException) { Thread.Sleep(100); }
 					}
 				}
 			}
@@ -403,11 +347,11 @@ namespace SmartAudioPlayerFx.Managers
 					"select ID from media where _ROWID_=last_insert_rowid()";
 				foreach (var x in items)
 				{
-					var ret = executor.ExecuteNonQuery(insert_sql, x);
+					var ret = _executor.ExecuteNonQuery(insert_sql, x);
 					if (ret > 0)
 					{
 						// 新しく割り当てられたIDを取得しオブジェクトにフィードバック
-						var new_id = executor.ExecuteScalar<long>(rowid_sql);
+						var new_id = _executor.ExecuteScalar<long>(rowid_sql);
 						x.ID = new_id;
 						yield return x;
 					}
@@ -438,7 +382,7 @@ namespace SmartAudioPlayerFx.Managers
 				foreach (var x in items)
 				{
 					x.LastUpdate = DateTime.UtcNow.Ticks;
-					var ret = executor.ExecuteNonQuery(update_sql, x);
+					var ret = _executor.ExecuteNonQuery(update_sql, x);
 					if (ret > 0)
 					{
 						yield return x;
@@ -464,5 +408,6 @@ namespace SmartAudioPlayerFx.Managers
 				return exp.Member.Name;
 			}
 		}
+
 	}
 }

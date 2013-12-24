@@ -1,22 +1,24 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using System.IO;
-using System.Linq;
-using System.Reactive;
-using System.Reactive.Linq;
-using System.Windows;
-using System.Windows.Media;
-using System.Xml.Linq;
-using __Primitives__;
-using Codeplex.Reactive;
-using Codeplex.Reactive.Extensions;
-using SmartAudioPlayerFx.Data;
-using SmartAudioPlayerFx.Managers;
-
-namespace SmartAudioPlayerFx.Views
+﻿namespace SmartAudioPlayerFx.Views
 {
+	using System;
+	using System.Collections.ObjectModel;
+	using System.IO;
+	using System.Linq;
+	using System.Reactive;
+	using System.Reactive.Linq;
+	using System.Threading.Tasks;
+	using System.Windows;
+	using System.Windows.Media;
+	using System.Xml.Linq;
+	using __Primitives__;
+	using Codeplex.Reactive;
+	using Codeplex.Reactive.Extensions;
+	using SmartAudioPlayerFx.Data;
+	using SmartAudioPlayerFx.Managers;
+
 	sealed class MediaListWindowViewModel
 	{
+		public IObservable<Unit> Initialized{get;private set;}
 		#region Properties
 
 		// Window
@@ -53,130 +55,129 @@ namespace SmartAudioPlayerFx.Views
 
 		public MediaListWindowViewModel()
 		{
-			// Window
-			Width = new ReactiveProperty<double>(750);
-			Height = new ReactiveProperty<double>(350);
-			Visibility = new ReactiveProperty<Visibility>(System.Windows.Visibility.Hidden);
-			TreeWidth = new ReactiveProperty<GridLength>(new GridLength(250));
-			VideoDrawingBrush = new ReactiveProperty<Brush>(Brushes.Transparent);
+			Initialized = Observable.Start(() =>
+			{
+				// Window
+				Width = new ReactiveProperty<double>(750);
+				Height = new ReactiveProperty<double>(350);
+				Visibility = new ReactiveProperty<Visibility>(System.Windows.Visibility.Hidden);
+				TreeWidth = new ReactiveProperty<GridLength>(new GridLength(250));
+				VideoDrawingBrush = new ReactiveProperty<Brush>(Brushes.Transparent);
 
-			// MiniOption
-			IsVideoDrawing = new ReactiveProperty<bool>(true);
-			IsEnableSoundFadeEffect = new ReactiveProperty<bool>(true);
-			IsTitleFromFileName = new ReactiveProperty<bool>(false);
-			IsAutoCloseWhenInactive = new ReactiveProperty<bool>(false);
-			IsAutoCloseWhenListSelected = new ReactiveProperty<bool>(false);
+				// MiniOption
+				IsVideoDrawing = new ReactiveProperty<bool>(true);
+				IsEnableSoundFadeEffect = new ReactiveProperty<bool>(true);
+				IsTitleFromFileName = new ReactiveProperty<bool>(false);
+				IsAutoCloseWhenInactive = new ReactiveProperty<bool>(false);
+				IsAutoCloseWhenListSelected = new ReactiveProperty<bool>(false);
 
-			//=[ Jukebox ViewModel (common) ]
-			CurrentMedia = new ReactiveProperty<MediaItem>();
-			StatusBarVisibility = new ReactiveProperty<System.Windows.Visibility>(System.Windows.Visibility.Collapsed);
-			StatusBarText = new ReactiveProperty<string>();
+				//=[ Jukebox ViewModel (common) ]
+				CurrentMedia = new ReactiveProperty<MediaItem>();
+				StatusBarVisibility = new ReactiveProperty<System.Windows.Visibility>(System.Windows.Visibility.Collapsed);
+				StatusBarText = new ReactiveProperty<string>();
 
-			//=[ Sub Property ]
-			CurrentMediaName = new ReactiveProperty<string>();
-			TreeItems = new ObservableCollection<MediaTreeItemViewModel>();
-			ListFocus = new ReactiveProperty<MediaListItemsSource>();
-			ListItems = new ReactiveProperty<ObservableCollection<IListEntry>>();
-			ListSelectedCommand = new ReactiveCommand<IListEntry>();
+				//=[ Sub Property ]
+				CurrentMediaName = new ReactiveProperty<string>();
+				TreeItems = new ObservableCollection<MediaTreeItemViewModel>();
+				ListFocus = new ReactiveProperty<MediaListItemsSource>();
+				ListItems = new ReactiveProperty<ObservableCollection<IListEntry>>();
+				ListSelectedCommand = new ReactiveCommand<IListEntry>();
 
-			SetupEvents();
-		}
-		void SetupEvents()
-		{
-			IsVideoDrawing
-				.ObserveOnUIDispatcher()
-				.Subscribe(x => ResetVideoDrawing(x));
-			IsEnableSoundFadeEffect
-				.Subscribe(x => AudioPlayerManager.IsEnableSoundFadeEffect = x);
-			IsTitleFromFileName
-				.Subscribe(x => MediaListItemViewModel.IsTitleFromFilePath = x);
+				// setup events
+				IsVideoDrawing
+					.ObserveOnUIDispatcher()
+					.Subscribe(x => ResetVideoDrawing(x));
+				IsEnableSoundFadeEffect
+					.Subscribe(x => AudioPlayerManager.IsEnableSoundFadeEffect = x);
+				IsTitleFromFileName
+					.Subscribe(x => MediaListItemViewModel.IsTitleFromFilePath = x);
 
-			ManagerServices.JukeboxManager.CurrentMedia
-				.Subscribe(x => CurrentMedia.Value = x);
-			// 新しく再生 or 設定されたらビデオ描画用ブラシをリセット
-			ManagerServices.AudioPlayerManager.OpenedAsObservable()
-				.Select(_ => IsVideoDrawing.Value)
-				.Merge(IsVideoDrawing)
-				.ObserveOnUIDispatcher()
-				.Subscribe(x => ResetVideoDrawing(x));
-			// TODO: ↓これ要らないかも？
-			ManagerServices.JukeboxManager.ViewFocus
-				.Where(x => x != null)
-				.Subscribe(x =>
-				{
-					x.Items
-						.GetNotifyObservable()
-						.Where(xx =>
-								xx.Type == VersionedCollection<MediaItem>.NotifyType.Update &&
-								CurrentMedia.Value != null &&
-								xx.Item.ID == CurrentMedia.Value.ID)
-						.Subscribe(xx => CurrentMedia.Value = xx.Item);
-				});
-			ManagerServices.MediaDBViewManager.ItemCollect_ScanFinishedAsObservable()
-				.Merge(Observable.Return(Unit.Default))	// first drain
-				.Subscribe(_ => StatusBarVisibility.Value = System.Windows.Visibility.Collapsed);
-			ManagerServices.MediaDBViewManager.ItemsCollectingAsObservable()
-				.Merge(Observable.Return(string.Empty))
-				.Subscribe(x => StatusBarText.Value = "ライブラリを更新しています... " + x);
-			StatusBarText
-				.Skip(1)
-				.Subscribe(_ => StatusBarVisibility.Value = System.Windows.Visibility.Visible);
-			StatusBarVisibility.Value = System.Windows.Visibility.Collapsed;
-
-			//=[ Sub Property ]
-			CurrentMedia
-				.CombineLatest(IsTitleFromFileName, (x, y) => new { CurrentMedia = x, IsTitleFromFileName = y, })
-				.Select(x =>
-				{
-					if (x.CurrentMedia == null) return string.Empty;
-					var name = x.IsTitleFromFileName ?
-						Path.GetFileName(x.CurrentMedia.FilePath) :
-						x.CurrentMedia.Title;
-					if (string.IsNullOrWhiteSpace(x.CurrentMedia.Artist) == false)
-						name += " - " + x.CurrentMedia.Artist;
-					return name;
-				})
-				.Subscribe(x => CurrentMediaName.Value = x);
-			// TreeView
-			TreeItems.Add(new MediaTreeItem_AllItemsViewModel());
-			TreeItems.Add(new MediaTreeItem_NonPlayedItemsViewModel());
-			TreeItems.Add(new MediaTreeItem_LatestAddItemsViewModel());
-			TreeItems.Add(new MediaTreeItem_FavoriteItemsViewModel());
-			TreeItems.Add(new MediaTreeItem_DefaultItemsViewModel(null, 0));
-			// ListBox
-			ListFocus
-				.Subscribe(x => ListItems.Value = (x == null) ? null : x.Items);
-			ListSelectedCommand
-				.Subscribe(x =>
-				{
-					if (x is MediaListDirectoryDifinition)
+				ManagerServices.JukeboxManager.CurrentMedia
+					.Subscribe(x => CurrentMedia.Value = x);
+				// 新しく再生 or 設定されたらビデオ描画用ブラシをリセット
+				ManagerServices.AudioPlayerManager.OpenedAsObservable()
+					.Select(_ => IsVideoDrawing.Value)
+					.Merge(IsVideoDrawing)
+					.ObserveOnUIDispatcher()
+					.Subscribe(x => ResetVideoDrawing(x));
+				// TODO: ↓これ要らないかも？
+				ManagerServices.JukeboxManager.ViewFocus
+					.Where(x => x != null)
+					.Subscribe(x =>
 					{
-						// ディレクトリ項目がダブルクリックされたのでツリーを展開して選択
-						FocusTreeItem(x.FilePath);
-					}
-					else if (x is MediaListItemViewModel)
+						x.Items
+							.GetNotifyObservable()
+							.Where(xx =>
+									xx.Type == VersionedCollection<MediaItem>.NotifyType.Update &&
+									CurrentMedia.Value != null &&
+									xx.Item.ID == CurrentMedia.Value.ID)
+							.Subscribe(xx => CurrentMedia.Value = xx.Item);
+					});
+				ManagerServices.MediaDBViewManager.ItemCollect_ScanFinishedAsObservable()
+					.Merge(Observable.Return(Unit.Default))	// first drain
+					.Subscribe(_ => StatusBarVisibility.Value = System.Windows.Visibility.Collapsed);
+				ManagerServices.MediaDBViewManager.ItemsCollectingAsObservable()
+					.Merge(Observable.Return(string.Empty))
+					.Subscribe(x => StatusBarText.Value = "ライブラリを更新しています... " + x);
+				StatusBarText
+					.Skip(1)
+					.Subscribe(_ => StatusBarVisibility.Value = System.Windows.Visibility.Visible);
+				StatusBarVisibility.Value = System.Windows.Visibility.Collapsed;
+
+				//=[ Sub Property ]
+				CurrentMedia
+					.CombineLatest(IsTitleFromFileName, (x, y) => new { CurrentMedia = x, IsTitleFromFileName = y, })
+					.Select(x =>
 					{
-						// ファイル項目がダブルクリックされたので、選択カウントを更新してからメディアを再生
-						var item = ((MediaListItemViewModel)x).Item;
-						item.SelectCount++;
-						item.LastUpdate = DateTime.UtcNow.Ticks;
-						ManagerServices.MediaDBViewManager.RaiseDBUpdateAsync(item, _ => _.SelectCount, _ => _.LastUpdate);
-						ManagerServices.JukeboxManager.CurrentMedia.Value = item;
-					}
-					// リスト選択時に、許可されていればウィンドウを閉じる
-					if (IsAutoCloseWhenListSelected.Value)
-						Visibility.Value = System.Windows.Visibility.Hidden;
-				});
+						if (x.CurrentMedia == null) return string.Empty;
+						var name = x.IsTitleFromFileName ?
+							Path.GetFileName(x.CurrentMedia.FilePath) :
+							x.CurrentMedia.Title;
+						if (string.IsNullOrWhiteSpace(x.CurrentMedia.Artist) == false)
+							name += " - " + x.CurrentMedia.Artist;
+						return name;
+					})
+					.Subscribe(x => CurrentMediaName.Value = x);
+				// TreeView
+				TreeItems.Add(new MediaTreeItem_AllItemsViewModel());
+				TreeItems.Add(new MediaTreeItem_NonPlayedItemsViewModel());
+				TreeItems.Add(new MediaTreeItem_LatestAddItemsViewModel());
+				TreeItems.Add(new MediaTreeItem_FavoriteItemsViewModel());
+				TreeItems.Add(new MediaTreeItem_DefaultItemsViewModel(null, 0));
+				// ListBox
+				ListFocus
+					.Subscribe(x => ListItems.Value = (x == null) ? null : x.Items);
+				ListSelectedCommand
+					.Subscribe(x =>
+					{
+						if (x is MediaListDirectoryDifinition)
+						{
+							// ディレクトリ項目がダブルクリックされたのでツリーを展開して選択
+							FocusTreeItem(x.FilePath);
+						}
+						else if (x is MediaListItemViewModel)
+						{
+							// ファイル項目がダブルクリックされたので、選択カウントを更新してからメディアを再生
+							var item = ((MediaListItemViewModel)x).Item;
+							item.SelectCount++;
+							item.LastUpdate = DateTime.UtcNow.Ticks;
+							ManagerServices.MediaDBViewManager.RaiseDBUpdate(item, _ => _.SelectCount, _ => _.LastUpdate);
+							ManagerServices.JukeboxManager.CurrentMedia.Value = item;
+						}
+						// リスト選択時に、許可されていればウィンドウを閉じる
+						if (IsAutoCloseWhenListSelected.Value)
+							Visibility.Value = System.Windows.Visibility.Hidden;
+					});
 
-			// Preferences
-			ManagerServices.PreferencesManager.PlayerSettings
-				.Subscribe(x => LoadPlayerPreferences(x));
-			ManagerServices.PreferencesManager.WindowSettings
-				.Subscribe(x => LoadWindowPrefrences(x));
-			ManagerServices.PreferencesManager.SerializeRequestAsObservable()
-				.Subscribe(_ => SavePreferences());
+				// Preferences
+				ManagerServices.PreferencesManager.PlayerSettings
+					.Subscribe(x => LoadPlayerPreferences(x));
+				ManagerServices.PreferencesManager.WindowSettings
+					.Subscribe(x => LoadWindowPrefrences(x));
+				ManagerServices.PreferencesManager.SerializeRequestAsObservable()
+					.Subscribe(_ => SavePreferences());
+			});
 		}
-
 		void LoadPlayerPreferences(XElement playerSettings)
 		{
 			playerSettings
@@ -254,9 +255,10 @@ namespace SmartAudioPlayerFx.Views
 			{
 				return null;
 			}
-			return (from x in items.OfType<MediaListItemViewModel>()
-					where string.Equals(x.FilePath, dir, StringComparison.CurrentCultureIgnoreCase)
-					select x).FirstOrDefault<MediaListItemViewModel>();
+			return items
+				.OfType<MediaListItemViewModel>()
+				.Where(x => string.Equals(x.FilePath, dir, StringComparison.CurrentCultureIgnoreCase))
+				.FirstOrDefault();
 		}
 
 	}

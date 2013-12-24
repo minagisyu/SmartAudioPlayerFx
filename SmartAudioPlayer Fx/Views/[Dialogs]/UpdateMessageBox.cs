@@ -1,7 +1,7 @@
-﻿using System.Windows.Forms;
-
-namespace SmartAudioPlayerFx.Views
+﻿namespace SmartAudioPlayerFx.Views
 {
+	using System.Windows.Forms;
+
 	/// <summary>
 	/// 更新内容とアップデートの可否を選択するメッセージボックス。
 	/// ダウンロード→ DialogResult.No

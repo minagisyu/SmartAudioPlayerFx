@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -79,7 +78,7 @@ namespace SmartAudioPlayerFx.Managers
 			tray.ShowBalloonTip((int)timeout.TotalMilliseconds, title, message, icon);
 		}
 
-		public void SetMenuItems()
+		public void SetMenuItems(MainWindow window)
 		{
 			if (tray == null) return;
 			if (tray.ContextMenu != null) return;
@@ -89,17 +88,61 @@ namespace SmartAudioPlayerFx.Managers
 				// メニュー内容を動的に変更
 				var menu = s as ContextMenu;
 				if (menu == null) return;
+
+				var items = TaskIconManager.CreateWinFormsMenuItems(window);
 				menu.MenuItems.Clear();
-				menu.MenuItems.AddRange(TaskIconManager.CreateWinFormsMenuItems());
+				menu.MenuItems.AddRange(items);
 			};
 		}
 
 		#region ContextMenu
 
 		// Tasktray & PlayerWindowで使う
-		public static MenuItem[] CreateWinFormsMenuItems()
+		public static MenuItem[] CreateWinFormsMenuItems(MainWindow window)
 		{
-			return ConvertToWinFormsMenuItems(CreateMenuItems()).ToArray();
+			var items = CreateMenuItems(window);
+			return ConvertToWinFormsMenuItems(items).ToArray();
+		}
+		static IEnumerable<MenuItemDefinition> CreateMenuItems(MainWindow window)
+		{
+			var is_videodraw = window.MediaListWindow.ViewModel.IsVideoDrawing.Value;
+			var is_repeat = ManagerServices.JukeboxManager.IsRepeat.Value;
+			var is_random = (ManagerServices.JukeboxManager.SelectMode.Value == JukeboxManager.SelectionMode.Random);
+			var is_sequential = (ManagerServices.JukeboxManager.SelectMode.Value == JukeboxManager.SelectionMode.Filename);
+			yield return new MenuItemDefinition("再生モード", subitems: new[]
+			{
+				new MenuItemDefinition("リピート", is_repeat, () => ManagerServices.JukeboxManager.IsRepeat.Value=!is_repeat),
+				new MenuItemDefinition("-"),
+				new MenuItemDefinition("ランダム", is_random, () => ManagerServices.JukeboxManager.SelectMode.Value = JukeboxManager.SelectionMode.Random),
+				new MenuItemDefinition("ファイル名順", is_sequential, () => ManagerServices.JukeboxManager.SelectMode.Value=JukeboxManager.SelectionMode.Filename)
+			});
+
+			var vol = ManagerServices.AudioPlayerManager.Volume;
+			var vol_is_max = vol >= 1.0;
+			var vol_is_min = vol <= 0.0;
+			var vol_text = "ボリューム (" + (vol * 100.0).ToString("F0") + "%)";
+			yield return new MenuItemDefinition(vol_text, subitems: new[]
+			{
+				new MenuItemDefinition("上げる", enabled: !vol_is_max, clicked: () => ManagerServices.AudioPlayerManager.Volume = ManagerServices.AudioPlayerManager.Volume+0.1),
+				new MenuItemDefinition("下げる", enabled: !vol_is_min, clicked: () => ManagerServices.AudioPlayerManager.Volume = ManagerServices.AudioPlayerManager.Volume-0.1),
+			});
+
+			yield return new MenuItemDefinition("-");
+			var play_pause_text = (ManagerServices.AudioPlayerManager.IsPaused) ? "再生" : "一時停止";
+			yield return new MenuItemDefinition(play_pause_text, clicked: () => ManagerServices.AudioPlayerManager.PlayPause());
+			yield return new MenuItemDefinition("スキップ", clicked: async () => await ManagerServices.JukeboxManager.SelectNext(true));
+			yield return new MenuItemDefinition("始めから再生", clicked: () => ManagerServices.AudioPlayerManager.Replay());
+			yield return new MenuItemDefinition("再生履歴", subitems: CreateRecentPlayMenuItems());
+			yield return new MenuItemDefinition("-");
+			yield return new MenuItemDefinition("開く", subitems: CreateRecentFolderMenuItems());
+			yield return new MenuItemDefinition("-");
+			var window_show_hide_text = window.IsVisible ? "ウィンドウを隠す" : "ウィンドウを表示する";
+			yield return new MenuItemDefinition(window_show_hide_text, clicked: () => window.WindowShowHideToggle());
+			yield return new MenuItemDefinition("ウィンドウを画面右下へ移動", clicked: () => window.ResetWindowPosition());
+			yield return new MenuItemDefinition("-");
+			yield return new MenuItemDefinition("アップデート", enabled: !ManagerServices.AppUpdateManager.IsShowingUpdateMessage, is_visibled: ManagerServices.AppUpdateManager.IsUpdateReady, clicked: async () => await OnUpdate());
+			yield return new MenuItemDefinition("オプション", enabled: !option_dialog_opened, clicked: OpenOptionDialog);
+			yield return new MenuItemDefinition("終了", clicked: () => window.Close());
 		}
 		static IEnumerable<MenuItem> ConvertToWinFormsMenuItems(IEnumerable<MenuItemDefinition> items)
 		{
@@ -122,47 +165,6 @@ namespace SmartAudioPlayerFx.Managers
 				yield return item;
 			}
 		}
-		static IEnumerable<MenuItemDefinition> CreateMenuItems()
-		{
-			var mw = ((MainWindow)App.Current.MainWindow);
-			//
-			var is_videodraw = mw.MediaListWindow.ViewModel.IsVideoDrawing.Value;
-			var is_repeat = ManagerServices.JukeboxManager.IsRepeat.Value;
-			var is_random = (ManagerServices.JukeboxManager.SelectMode.Value == JukeboxManager.SelectionMode.Random);
-			var is_sequential = (ManagerServices.JukeboxManager.SelectMode.Value == JukeboxManager.SelectionMode.Filename);
-			yield return new MenuItemDefinition("再生モード", subitems: new[]
-			{
-				new MenuItemDefinition("リピート", is_repeat, ()=> ManagerServices.JukeboxManager.IsRepeat.Value=!is_repeat),
-				new MenuItemDefinition("-"),
-				new MenuItemDefinition("ランダム", is_random, ()=> ManagerServices.JukeboxManager.SelectMode.Value = JukeboxManager.SelectionMode.Random),
-				new MenuItemDefinition("ファイル名順", is_sequential, ()=> ManagerServices.JukeboxManager.SelectMode.Value=JukeboxManager.SelectionMode.Filename)
-			});
-			var vol = ManagerServices.AudioPlayerManager.Volume;
-			var vol_is_max = vol >= 1.0;
-			var vol_is_min = vol <= 0.0;
-			var vol_text = "ボリューム (" + (vol * 100.0).ToString("F0") + "%)";
-			yield return new MenuItemDefinition(vol_text, subitems: new[]
-			{
-				new MenuItemDefinition("上げる", enabled: !vol_is_max, clicked: ()=>ManagerServices.AudioPlayerManager.Volume = ManagerServices.AudioPlayerManager.Volume+0.1),
-				new MenuItemDefinition("下げる", enabled: !vol_is_min, clicked: ()=>ManagerServices.AudioPlayerManager.Volume = ManagerServices.AudioPlayerManager.Volume-0.1),
-			});
-			yield return new MenuItemDefinition("-");
-			var play_pause_text = (ManagerServices.AudioPlayerManager.IsPaused) ? "再生" : "一時停止";
-			yield return new MenuItemDefinition(play_pause_text, clicked: () => ManagerServices.AudioPlayerManager.PlayPause());
-			yield return new MenuItemDefinition("スキップ", clicked: () => ManagerServices.JukeboxManager.SelectNext(true));
-			yield return new MenuItemDefinition("始めから再生", clicked: () => ManagerServices.AudioPlayerManager.Replay());
-			yield return new MenuItemDefinition("再生履歴", subitems: CreateRecentPlayMenuItems());
-			yield return new MenuItemDefinition("-");
-			yield return new MenuItemDefinition("開く", subitems: CreateRecentFolderMenuItems());
-			yield return new MenuItemDefinition("-");
-			var window_show_hide_text = mw.IsVisible ? "ウィンドウを隠す" : "ウィンドウを表示する";
-			yield return new MenuItemDefinition(window_show_hide_text, clicked: () => mw.WindowShowHideToggle());
-			yield return new MenuItemDefinition("ウィンドウを画面右下へ移動", clicked: () => mw.ResetWindowPosition());
-			yield return new MenuItemDefinition("-");
-			yield return new MenuItemDefinition("アップデート", enabled: !ManagerServices.AppUpdateManager.IsShowingUpdateMessage, is_visibled: ManagerServices.AppUpdateManager.IsUpdateReady, clicked: OnUpdate);
-			yield return new MenuItemDefinition("オプション", enabled: !option_dialog_opened, clicked: OpenOptionDialog);
-			yield return new MenuItemDefinition("終了", clicked: () => mw.Close());
-		}
 
 		static bool folder_dialog_opened = false;
 		static bool option_dialog_opened = false;
@@ -180,7 +182,7 @@ namespace SmartAudioPlayerFx.Managers
 					is_checked: f.Equals(current, StringComparison.CurrentCultureIgnoreCase),
 					clicked: delegate
 					{
-						TaskEx.Run(() =>
+						Task.Run(() =>
 						{
 							ManagerServices.MediaDBViewManager.FocusPath.Value = f;
 							ManagerServices.JukeboxManager.ViewFocus.Value.Dispose();
@@ -205,9 +207,9 @@ namespace SmartAudioPlayerFx.Managers
 				.ToArray();
 			return ret.Any() ? ret : new[] { new MenuItemDefinition("履歴はありません", enabled: false), };
 		}
-		static void OnUpdate()
+		static async Task OnUpdate()
 		{
-			if (ManagerServices.AppUpdateManager.ShowUpdateMessage(new WindowInteropHelper(App.Current.MainWindow).EnsureHandle()))
+			if (await ManagerServices.AppUpdateManager.ShowUpdateMessage(new WindowInteropHelper(App.Current.MainWindow).EnsureHandle()))
 				App.Current.Shutdown();
 		}
 		static void OpenFolderDialog()
@@ -226,7 +228,7 @@ namespace SmartAudioPlayerFx.Managers
 					{
 						if (dlg.ShowDialog(nativeWindow) == DialogResult.OK)
 						{
-							TaskEx.Run(() =>
+							Task.Run(() =>
 							{
 								ManagerServices.MediaDBViewManager.FocusPath.Value = dlg.SelectedPath;
 								ManagerServices.JukeboxManager.ViewFocus.Value.Dispose();
@@ -252,7 +254,7 @@ namespace SmartAudioPlayerFx.Managers
 				nativeWindow.AssignHandle(handle);
 				using (var dlg = new OptionDialog())
 				{
-					App.CenterWindow(dlg.Handle, handle);
+					dlg.CenterWindow(handle);
 					var mw = (MainWindow)App.Current.MainWindow;
 					dlg.InactiveOpacity = (int)(mw.ViewModel.InactiveOpacity.Value * 100.0);
 					dlg.DeactiveOpacity = (int)(mw.ViewModel.DeactiveOpacity.Value * 100.0);
@@ -267,7 +269,11 @@ namespace SmartAudioPlayerFx.Managers
 			finally
 			{
 				option_dialog_opened = false;
-				ManagerServices.ShortcutKeyManager.SuspressKeyEvent = false;
+				var skm = ManagerServices.ShortcutKeyManager;
+				if (skm != null)
+				{
+					skm.SuspressKeyEvent = false;
+				}
 				nativeWindow.ReleaseHandle();
 			}
 		}
@@ -305,9 +311,7 @@ namespace SmartAudioPlayerFx.Managers
 	{
 		public static IObservable<object> BaloonTipClickedAsObservable(this TaskIconManager manager)
 		{
-			return Observable.FromEvent<object>(
-				v => manager.BaloonTipClicked += v,
-				v => manager.BaloonTipClicked -= v);
+			return Observable.FromEvent<object>(v => manager.BaloonTipClicked += v, v => manager.BaloonTipClicked -= v);
 		}
 	}
 }

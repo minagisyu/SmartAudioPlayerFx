@@ -1,13 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
-using System.Windows;
-using System.Windows.Media;
-
-namespace __Primitives__
+﻿namespace __Primitives__
 {
+	using System;
+	using System.Collections.Generic;
+	using System.IO;
+	using System.Windows.Controls;
+	using System.Windows.Controls.Primitives;
+	using System.Windows;
+	using System.Windows.Media;
+
 	// ItemsControlUtil http://pro.art55.jp/?eid=1161413
 	static class IItemsContainerGeneratorExtension
 	{

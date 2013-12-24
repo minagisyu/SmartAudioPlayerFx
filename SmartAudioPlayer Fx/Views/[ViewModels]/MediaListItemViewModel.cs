@@ -1,19 +1,19 @@
-﻿using System;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Reactive;
-using System.Reactive.Disposables;
-using System.Reactive.Linq;
-using System.Windows;
-using System.Windows.Media;
-using __Primitives__;
-using Codeplex.Reactive.Extensions;
-using SmartAudioPlayerFx.Data;
-using SmartAudioPlayerFx.Managers;
-
-namespace SmartAudioPlayerFx.Views
+﻿namespace SmartAudioPlayerFx.Views
 {
+	using System;
+	using System.Diagnostics;
+	using System.IO;
+	using System.Linq;
+	using System.Reactive;
+	using System.Reactive.Disposables;
+	using System.Reactive.Linq;
+	using System.Windows;
+	using System.Windows.Media;
+	using __Primitives__;
+	using Codeplex.Reactive.Extensions;
+	using SmartAudioPlayerFx.Data;
+	using SmartAudioPlayerFx.Managers;
+
 	// リスト用エントリー要素
 	interface IListEntry
 	{
@@ -51,7 +51,7 @@ namespace SmartAudioPlayerFx.Views
 				{
 					_OpenExplorerCommand = new DelegateCommand<string>(x =>
 					{
-						App.OpenToExplorer(x);
+						OutProcess.OpenToExplorer(x);
 					});
 				}
 				return _OpenExplorerCommand;
@@ -303,7 +303,7 @@ namespace SmartAudioPlayerFx.Views
 				{
 					_OpenExplorerCommand = new DelegateCommand<string>(x =>
 					{
-						App.OpenToExplorer(x);
+						OutProcess.OpenToExplorer(x);
 					});
 				}
 				return _OpenExplorerCommand;
@@ -373,7 +373,7 @@ namespace SmartAudioPlayerFx.Views
 						// Twoway Bindingで変化するけど一応。
 						this.IsFavorite = x;
 						this.Item.LastUpdate = DateTime.UtcNow.Ticks;
-						ManagerServices.MediaDBViewManager.RaiseDBUpdateAsync(this.Item, _ => _.IsFavorite, _ => _.LastUpdate);
+						ManagerServices.MediaDBViewManager.RaiseDBUpdate(this.Item, _ => _.IsFavorite, _ => _.LastUpdate);
 					});
 				}
 				return _ChangeFavoriteCommand;

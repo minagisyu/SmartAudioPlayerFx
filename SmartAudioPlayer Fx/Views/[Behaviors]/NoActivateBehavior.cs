@@ -1,13 +1,13 @@
-﻿using System;
-using System.Diagnostics;
-using System.Runtime.InteropServices;
-using System.Windows;
-using System.Windows.Interactivity;
-using System.Windows.Interop;
-using __Primitives__;
-
-namespace SmartAudioPlayerFx.Views
+﻿namespace SmartAudioPlayerFx.Views
 {
+	using System;
+	using System.Diagnostics;
+	using System.Runtime.InteropServices;
+	using System.Windows;
+	using System.Windows.Interactivity;
+	using System.Windows.Interop;
+	using __Primitives__;
+
 	/// <summary>
 	/// ウィンドウのアクティブ化を防ぐビヘイビア。
 	/// 初回変更のみの手抜き実装です

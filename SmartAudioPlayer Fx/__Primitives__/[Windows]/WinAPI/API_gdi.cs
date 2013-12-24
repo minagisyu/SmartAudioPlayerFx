@@ -1,9 +1,9 @@
-using System;
-using System.Runtime.InteropServices;
-using System.Security;
-
 namespace __Primitives__
 {
+	using System;
+	using System.Runtime.InteropServices;
+	using System.Security;
+
 	using HDC = System.IntPtr;
 	using HFONT = System.IntPtr;
 	using COLORREF = System.UInt32;

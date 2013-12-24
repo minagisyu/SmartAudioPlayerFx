@@ -1,11 +1,11 @@
-using System;
-using System.Runtime.InteropServices;
-
-// 「warning CS0649: フィールド 'xxx' は割り当てられません。常に既定値 を使用します。」の抑制。
-#pragma warning disable 649
-
 namespace __Primitives__
 {
+	using System;
+	using System.Runtime.InteropServices;
+
+	// 「warning CS0649: フィールド 'xxx' は割り当てられません。常に既定値 を使用します。」の抑制。
+	#pragma warning disable 649
+
 	partial class WinAPI
 	{
 		const string msacm32 = "msacm32.dll";

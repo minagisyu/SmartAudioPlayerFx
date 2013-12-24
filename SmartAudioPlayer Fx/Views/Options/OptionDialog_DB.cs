@@ -1,10 +1,10 @@
-using System;
-using System.Reactive.Linq;
-using System.Threading.Tasks;
-using SmartAudioPlayerFx.Managers;
-
 namespace SmartAudioPlayerFx.Views.Options
 {
+	using System;
+	using System.Reactive.Linq;
+	using System.Threading.Tasks;
+	using SmartAudioPlayerFx.Managers;
+
 	sealed partial class OptionDialog_DB : OptionPage
 	{
 		public OptionDialog_DB()
@@ -18,7 +18,7 @@ namespace SmartAudioPlayerFx.Views.Options
 
 		void button1_Click(object sender, EventArgs e)
 		{
-			TaskEx.Run(() => ManagerServices.MediaDBManager.Recycle(true));
+			Task.Run(() => ManagerServices.MediaDBManager.Recycle(true));
 		}
 
 		public override void Save()

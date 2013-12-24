@@ -10,18 +10,7 @@ using SmartAudioPlayerFx.Managers;
 
 namespace SmartAudioPlayerFx.Data
 {
-	// マーキング用
-	interface ISpecialMediaDBViewFocus
-	{
-	}
-
 	// MediaDBViewの内容をフィルタリングする
-	// - FocusPath:
-	//   - 設定するとViewMode=Defaultに設定
-	// - ViewMode:
-	//   - Default: FocusPathによるフィルタ
-	//   - 他: _view.Itemsから特定の物を対象にする、FocusPathの設定値は無視
-	//
 	class MediaDBViewFocus : IDisposable
 	{
 		public string FocusPath { get; private set; }
@@ -31,8 +20,7 @@ namespace SmartAudioPlayerFx.Data
 		public MediaDBViewFocus(string focusPath, bool loadItems = true)
 		{
 			FocusPath = focusPath;
-			Items = new VersionedCollection<MediaItem>(
-				new CustomEqualityComparer<MediaItem>(x => x.ID.GetHashCode(), (x, y) => x.ID == y.ID));
+			Items = new VersionedCollection<MediaItem>(new MediaItemIDEqualityComparer());
 			_disposables = new CompositeDisposable();
 
 			ManagerServices.MediaDBViewManager.Items	// SerialDisposableつかえる？
@@ -76,8 +64,6 @@ namespace SmartAudioPlayerFx.Data
 			return item.ContainsDirPath(fpath);
 		}
 
-		#region LoadViewItems
-
 		protected void LoadViewItems()
 		{
 			Logger.AddDebugLog("Call LoadViewItems[{0}]", this.GetHashCode());
@@ -104,8 +90,11 @@ namespace SmartAudioPlayerFx.Data
 			sw.Stop();
 			Logger.AddDebugLog(" **LoadViewItems[{0}]({1}items): {2}ms", this.GetHashCode(), Items.Count, sw.ElapsedMilliseconds);
 		}
+	}
 
-		#endregion
+	// マーキング用
+	interface ISpecialMediaDBViewFocus
+	{
 	}
 
 	sealed class MediaDBViewFocus_FavoriteOnly : MediaDBViewFocus, ISpecialMediaDBViewFocus
@@ -146,7 +135,7 @@ namespace SmartAudioPlayerFx.Data
 			SearchWord = word;
 			_splittedWords = string.IsNullOrWhiteSpace(word) ?
 					new string[0] :
-					MediaItem.StrConv_LowerHankakuKana(word).Split(' ');
+					MediaItemExtension.StrConv_LowerHankakuKana(word).Split(' ');
 			LoadViewItems();
 		}
 		protected override bool ValidateItem(MediaItem item)

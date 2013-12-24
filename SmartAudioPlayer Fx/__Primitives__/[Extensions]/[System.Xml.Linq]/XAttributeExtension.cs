@@ -1,9 +1,9 @@
-﻿using System;
-using System.ComponentModel;
-using System.Xml.Linq;
-
-namespace __Primitives__
+﻿namespace __Primitives__
 {
+	using System;
+	using System.ComponentModel;
+	using System.Xml.Linq;
+
 	static class XAttributeExtension
 	{
 		public static T SafeParse<T>(this XAttribute element, T defaultValue)

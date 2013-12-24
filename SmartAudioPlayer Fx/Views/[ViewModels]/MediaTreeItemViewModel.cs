@@ -1,20 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Reactive.Disposables;
-using System.Reactive.Linq;
-using System.Threading;
-using System.Windows;
-using __Primitives__;
-using Codeplex.Reactive.Extensions;
-using SmartAudioPlayerFx.Data;
-using SmartAudioPlayerFx.Managers;
-
-namespace SmartAudioPlayerFx.Views
+﻿namespace SmartAudioPlayerFx.Views
 {
+	using System;
+	using System.Collections.Generic;
+	using System.Collections.ObjectModel;
+	using System.Diagnostics;
+	using System.IO;
+	using System.Linq;
+	using System.Reactive.Disposables;
+	using System.Reactive.Linq;
+	using System.Threading;
+	using System.Windows;
+	using __Primitives__;
+	using Codeplex.Reactive.Extensions;
+	using SmartAudioPlayerFx.Data;
+	using SmartAudioPlayerFx.Managers;
+
 	// 特殊検索条件ツリー用のマーキング用
 	interface ISpecialMediaTreeItem
 	{
@@ -98,7 +98,7 @@ namespace SmartAudioPlayerFx.Views
 				{
 					_OpenExplorerCommand = new DelegateCommand<string>(x =>
 					{
-						App.OpenToExplorer(x);
+						OutProcess.OpenToExplorer(x);
 					});
 				}
 				return _OpenExplorerCommand;
@@ -357,7 +357,7 @@ namespace SmartAudioPlayerFx.Views
 				return;
 			if (dirName.Length == BasePath.Length && dirName.Equals(BasePath, StringComparison.CurrentCultureIgnoreCase))
 				return;	// 指定されたパスが基準パスと同一(自分自身は追加できないし)
-			if (!MediaItemExtension.ContainsDirPath(dirName, BasePath))
+			if (!MediaItemCache.ContainsDirPath(dirName, BasePath))
 				return;	// 指定されたパスが基準パスと異なる
 			AppendByDirectoryPath_Core(dirName);
 		}
@@ -400,7 +400,7 @@ namespace SmartAudioPlayerFx.Views
 				return;
 			if (dirName.Length == BasePath.Length && dirName.Equals(BasePath, StringComparison.CurrentCultureIgnoreCase))
 				return;	// 指定されたパスが基準パスと同一(自分自身は追加できないし)
-			if (!MediaItemExtension.ContainsDirPath(dirName, BasePath))
+			if (!MediaItemCache.ContainsDirPath(dirName, BasePath))
 				return;	// 指定されたパスが基準パスと異なる
 			RemoveByDirectoryPath_Core(dirName);
 		}
@@ -468,7 +468,7 @@ namespace SmartAudioPlayerFx.Views
 		{
 			if (path.Length == BasePath.Length && path.Equals(BasePath, StringComparison.CurrentCultureIgnoreCase))
 				return null;	// 指定されたパスが基準パスと同一(自分自身は追加できないし)
-			if (!MediaItemExtension.ContainsDirPath(path, BasePath))
+			if (!MediaItemCache.ContainsDirPath(path, BasePath))
 				return null;	// 指定されたパスが基準パスと異なる
 			return FindItemRoad_Core(path);
 		}

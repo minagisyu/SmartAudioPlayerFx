@@ -1,10 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Runtime.InteropServices;
-
 namespace __Primitives__
 {
+	using System;
+	using System.Collections.Generic;
+	using System.Text;
+	using System.Runtime.InteropServices;
+
 	using HIMAGELIST = System.IntPtr;
 	using HINSTANCE = System.IntPtr;
 	using COLORREF = System.UInt32;

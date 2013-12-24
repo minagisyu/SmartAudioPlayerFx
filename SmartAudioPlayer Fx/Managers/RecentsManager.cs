@@ -29,7 +29,6 @@ namespace SmartAudioPlayerFx.Managers
 			ManagerServices.PreferencesManager.SerializeRequestAsObservable()
 				.Subscribe(_ => SavePreferences(ManagerServices.PreferencesManager.PlayerSettings.Value))
 				.AddTo(_disposables);
-
 			LoadRecentsPlayItemsFromDB();
 			ManagerServices.MediaDBViewManager.FocusPath
 				.Subscribe(x => AddRecentsOpenedFolder(x))

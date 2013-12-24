@@ -1,9 +1,9 @@
-﻿using System.Windows;
-using Drawing = System.Drawing;
-using WinForms = System.Windows.Forms;
-
-namespace __Primitives__
+﻿namespace __Primitives__
 {
+	using System.Windows;
+	using Drawing = System.Drawing;
+	using WinForms = System.Windows.Forms;
+
 	/// <summary>
 	/// ウィンドウの矩形をディスプレイサイズの割合に変換します
 	/// </summary>

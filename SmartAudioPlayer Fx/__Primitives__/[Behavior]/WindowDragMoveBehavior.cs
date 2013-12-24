@@ -1,12 +1,12 @@
-﻿using System;
-using System.Runtime.InteropServices;
-using System.Windows;
-using System.Windows.Input;
-using System.Windows.Interactivity;
-using System.Windows.Interop;
-
-namespace __Primitives__
+﻿namespace __Primitives__
 {
+	using System;
+	using System.Runtime.InteropServices;
+	using System.Windows;
+	using System.Windows.Input;
+	using System.Windows.Interactivity;
+	using System.Windows.Interop;
+
 	/// <summary>
 	/// ウィンドウをドラッグで移動させるビヘイビア
 	/// 画面/ウィンドウ端吸着(スナップ)機能付き(Shiftキーで解除)

@@ -1,11 +1,11 @@
-﻿using System;
-using System.Diagnostics;
-using System.Windows;
-using System.Windows.Interactivity;
-using System.Windows.Interop;
-
-namespace __Primitives__
+﻿namespace __Primitives__
 {
+	using System;
+	using System.Diagnostics;
+	using System.Windows;
+	using System.Windows.Interactivity;
+	using System.Windows.Interop;
+
 	/// <summary>
 	/// WM_NCHITTESTメッセージを処理し
 	/// ウィンドウ端から指定位置までをウィンドウのボーダーであるかのようにWindowsに報告する

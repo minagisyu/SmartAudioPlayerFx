@@ -1,11 +1,11 @@
-﻿using System;
-using System.Reactive;
-using System.Reactive.Linq;
-using System.Windows;
-using System.Windows.Threading;
-
-namespace __Primitives__
+﻿namespace __Primitives__
 {
+	using System;
+	using System.Reactive;
+	using System.Reactive.Linq;
+	using System.Windows;
+	using System.Windows.Threading;
+
 	static class EventAsObservableExtension
 	{
 		// System.AppDomain

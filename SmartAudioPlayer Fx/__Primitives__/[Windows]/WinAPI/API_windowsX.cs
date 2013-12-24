@@ -1,8 +1,8 @@
-﻿using System;
-using System.Runtime.InteropServices;
-
-namespace __Primitives__
+﻿namespace __Primitives__
 {
+	using System;
+	using System.Runtime.InteropServices;
+
 	using HWND = System.IntPtr;
 
 	partial class WinAPI

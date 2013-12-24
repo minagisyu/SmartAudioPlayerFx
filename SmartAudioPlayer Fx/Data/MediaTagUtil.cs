@@ -2,6 +2,7 @@
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Security;
+using System.Threading.Tasks;
 
 namespace SmartAudioPlayerFx.Data
 {
@@ -17,7 +18,7 @@ namespace SmartAudioPlayerFx.Data
 		/// </summary>
 		/// <param name="filePath"></param>
 		/// <returns></returns>
-		public static MediaTagInfo Get(string filePath)
+		public static IMediaTagInfo Get(string filePath)
 		{
 			lock (getlock)
 			{
@@ -34,53 +35,61 @@ namespace SmartAudioPlayerFx.Data
 				false, 0, 0);
 		}
 
-		public abstract class MediaTagInfo
+		public interface IMediaTagInfo
 		{
 			/// <summary>
 			/// タグ情報が読み込まれたときはtrue
 			/// </summary>
-			public bool IsTagLoaded;
+			bool IsTagLoaded { get; }
+
 			/// <summary>
 			/// ファイルパス
 			/// </summary>
-			public string FilePath;
+			string FilePath { get; }
+
 			/// <summary>
 			/// タイトル、読み込み失敗orタグ存在しない時はファイル名
 			/// </summary>
-			public string Title;
+			string Title { get; }
+
 			/// <summary>
 			/// アーティスト、読み込み失敗orタグ存在しない時は空白
 			/// </summary>
-			public string Artist;
+			string Artist { get; }
+
 			/// <summary>
 			/// アルバム、読み込み失敗orタグ存在しない時は空白
 			/// </summary>
-			public string Album;
+			string Album { get; }
+
 			/// <summary>
 			/// コメント、読み込み失敗orタグ存在しない時は空白
 			/// </summary>
-			public string Comment;
+			string Comment { get; }
 		}
 
 		/// <summary>
 		/// ファイルからタグ情報を取得します。
 		/// (要mp3infp.dll)
 		/// </summary>
-		sealed class MediaTagInfo_Mp3infp : MediaTagInfo
+		sealed class MediaTagInfo_Mp3infp : IMediaTagInfo
 		{
 			static bool disabled = false;
 			static readonly object sync = new object();
 
 			static MediaTagInfo_Mp3infp()
 			{
-				try
+				lock (sync)
 				{
-					var version = Mp3infp.GetVer();
-					disabled = (version < 0x253);
-				}
-				catch
-				{
-					disabled = true;
+					try
+					{
+						var version = Mp3infp.GetVer();
+						disabled = (version < 0x253);
+					}
+					catch
+					{
+						disabled = true;
+					}
 				}
 			}
 
@@ -164,7 +173,24 @@ namespace SmartAudioPlayerFx.Data
 				}
 			}
 
+			#region IMediaTagInfo
+
+			public bool IsTagLoaded { get; private set; }
+			public string FilePath { get; private set; }
+			public string Title { get; private set; }
+			public string Artist { get; private set; }
+			public string Album { get; private set; }
+			public string Comment { get; private set; }
+
+			#endregion
 			#region CollectByXXX
+
+			string Mp3infp_GetValue(string key)
+			{
+				string value;
+				Mp3infp.GetValue(key, out value);
+				return value;
+			}
 
 			void CollectByMP3()
 			{
@@ -173,86 +199,86 @@ namespace SmartAudioPlayerFx.Data
 				// MP3v2 -> APE -> RIFF -> MP3v1の順で探す。
 				if (tagtype.HasFlag(Mp3infp.HasMp3.ID3V2))
 				{
-					Mp3infp.GetValue("INAM_v2", out Title);
-					Mp3infp.GetValue("IART_v2", out Artist);
-					Mp3infp.GetValue("IPRD_v2", out Album);
-					Mp3infp.GetValue("ICMT_v2", out Comment);
+					Title = Mp3infp_GetValue("INAM_v2");
+					Artist = Mp3infp_GetValue("IART_v2");
+					Album = Mp3infp_GetValue("IPRD_v2");
+					Comment = Mp3infp_GetValue("ICMT_v2");
 				}
 				else if (tagtype.HasFlag(Mp3infp.HasMp3.APEV1) || tagtype.HasFlag(Mp3infp.HasMp3.APEV2))
 				{
-					Mp3infp.GetValue("INAM_APE", out Title);
-					Mp3infp.GetValue("IART_APE", out Artist);
-					Mp3infp.GetValue("IPRD_APE", out Album);
-					Mp3infp.GetValue("ICMT_APE", out Comment);
+					Title = Mp3infp_GetValue("INAM_APE");
+					Artist = Mp3infp_GetValue("IART_APE");
+					Album = Mp3infp_GetValue("IPRD_APE");
+					Comment = Mp3infp_GetValue("ICMT_APE");
 				}
 				else if (tagtype.HasFlag(Mp3infp.HasMp3.RIFFSIF))
 				{
-					Mp3infp.GetValue("INAM_rmp", out Title);
-					Mp3infp.GetValue("IART_rmp", out Artist);
-					Mp3infp.GetValue("IPRD_rmp", out Album);
-					Mp3infp.GetValue("ICMT_rmp", out Comment);
+					Title = Mp3infp_GetValue("INAM_rmp");
+					Artist = Mp3infp_GetValue("IART_rmp");
+					Album = Mp3infp_GetValue("IPRD_rmp");
+					Comment = Mp3infp_GetValue("ICMT_rmp");
 				}
 				else if (tagtype.HasFlag(Mp3infp.HasMp3.ID3V1))
 				{
-					Mp3infp.GetValue("INAM_v1", out Title);
-					Mp3infp.GetValue("IART_v1", out Artist);
-					Mp3infp.GetValue("IPRD_v1", out Album);
-					Mp3infp.GetValue("ICMT_v1", out Comment);
+					Title = Mp3infp_GetValue("INAM_v1");
+					Artist = Mp3infp_GetValue("IART_v1");
+					Album = Mp3infp_GetValue("IPRD_v1");
+					Comment = Mp3infp_GetValue("ICMT_v1");
 				}
 			}
 
 			void CollectByWav()
 			{
-				Mp3infp.GetValue("INAM", out Title);
-				Mp3infp.GetValue("IART", out Artist);
-				Mp3infp.GetValue("IPRD", out Album);
-				Mp3infp.GetValue("ICMT", out Comment);
+				Title = Mp3infp_GetValue("INAM");
+				Artist = Mp3infp_GetValue("IART");
+				Album = Mp3infp_GetValue("IPRD");
+				Comment = Mp3infp_GetValue("ICMT");
 			}
 
 			void CollectByAvi()
 			{
-				Mp3infp.GetValue("INAM", out Title);
-				Mp3infp.GetValue("IART", out Artist);
-				Mp3infp.GetValue("ICMT", out Comment);
+				Title = Mp3infp_GetValue("INAM");
+				Artist = Mp3infp_GetValue("IART");
+				Comment = Mp3infp_GetValue("ICMT");
 			}
 
 			void CollectByVQF()
 			{
-				Mp3infp.GetValue("INAM", out Title);
-				Mp3infp.GetValue("IART", out Artist);
-				Mp3infp.GetValue("ICMT", out Comment);
+				Title = Mp3infp_GetValue("INAM");
+				Artist = Mp3infp_GetValue("IART");
+				Comment = Mp3infp_GetValue("ICMT");
 			}
 
 			void CollectByWMA()
 			{
-				Mp3infp.GetValue("INAM", out Title);
-				Mp3infp.GetValue("IART", out Artist);
-				Mp3infp.GetValue("IPRD", out Album);
-				Mp3infp.GetValue("ICMT", out Comment);
+				Title = Mp3infp_GetValue("INAM");
+				Artist = Mp3infp_GetValue("IART");
+				Album = Mp3infp_GetValue("IPRD");
+				Comment = Mp3infp_GetValue("ICMT");
 			}
 
 			void CollectByOGG()
 			{
-				Mp3infp.GetValue("INAM", out Title);
-				Mp3infp.GetValue("IART", out Artist);
-				Mp3infp.GetValue("IPRD", out Album);
-				Mp3infp.GetValue("ICMT", out Comment);
+				Title = Mp3infp_GetValue("INAM");
+				Artist = Mp3infp_GetValue("IART");
+				Album = Mp3infp_GetValue("IPRD");
+				Comment = Mp3infp_GetValue("ICMT");
 			}
 
 			void CollectByAPE()
 			{
-				Mp3infp.GetValue("INAM", out Title);
-				Mp3infp.GetValue("IART", out Artist);
-				Mp3infp.GetValue("IPRD", out Album);
-				Mp3infp.GetValue("ICMT", out Comment);
+				Title = Mp3infp_GetValue("INAM");
+				Artist = Mp3infp_GetValue("IART");
+				Album = Mp3infp_GetValue("IPRD");
+				Comment = Mp3infp_GetValue("ICMT");
 			}
 
 			void CollectByMpeg4()
 			{
-				Mp3infp.GetValue("INAM", out Title);
-				Mp3infp.GetValue("IART", out Artist);
-				Mp3infp.GetValue("IPRD", out Album);
-				Mp3infp.GetValue("ICMT", out Comment);
+				Title = Mp3infp_GetValue("INAM");
+				Artist = Mp3infp_GetValue("IART");
+				Album = Mp3infp_GetValue("IPRD");
+				Comment = Mp3infp_GetValue("ICMT");
 			}
 
 			#endregion
@@ -455,6 +481,87 @@ namespace SmartAudioPlayerFx.Data
 			{
 				// unicode阪を使う
 				const string mp3infp = "mp3infp.dll";
+				static readonly object sync = new object();
+				static IntPtr _dllModule = IntPtr.Zero;
+
+				static Mp3infp()
+				{
+					lock (sync)
+					{
+						if (_dllModule != IntPtr.Zero)
+							return;
+
+						_dllModule = PreLoadMp3infpDll();
+					}
+				}
+
+				#region DllLoader
+
+				// LoadLibrary APIで予めDLLを読み込むことでx86/x64両対応のP/Invokeを実現する
+
+				[DllImport("kernel32")]
+				static extern IntPtr LoadLibrary(string fileName);
+
+				static IntPtr PreLoadMp3infpDll()
+				{
+					var directory = AppDomain.CurrentDomain.BaseDirectory;
+					if (directory == null)
+						return IntPtr.Zero;
+
+					var fileName = Path.Combine(directory, mp3infp);
+					if (File.Exists(fileName))
+						return IntPtr.Zero;
+
+					var processorArchitecture = Environment.GetEnvironmentVariable("PROCESSOR_ARCHITECTURE");
+					if (processorArchitecture == null)
+						return IntPtr.Zero;
+
+					fileName = Path.Combine(directory, processorArchitecture, mp3infp);
+					if (!File.Exists(fileName))
+					{
+						string platformName = GetPlatformName(processorArchitecture);
+
+						if (platformName == null)
+							return IntPtr.Zero;
+
+						fileName = Path.Combine(directory, platformName, mp3infp);
+
+						if (!File.Exists(fileName))
+							return IntPtr.Zero;
+					}
+
+					try
+					{
+						return LoadLibrary(fileName);
+					}
+					catch (Exception)
+					{
+					}
+
+					return IntPtr.Zero;
+				}
+
+				static string GetPlatformName(string processorArchitecture)
+				{
+					if (String.IsNullOrEmpty(processorArchitecture))
+						return null;
+
+					switch (processorArchitecture)
+					{
+						case "x86":
+							return "Win32";
+						case "AMD64":
+							return "x64";
+						case "IA64":
+							return "Itanium";
+						case "ARM":
+							return "WinCE";
+						default:
+							return null;
+					}
+				}
+
+				#endregion
 
 				/// <summary>
 				/// mp3infpのバージョンを取得する (Ver2.11～)

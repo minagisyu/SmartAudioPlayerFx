@@ -1,10 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Runtime.InteropServices;
-
 namespace __Primitives__
 {
+	using System;
+	using System.Collections.Generic;
+	using System.Text;
+	using System.Runtime.InteropServices;
+
 	using HWND = System.IntPtr;
 
 	partial class WinAPI

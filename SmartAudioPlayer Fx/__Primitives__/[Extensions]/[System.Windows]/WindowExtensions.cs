@@ -1,10 +1,10 @@
-﻿using System;
-using System.Runtime.InteropServices;
-using System.Windows;
-using System.Windows.Interop;
-
-namespace __Primitives__
+﻿namespace __Primitives__
 {
+	using System;
+	using System.Runtime.InteropServices;
+	using System.Windows;
+	using System.Windows.Interop;
+
 	static class WindowExtensions
 	{
 		// Window Placement API wrapper

@@ -31,8 +31,7 @@ namespace SmartAudioPlayerFx.Managers
 		public MediaDBViewManager()
 		{
 			FocusPath = new ReactiveProperty<string>(mode: ReactivePropertyMode.RaiseLatestValueOnSubscribe);
-			Items = new VersionedCollection<MediaItem>(
-				new CustomEqualityComparer<MediaItem>(x => x.ID.GetHashCode(), (x, y) => x.ID == y.ID));
+			Items = new VersionedCollection<MediaItem>(new MediaItemIDEqualityComparer());
 			_disposables = new CompositeDisposable(FocusPath);
 
 			// Preferences
@@ -47,17 +46,17 @@ namespace SmartAudioPlayerFx.Managers
 			// 最後の通知から500ms後にItemsの再検証
 			ManagerServices.MediaItemFilterManager.PropertyChangedAsObservable()
 				.Throttle(TimeSpan.FromMilliseconds(500))
-				.Subscribe(_ => RevalidateItems(FocusPath.Value))
+				.Subscribe(async _ => await RevalidateItems(FocusPath.Value))
 				.AddTo(_disposables);
 
 			// FocusPathが変更されたらItemsを再設定
 			FocusPath
-				.Subscribe(x => LoadDBItems(x))
+				.Subscribe(async x => await LoadDBItems(x))
 				.AddTo(_disposables);
 		}
 		public void Dispose()
 		{
-			StopAllAsyncProcess();
+			Task.Run(async () => await StopAllAsyncProcess());
 			_disposables.Dispose();
 
 			ItemsCollecting = null;
@@ -65,13 +64,13 @@ namespace SmartAudioPlayerFx.Managers
 			ItemCollect_ScanFinished = null;
 			ItemsLoaded = null;
 		}
-		public void StopAllAsyncProcess()
+		public async Task StopAllAsyncProcess()
 		{
-			LoadDBItems(null);
-			RevalidateItems(null);
-			CollectFiles(null).Wait();
-			RaiseDBUpdateAsync(null);
-			RaiseDBInsertAsync(null);
+			await LoadDBItems(null);
+			await RevalidateItems(null);
+			await CollectFiles(null);
+			RaiseDBUpdate(null);
+			RaiseDBInsert(null);
 		}
 
 		void LoadPreferences(XElement element)
@@ -141,107 +140,76 @@ namespace SmartAudioPlayerFx.Managers
 			{
 				if (exists == false) return null;
 				item = new MediaItem(filepath);
-				RaiseDBInsertAsync(item);
+				RaiseDBInsert(item);
 			}
 			else if (exists == false)
 			{
 				// ファイルが消されたっぽいのでIsNotExist更新通知
 				item.IsNotExist = true;
 				item.LastUpdate = DateTime.UtcNow.Ticks;
-				RaiseDBUpdateAsync(item, _ => _.IsNotExist, _ => _.LastUpdate);
+				RaiseDBUpdate(item, _ => _.IsNotExist, _ => _.LastUpdate);
 			}
 			return item;
 		}
 
-		#region WaitForAsyncRaising / RaiseDBUpdate / RaiseDBInsert
-
-		public void WaitForAsyncRaiging()
-		{
-			RaiseDBInsertAsync(null);
-			RaiseDBUpdateAsync(null);
-		}
-
-		Task _RaiseDBUpdate_Task;
+		#region RaiseDBUpdate / RaiseDBInsert
 
 		/// <summary>
 		/// itemの指定プロパティの情報をDBへ書き込みます
 		/// </summary>
 		/// <param name="item"></param>
 		/// <param name="columns"></param>
-		public Task RaiseDBUpdateAsync(MediaItem item, params Expression<Func<MediaItem, object>>[] columns)
+		public void RaiseDBUpdate(MediaItem item, params Expression<Func<MediaItem, object>>[] columns)
 		{
-			// 以前の非同期処理の終了を待つ
-			if (_RaiseDBUpdate_Task != null)
-			{
-				_RaiseDBUpdate_Task.Wait();
-				_RaiseDBUpdate_Task = null;
-			}
+			if (item == null) return;
+			if (item.ID == 0) return;
 
-			if (item == null) return null;
-			if (item.ID == 0) return null;
-			return _RaiseDBUpdate_Task = TaskEx.Run(()=>
+			using (var dbaction = ManagerServices.MediaDBManager.BeginTransaction())
 			{
-				ManagerServices.MediaDBManager.UseTransaction(dbaction =>
-				{
-					dbaction.Update(new[] { item }, columns)
-						.AsParallel()
-						.Where(x => ManagerServices.MediaItemFilterManager.Validate(x))
-						.ForAll(x => Items.AddOrReplace(x));
-				});
-			});
+				dbaction.Update(new[] { item }, columns)
+					.AsParallel()
+					.Where(x => ManagerServices.MediaItemFilterManager.Validate(x))
+					.ForAll(x => Items.AddOrReplace(x));
+				dbaction.Commit();
+			}
 		}
 
-		Task _RaiseDBInsert_Task;
-		public Task RaiseDBInsertAsync(MediaItem item)
+		public void RaiseDBInsert(MediaItem item)
 		{
-			// 以前の非同期処理の終了を待つ
-			if (_RaiseDBInsert_Task != null)
-			{
-				_RaiseDBInsert_Task.Wait();
-				_RaiseDBInsert_Task = null;
-			}
+			if (item == null) return;
 
-			if (item == null) return null;
-			return _RaiseDBInsert_Task = TaskEx.Run(() =>
+			using (var dbaction = ManagerServices.MediaDBManager.BeginTransaction())
 			{
-				ManagerServices.MediaDBManager.UseTransaction(dbaction =>
-				{
-					dbaction.Insert(new[] { item })
-						.AsParallel()
-						.Where(x => ManagerServices.MediaItemFilterManager.Validate(x))
-						.ForAll(x => Items.AddOrReplace(x));
-				});
-			});
+				dbaction.Insert(new[] { item })
+					.AsParallel()
+					.Where(x => ManagerServices.MediaItemFilterManager.Validate(x))
+					.ForAll(x => Items.AddOrReplace(x));
+				dbaction.Commit();
+			}
 		}
 
 		#endregion
 		#region LoadDBItems
 
 		CancellationTokenSource _LoadDBItems_CTS;
-		Task _LoadDBItems_Task;
 
-		void LoadDBItems(string path)
+		async Task LoadDBItems(string path)
 		{
 			Logger.AddDebugLog("Call LoadDBItems: path={0}", path);
 
 			// 以前の非同期処理をキャンセルして終了を待つ
 			if (_LoadDBItems_CTS != null)
 				_LoadDBItems_CTS.Cancel();
-			if (_LoadDBItems_Task != null)
-			{
-				_LoadDBItems_Task.Wait();
-				_LoadDBItems_Task = null;
-			}
 
 			// 初期化
 			_LoadDBItems_CTS = new CancellationTokenSource();
 			Items.Clear();
-			MediaItemExtension.ClearAllCache();
+			MediaItemCache.ClearAllCache();
 
 			// 読み込み
 			var ct = _LoadDBItems_CTS.Token;
 			var itemsLoaded_ev = ItemsLoaded;
-			_LoadDBItems_Task = TaskEx.Run(() =>
+			await Task.Run(() =>
 			{
 				if (string.IsNullOrWhiteSpace(path)) return;
 				if (Path.IsPathRooted(path) == false) return;
@@ -266,40 +234,36 @@ namespace SmartAudioPlayerFx.Managers
 				sw.Stop();
 				Logger.AddDebugLog(" **LoadDBItems({0}items): {1}ms", Items.Count, sw.ElapsedMilliseconds);
 			})
-			.ContinueWith(_ =>
+			.ContinueWith(async _ =>
 			{
-				CollectFiles(path);
+				await CollectFiles(path);
 
 				if (ct.IsCancellationRequested)
-					CollectFiles(null).Wait();
+					await CollectFiles(null);
 				if (itemsLoaded_ev != null)
 					itemsLoaded_ev();
 				Logger.AddDebugLog(" **LoadDBItems(full-complete)");
 			});
+
 		}
 
 		#endregion
 		#region RevalidateItems
 
 		CancellationTokenSource _revalidateItems_CTS;
-		Task _revalidateItems_Task;
-		void RevalidateItems(string path)
+
+		async Task RevalidateItems(string path)
 		{
 			Logger.AddDebugLog("Call RevalidateItems: path={0}", path);
 
 			// 以前の非同期操作をキャンセル
 			if (_revalidateItems_CTS != null)
 				_revalidateItems_CTS.Cancel();
-			if (_revalidateItems_Task != null)
-			{
-				_revalidateItems_Task.Wait();
-				_revalidateItems_Task = null;
-			}
 
 			_revalidateItems_CTS = new CancellationTokenSource();
 			var itemsLoaded_ev = ItemsLoaded;
 			var ct = _revalidateItems_CTS.Token;
-			_revalidateItems_Task = TaskEx.Run(() =>
+			await Task.Run(() =>
 			{
 				if (string.IsNullOrWhiteSpace(path)) return;
 
@@ -325,13 +289,13 @@ namespace SmartAudioPlayerFx.Managers
 				sw.Stop();
 				Logger.AddDebugLog(" **RevalidateItems: {0}ms", sw.ElapsedMilliseconds);
 			})
-			.ContinueWith(_ =>
+			.ContinueWith(async _ =>
 			{
 				// phase file_add: ファイルシステムを再検索して追加として通知する
-				CollectFiles(path);
+				await CollectFiles(path);
 
 				if (ct.IsCancellationRequested)
-					CollectFiles(null).Wait();
+					await CollectFiles(null);
 				if (itemsLoaded_ev != null)
 					itemsLoaded_ev();
 				Logger.AddDebugLog(" **RevalidateItems(full-complete)");
@@ -342,26 +306,21 @@ namespace SmartAudioPlayerFx.Managers
 		#region CollectFiles
 
 		CancellationTokenSource _collectFiles_CTS;
-		Task _collectFiles_Task;
-		Task CollectFiles(string path)
+
+		async Task CollectFiles(string path)
 		{
 			Logger.AddDebugLog("Call CollectFiles: path={0}", path);
 
 			// 以前の検索をキャンセル
 			if (_collectFiles_CTS != null)
 				_collectFiles_CTS.Cancel();
-			if (_collectFiles_Task != null)
-			{
-				_collectFiles_Task.Wait();
-				_collectFiles_Task = null;
-			}
 
 			_collectFiles_CTS = new CancellationTokenSource();
 			var ct = _collectFiles_CTS.Token;
 			var notify = ItemsCollecting;
 			var corescan_finished = ItemCollect_CoreScanFinished;
 			var scan_finished = ItemCollect_ScanFinished;
-			_collectFiles_Task = TaskEx.Run(() =>
+			await Task.Run(async () =>
 			{
 				if (string.IsNullOrWhiteSpace(path) || Directory.Exists(path) == false)
 				{
@@ -397,19 +356,22 @@ namespace SmartAudioPlayerFx.Managers
 						if (notify != null)
 							notify("[1] " + x.DirectoryName);
 
-						ManagerServices.MediaDBManager.UseTransaction(dbaction =>
+						// MEMO:
+						// LastWrite = MinValueはphase3で更新する際に識別するためのフラグとして使用する
+						var xs = x.Files
+							.Select(y => new MediaItem(y) { LastWrite = DateTime.MinValue.Ticks })
+							.Where(y => ManagerServices.MediaItemFilterManager.Validate(y));
+						using (var dbaction = ManagerServices.MediaDBManager.BeginTransaction())
 						{
-							// MEMO:
-							// LastWrite = MinValueはphase3で更新する際に識別するためのフラグとして使用する
-							var xs = x.Files
-								.Select(y => new MediaItem(y) { LastWrite = DateTime.MinValue.Ticks })
-								.Where(y => ManagerServices.MediaItemFilterManager.Validate(y));
-							foreach (var y in dbaction.Insert(xs))
-							{
-								add_count++;
-								Items.AddOrReplace(y);
-							}
-						});
+							dbaction.Insert(xs)
+								.AsParallel()
+								.ForAll(y =>
+								{
+									Interlocked.Increment(ref add_count);
+									Items.AddOrReplace(y);
+								});
+							dbaction.Commit();
+						}
 					}
 					sw.Stop();
 					Logger.AddDebugLog(" - CollectFiles phase1({0}items add, elapsed {1}ms)", add_count, sw.ElapsedMilliseconds);
@@ -447,13 +409,14 @@ namespace SmartAudioPlayerFx.Managers
 						notify(string.Empty);
 					if (!updateList.IsEmpty)
 					{
-						ManagerServices.MediaDBManager.UseTransaction(dbaction =>
+						using (var dbaction = ManagerServices.MediaDBManager.BeginTransaction())
 						{
 							// MEMO:
 							// .ToArray()で引っ張ってならないとupdateListの中身が処理されない...
 							dbaction.Update(updateList, _ => _.LastUpdate, _ => _.IsNotExist)
 								.ToArray();
-						});
+							dbaction.Commit();
+						}
 					}
 					sw.Stop();
 					Logger.AddDebugLog(" - CollectFiles phase2({0}items update, elapsed {1}ms)", updateList.Count, sw.ElapsedMilliseconds);
@@ -501,14 +464,15 @@ namespace SmartAudioPlayerFx.Managers
 						notify(string.Empty);
 					if (!updateList.IsEmpty)
 					{
-						ManagerServices.MediaDBManager.UseTransaction(dbaction =>
+						using (var dbaction = ManagerServices.MediaDBManager.BeginTransaction())
 						{
 							dbaction.Update(updateList,
 								_ => _.FilePath,
 								_ => _.Title, _ => _.Artist, _ => _.Album, _ => _.Comment, _ => _.SearchHint,
 								_ => _.CreatedDate, _ => _.LastUpdate, _ => _.LastWrite, _ => _.IsNotExist)
-							.ToArray();
-						});
+								.ToArray();
+							dbaction.Commit();
+						}
 					}
 					sw.Stop();
 					Logger.AddDebugLog(" - CollectFiles phase3({0}items update, ellapsed {1}ms", updateList.Count, sw.ElapsedMilliseconds);
@@ -528,14 +492,12 @@ namespace SmartAudioPlayerFx.Managers
 						// 最後の通知から2秒経過するまで待ってみる(2秒のタイムアウトが発生するまで待つ)
 						while (fsw.WaitForChanged(WatcherChangeTypes.All, 2000).TimedOut == false) ;
 						Logger.AddDebugLog("FSW-Notify, RaiseRescan.");
-						TaskEx.Run(() => CollectFiles(path));
+						await Task.Run(async () => await CollectFiles(path));
 						break;
 					}
 				}
 				Logger.AddDebugLog(" - CollectFiles finished.");
 			});
-
-			return _collectFiles_Task;
 		}
 
 		#endregion
@@ -545,27 +507,19 @@ namespace SmartAudioPlayerFx.Managers
 	{
 		public static IObservable<string> ItemsCollectingAsObservable(this MediaDBViewManager manager)
 		{
-			return Observable.FromEvent<string>(
-				v => manager.ItemsCollecting += v,
-				v => manager.ItemsCollecting -= v);
+			return Observable.FromEvent<string>(v => manager.ItemsCollecting += v, v => manager.ItemsCollecting -= v);
 		}
 		public static IObservable<Unit> ItemCollect_CoreScanFinishedAsObservable(this MediaDBViewManager manager)
 		{
-			return Observable.FromEvent(
-				v => manager.ItemCollect_CoreScanFinished += v,
-				v => manager.ItemCollect_CoreScanFinished -= v);
+			return Observable.FromEvent(v => manager.ItemCollect_CoreScanFinished += v, v => manager.ItemCollect_CoreScanFinished -= v);
 		}
 		public static IObservable<Unit> ItemCollect_ScanFinishedAsObservable(this MediaDBViewManager manager)
 		{
-			return Observable.FromEvent(
-				v => manager.ItemCollect_ScanFinished += v,
-				v => manager.ItemCollect_ScanFinished -= v);
+			return Observable.FromEvent(v => manager.ItemCollect_ScanFinished += v, v => manager.ItemCollect_ScanFinished -= v);
 		}
 		public static IObservable<Unit> ItemsLoadedAsObservable(this MediaDBViewManager manager)
 		{
-			return Observable.FromEvent(
-				v => manager.ItemsLoaded += v,
-				v => manager.ItemsLoaded -= v);
+			return Observable.FromEvent(v => manager.ItemsLoaded += v, v => manager.ItemsLoaded -= v);
 		}
 
 	}

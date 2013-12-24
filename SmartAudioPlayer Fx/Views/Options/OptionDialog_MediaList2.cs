@@ -1,9 +1,9 @@
-using System;
-using SmartAudioPlayerFx.Data;
-using SmartAudioPlayerFx.Managers;
-
 namespace SmartAudioPlayerFx.Views.Options
 {
+	using System;
+	using SmartAudioPlayerFx.Data;
+	using SmartAudioPlayerFx.Managers;
+
 	sealed partial class OptionDialog_MediaList2 : OptionPage
 	{
 		public OptionDialog_MediaList2()

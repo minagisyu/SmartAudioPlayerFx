@@ -1,10 +1,10 @@
-﻿using System;
-using System.Windows.Forms;
-using System.Runtime.InteropServices;
-using Microsoft.WindowsAPICodePack.Dialogs;
-
-namespace __Primitives__
+﻿namespace __Primitives__
 {
+	using System;
+	using System.Windows.Forms;
+	using System.Runtime.InteropServices;
+	using Microsoft.WindowsAPICodePack.Dialogs;
+
 	/// <summary>
 	/// IFileOpenDialogを使うラッパー。
 	/// インターフェイスが使えない(Vista以下)ときは、WinFormsのFolderBrowserDialogを使います。

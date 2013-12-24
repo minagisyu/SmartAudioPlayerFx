@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Windows.Input;
-
-namespace __Primitives__
+﻿namespace __Primitives__
 {
+	using System;
+	using System.Collections.Generic;
+	using System.Linq;
+	using System.Text;
+	using System.Windows.Input;
+
 	public class DelegateCommand<T> : ICommand
 	{
 		// Fields

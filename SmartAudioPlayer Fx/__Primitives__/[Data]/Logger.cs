@@ -1,78 +1,48 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Reactive.Concurrency;
-using System.Reactive.Disposables;
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
-using System.Reflection;
-using Codeplex.Reactive;
-using Codeplex.Reactive.Extensions;
-
-namespace __Primitives__
+﻿namespace __Primitives__
 {
+	using System;
+	using System.Diagnostics;
+	using System.Reflection;
+
 	static class Logger
 	{
-		readonly static CompositeDisposable disposable = new CompositeDisposable();
-		readonly static Subject<Item> newlog_added = new Subject<Item>();
-		readonly static List<Item> logs = new List<Item>();
-		public static ReactiveProperty<int> MaxLogs { get; private set; }
+		static DefaultTraceListener _listener;
 
 		static Logger()
 		{
-			MaxLogs = new ReactiveProperty<int>(1000);
-			
-			newlog_added
-				.ObserveOn(Scheduler.TaskPool)
-				.Subscribe(x =>
-				{
-					Debugger.Log(0, x.Source, x + Environment.NewLine);
-					lock (logs)
-					{
-						logs.Add(x);
-						var overflow = logs.Count - (MaxLogs.Value + 1);
-						if (overflow > 0)
-							logs.RemoveRange(MaxLogs.Value, overflow);
-					}
-				})
-				.AddTo(disposable);
-
-			MaxLogs
-				.ObserveOn(Scheduler.TaskPool)
-				.Subscribe(x =>
-				{
-					lock (logs)
-					{
-						var overflow = logs.Count - (x + 1);
-						if (overflow > 0)
-							logs.RemoveRange(x, overflow);
-					}
-				})
-				.AddTo(disposable);
+			_listener = new DefaultTraceListener();
 		}
-		#region Dispose
-
-		public static void Dispose()
+		public static void SetLogFileName(string logFileName)
 		{
-			disposable.Dispose();
+			_listener.LogFileName = logFileName;
 		}
-	
-		#endregion
 
 		#region AddLog
 
+		static bool _headerWrited = false;
 		static void AddLog(LogType logType, string message)
 		{
-			var log = new Item()
+			lock (_listener)
 			{
-				Time = DateTime.Now,
-				Type = logType,
-				Source = new StackTrace().GetFrame(2).GetMethod().DeclaringType.Name,
-				Message = message,
-			};
-			newlog_added.OnNext(log);
+				if (!_headerWrited)
+				{
+					_headerWrited = true;
+					var asm = Assembly.GetEntryAssembly();
+					var version = FileVersionInfo.GetVersionInfo(asm.Location);
+					_listener.WriteLine(string.Empty);
+					_listener.WriteLine("--------------------------------------------------------------------------------");
+					_listener.WriteLine(string.Format("{0} ver.{1}", version.FileDescription, version.ProductVersion));
+					_listener.WriteLine(string.Empty);
+				}
+				var log = new Item()
+				{
+					Time = DateTime.Now,
+					Type = logType,
+					Source = new StackTrace().GetFrame(2).GetMethod().DeclaringType.Name,
+					Message = message,
+				};
+				_listener.WriteLine(log.ToString());
+			}
 		}
 		// 情報ログ
 		public static void AddInfoLog(string format, params object[] args)
@@ -117,38 +87,6 @@ namespace __Primitives__
 
 		#endregion
 
-		public static void Save(string filepath, LogType minLogLevel = LogType.INFO)
-		{
-			List<Item> log;
-			lock (logs)
-			{
-				log = logs
-					.Where(l => l.Type >= minLogLevel)
-					.ToList();
-			}
-			if (log.Count <= 0) return;
-
-			using (var stream = File.Open(filepath, FileMode.Append, FileAccess.Write, FileShare.None))
-			using (var writer = new StreamWriter(stream))
-			{
-				var asm = Assembly.GetEntryAssembly();
-				var version = FileVersionInfo.GetVersionInfo(asm.Location);
-				writer.WriteLine();
-				writer.WriteLine("--------------------------------------------------------------------------------");
-				writer.WriteLine("{0} ver.{1}", version.FileDescription, version.ProductVersion);
-				writer.WriteLine();
-				log.ForEach(l => writer.WriteLine(l.ToString()));
-			}
-		}
-
-		public static void Clear()
-		{
-			lock (logs)
-			{
-				logs.Clear();
-			}
-		}
-
 		class Item
 		{
 			public DateTime Time { get; set; }
@@ -157,7 +95,7 @@ namespace __Primitives__
 			public string Message { get; set; }
 			public override string ToString()
 			{
-				return string.Format("[{0:G}][{1}]<{2}> {3}", Time, Type, Source, Message);
+				return string.Format("{0:G} [{1}] <{2}> : {3}", Time, Type, Source, Message);
 			}
 		}
 

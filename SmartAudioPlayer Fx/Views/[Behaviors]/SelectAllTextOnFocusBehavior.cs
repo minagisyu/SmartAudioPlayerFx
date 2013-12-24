@@ -1,8 +1,8 @@
-﻿using System.Windows.Controls;
-using System.Windows.Interactivity;
-
-namespace SmartAudioPlayerFx.Views
+﻿namespace SmartAudioPlayerFx.Views
 {
+	using System.Windows.Controls;
+	using System.Windows.Interactivity;
+
     /// <summary>
     /// フォーカスが移ったときにテキストを全選択状態にするビヘイビア
     /// http://stackoverflow.com/questions/660554/how-to-automatically-select-all-text-on-focus-in-wpf-textbox

@@ -18,15 +18,20 @@ namespace SmartAudioPlayerFx.Managers
 	[Standalone]
 	sealed class AudioPlayerManager : IDisposable
 	{
-		public static bool IsEnableSoundFadeEffect = true;
+		public static bool IsEnableSoundFadeEffect { get; set; }
+
+		static AudioPlayerManager()
+		{
+			IsEnableSoundFadeEffect = true;
+		}
 
 		#region ctor
 
-		MediaPlayer player;
+		readonly MediaPlayer player;
 		Action<Exception> on_failed = null;	// player.Open()後のplayer.MediaFailed
 		Action on_opened = null;			// player.Open()後のplayer.MediaOpened
 
-		internal AudioPlayerManager()
+		public AudioPlayerManager()
 		{
 			if (App.Current != null && App.Current.Dispatcher != Dispatcher.CurrentDispatcher)
 				throw new InvalidOperationException("call on UIThread!!");
@@ -38,11 +43,8 @@ namespace SmartAudioPlayerFx.Managers
 		}
 		public void Dispose()
 		{
-			if (player != null)
-			{
-				Close();
-				player = null;
-			}
+			Close();
+
 			on_failed = null;
 			on_opened = null;
 			IsPausedChanged = null;
@@ -333,7 +335,8 @@ namespace SmartAudioPlayerFx.Managers
 		// WinFormsのDoEventsライクな...
 		static void DoDispatcherEvents()
 		{
-			App.UIThreadInvoke(() => System.Windows.Forms.Application.DoEvents());
+			new Action(() => System.Windows.Forms.Application.DoEvents())
+				.UIThreadInvoke();
 		}
 
 		// 停止状態からフェードイン再生
@@ -485,9 +488,7 @@ namespace SmartAudioPlayerFx.Managers
 		}
 		public static IObservable<AudioPlayerManager.PlayEndedEventArgs> PlayEndedAsObservable(this AudioPlayerManager manager)
 		{
-			return Observable.FromEvent<AudioPlayerManager.PlayEndedEventArgs>(
-				v => manager.PlayEnded += v,
-				v => manager.PlayEnded -= v);
+			return Observable.FromEvent<AudioPlayerManager.PlayEndedEventArgs>(v => manager.PlayEnded += v, v => manager.PlayEnded -= v);
 		}
 	}
 

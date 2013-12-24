@@ -1,9 +1,9 @@
-using System;
-using System.Windows.Forms;
-using SmartAudioPlayerFx.Managers;
-
 namespace SmartAudioPlayerFx.Views.Options
 {
+	using System;
+	using System.Windows.Forms;
+	using SmartAudioPlayerFx.Managers;
+
 	sealed partial class OptionDialog_ShortcutKey : OptionPage
 	{
 		public OptionDialog_ShortcutKey()

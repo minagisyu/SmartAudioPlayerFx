@@ -1,21 +1,22 @@
-﻿using System;
-using System.IO;
-using System.Reactive;
-using System.Reactive.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Xml.Linq;
-using __Primitives__;
-using Codeplex.Reactive;
-using Codeplex.Reactive.Extensions;
-using SmartAudioPlayerFx.Data;
-using SmartAudioPlayerFx.Managers;
-
-namespace SmartAudioPlayerFx.Views
+﻿namespace SmartAudioPlayerFx.Views
 {
-	class MainWindowViewModel
+	using System;
+	using System.IO;
+	using System.Reactive;
+	using System.Reactive.Linq;
+	using System.Text;
+	using System.Threading.Tasks;
+	using System.Windows;
+	using System.Xml.Linq;
+	using __Primitives__;
+	using Codeplex.Reactive;
+	using Codeplex.Reactive.Extensions;
+	using SmartAudioPlayerFx.Data;
+	using SmartAudioPlayerFx.Managers;
+
+	sealed class MainWindowViewModel
 	{
+		public IObservable<Unit> Initialized { get; private set; }
 		#region Properties
 
 		public ReactiveProperty<Int32Rect> WindowPlacement { get; private set; }
@@ -57,131 +58,133 @@ namespace SmartAudioPlayerFx.Views
 
 		public MainWindowViewModel()
 		{
-			WindowPlacement = new ReactiveProperty<Int32Rect>(new Int32Rect(0, 0, 0, 0));
-			InactiveOpacity = new ReactiveProperty<double>(0.8);
-			DeactiveOpacity = new ReactiveProperty<double>(0.65);
-			IsVisible = new ReactiveProperty<bool>(true);
-			PlayPauseCommand = new ReactiveCommand();
+			Initialized = Observable.Start(() =>
+			{
+				WindowPlacement = new ReactiveProperty<Int32Rect>(new Int32Rect(0, 0, 0, 0));
+				InactiveOpacity = new ReactiveProperty<double>(0.8);
+				DeactiveOpacity = new ReactiveProperty<double>(0.65);
+				IsVisible = new ReactiveProperty<bool>(true);
+				PlayPauseCommand = new ReactiveCommand();
 
-			// Common Property
-			IsLoading = new ReactiveProperty<bool>(false);
-			SelectMode = new ReactiveProperty<JukeboxManager.SelectionMode>(JukeboxManager.SelectionMode.Random);
-			IsRepeat = new ReactiveProperty<bool>(false);
-			IsPaused = new ReactiveProperty<bool>();
-			CurrentMedia = new ReactiveProperty<MediaItem>();
-			PositionTicks = new ReactiveProperty<long>();
-			DurationTicks = new ReactiveProperty<long>();
-			Volume = new ReactiveProperty<double>();
+				// Common Property
+				IsLoading = new ReactiveProperty<bool>(false);
+				SelectMode = new ReactiveProperty<JukeboxManager.SelectionMode>(JukeboxManager.SelectionMode.Random);
+				IsRepeat = new ReactiveProperty<bool>(false);
+				IsPaused = new ReactiveProperty<bool>();
+				CurrentMedia = new ReactiveProperty<MediaItem>();
+				PositionTicks = new ReactiveProperty<long>();
+				DurationTicks = new ReactiveProperty<long>();
+				Volume = new ReactiveProperty<double>();
 
-			// Sub Property
-			SelectModeTooltip = new ReactiveProperty<string>();
-			SelectModeToggleCommand = new ReactiveCommand();
-			RepeatTooltip = new ReactiveProperty<string>();
-			RepeatToggleCommand = new ReactiveCommand();
-			StateTooltip = new ReactiveProperty<string>();
-			StateToggleCommand = new ReactiveCommand();
-			Title = new ReactiveProperty<string>();
-			TitleTooltip = new ReactiveProperty<string>();
-			TitleTooltipEnable = new ReactiveProperty<bool>();
-			TitleSkipCommand = new ReactiveCommand();
-			VolumeLevel = new ReactiveProperty<string>();
-			VolumeTooltip = new ReactiveProperty<string>();
-			PositionString = new ReactiveProperty<string>();
-			SeekTooltip = new ReactiveProperty<string>();
+				// Sub Property
+				SelectModeTooltip = new ReactiveProperty<string>();
+				SelectModeToggleCommand = new ReactiveCommand();
+				RepeatTooltip = new ReactiveProperty<string>();
+				RepeatToggleCommand = new ReactiveCommand();
+				StateTooltip = new ReactiveProperty<string>();
+				StateToggleCommand = new ReactiveCommand();
+				Title = new ReactiveProperty<string>();
+				TitleTooltip = new ReactiveProperty<string>();
+				TitleTooltipEnable = new ReactiveProperty<bool>();
+				TitleSkipCommand = new ReactiveCommand();
+				VolumeLevel = new ReactiveProperty<string>();
+				VolumeTooltip = new ReactiveProperty<string>();
+				PositionString = new ReactiveProperty<string>();
+				SeekTooltip = new ReactiveProperty<string>();
 
-			// Preferences
-			ManagerServices.PreferencesManager.WindowSettings
-				.Subscribe(x => OnLoadWindowPrefernces(x));
-			ManagerServices.PreferencesManager.SerializeRequestAsObservable()
-				.Subscribe(_ => OnSavePreferences());
+				// Preferences
+				ManagerServices.PreferencesManager.WindowSettings
+					.Subscribe(x => OnLoadWindowPrefernces(x));
+				ManagerServices.PreferencesManager.SerializeRequestAsObservable()
+					.Subscribe(_ => OnSavePreferences());
 
-			SetupEvents();
-		}
-		void SetupEvents()
-		{
-			PlayPauseCommand
-				.Subscribe(_ => ManagerServices.AudioPlayerManager.PlayPause());
+				// Setup Events
+				PlayPauseCommand
+					.Subscribe(_ => ManagerServices.AudioPlayerManager.PlayPause());
 
-			// Common Property
-			ManagerServices.JukeboxManager.IsServiceStarted
-				.Subscribe(x => IsLoading.Value = !x);
-			ManagerServices.JukeboxManager.SelectMode
-				.Subscribe(x => SelectMode.Value = x);
-			ManagerServices.JukeboxManager.IsRepeat
-				.Subscribe(x => IsRepeat.Value = x);
-			Observable.Merge(
-				ManagerServices.AudioPlayerManager.OpenedAsObservable(),
-				ManagerServices.AudioPlayerManager.IsPausedChangedAsObservable(),
-				Observable.Return(Unit.Default))	// イベント来るまで動かないので初期設定用にReturnを返してやる
-				.Subscribe(_ => IsPaused.Value = ManagerServices.AudioPlayerManager.IsPaused);
-			ManagerServices.JukeboxManager.CurrentMedia
-				.Subscribe(x => CurrentMedia.Value = x);
-			Observable.Merge(
-				ManagerServices.AudioPlayerManager.OpenedAsObservable(),
-				ManagerServices.AudioPlayerManager.PositionSettedAsObservable(),
-				Observable.Timer(TimeSpan.Zero, TimeSpan.FromSeconds(1)).Select(_ => Unit.Default))
-				.ObserveOnUIDispatcher()
-				.Subscribe(_ => PositionTicks.Value = ManagerServices.AudioPlayerManager.Position.Ticks);
-			ManagerServices.AudioPlayerManager.OpenedAsObservable()
-				.Subscribe(_ => DurationTicks.Value = ManagerServices.AudioPlayerManager.Duration.HasValue ? ManagerServices.AudioPlayerManager.Duration.Value.Ticks : 0);
-			Observable.Merge(
-				ManagerServices.AudioPlayerManager.VolumeChangedAsObservable(),
-				Observable.Return(Unit.Default))
-				.ObserveOnUIDispatcher()
-				.Subscribe(_ => Volume.Value = ManagerServices.AudioPlayerManager.Volume);
-			Volume
-				.ObserveOnUIDispatcher()
-				.Subscribe(x => ManagerServices.AudioPlayerManager.Volume = x);
-
-			// SubProperty
-			SelectMode
-				.Subscribe(x => SelectModeTooltip.Value = SelectModeToTooltipString(x));
-			SelectModeToggleCommand
-				.Subscribe(_ =>
+				// Common Property
+				ManagerServices.JukeboxManager.IsServiceStarted
+					.Subscribe(x => IsLoading.Value = !x);
+				ManagerServices.JukeboxManager.SelectMode
+					.Subscribe(x => SelectMode.Value = x);
+				ManagerServices.JukeboxManager.IsRepeat
+					.Subscribe(x => IsRepeat.Value = x);
+				Observable.Merge(
+					ManagerServices.AudioPlayerManager.OpenedAsObservable(),
+					ManagerServices.AudioPlayerManager.IsPausedChangedAsObservable(),
+					Observable.Return(Unit.Default))	// イベント来るまで動かないので初期設定用にReturnを返してやる
+					.Subscribe(_ => IsPaused.Value = ManagerServices.AudioPlayerManager.IsPaused);
+				ManagerServices.JukeboxManager.CurrentMedia
+					.Subscribe(x => CurrentMedia.Value = x);
+				Observable.Merge(
+					ManagerServices.AudioPlayerManager.OpenedAsObservable(),
+					ManagerServices.AudioPlayerManager.PositionSettedAsObservable(),
+					Observable.Timer(TimeSpan.Zero, TimeSpan.FromSeconds(1)).Select(_ => Unit.Default))
+					.ObserveOnUIDispatcher()
+					.Subscribe(_ => PositionTicks.Value = ManagerServices.AudioPlayerManager.Position.Ticks);
+				ManagerServices.AudioPlayerManager.OpenedAsObservable()
+					.Subscribe(_ => DurationTicks.Value = ManagerServices.AudioPlayerManager.Duration.HasValue ? ManagerServices.AudioPlayerManager.Duration.Value.Ticks : 0);
+				App.Current.Dispatcher.Invoke(() =>
 				{
-					var newMode = (ManagerServices.JukeboxManager.SelectMode.Value == JukeboxManager.SelectionMode.Filename) ?
-						JukeboxManager.SelectionMode.Random :
-						JukeboxManager.SelectionMode.Filename;
-					ManagerServices.JukeboxManager.SelectMode.Value = newMode;
+					Observable.Merge(
+						ManagerServices.AudioPlayerManager.VolumeChangedAsObservable(),
+						Observable.Return(Unit.Default))
+						.Subscribe(_ => Volume.Value = ManagerServices.AudioPlayerManager.Volume);
 				});
-			IsRepeat
-				.Subscribe(x => RepeatTooltip.Value = RepeatModeToTooltipString(x));
-			RepeatToggleCommand
-				.Subscribe(_ =>
-				{
-					var newRepeat = !ManagerServices.JukeboxManager.IsRepeat.Value;
-					ManagerServices.JukeboxManager.IsRepeat.Value = newRepeat;
-				});
-			IsPaused
-				.Subscribe(x => StateTooltip.Value = PlayStateToTooltipString(x));
-			StateToggleCommand
-				.Subscribe(_ => ManagerServices.AudioPlayerManager.PlayPause());
-			Observable.Merge(
-				MediaListItemViewModel._isTitleFromFilePathChangedAsObservable(),
-				Observable.Return(Unit.Default))
-				.Select(_ => MediaListItemViewModel.IsTitleFromFilePath)
-				.CombineLatest(CurrentMedia, IsLoading,
-					(x, y, z) => new { IsTitleFromFilePath = x, CurrentMedia = y, IsLoading = z, })
-				.Subscribe(x => Title.Value = CurrentMediaToTitleString(x.CurrentMedia, x.IsLoading, x.IsTitleFromFilePath));
-			CurrentMedia
-				.CombineLatest(IsLoading, (x, y) => new { CurrentMedia = x, IsLoading = y, })
-				.Subscribe(x => TitleTooltip.Value = CurrentMediaToTitleTooltipString(x.CurrentMedia, x.IsLoading));
-			TitleTooltip
-				.Subscribe(x => TitleTooltipEnable.Value = !string.IsNullOrWhiteSpace(x));
-			TitleSkipCommand
-				.Subscribe(_ => TaskEx.Run(() => ManagerServices.JukeboxManager.SelectNext(true)));
-			Volume
-				.Subscribe(x =>
-				{
-					VolumeLevel.Value = VolumeToVolumeLevelString(x);
-					VolumeTooltip.Value = VolumeToTooltipString(x);
-				});
-			PositionTicks
-				.CombineLatest(DurationTicks, (x, y) => new { PositionTicks = x, DurationTicks = y, })
-				.Subscribe(x => PositionString.Value = PositionToString(x.PositionTicks, x.DurationTicks));
-			PositionString
-				.CombineLatest(DurationTicks, (x, y) => new { PosString = x, DurTicks = y })
-				.Subscribe(x => SeekTooltip.Value = PositionToTooltipString(x.PosString, x.DurTicks));
+				Volume
+					 .ObserveOnUIDispatcher()
+					 .Subscribe(x => ManagerServices.AudioPlayerManager.Volume = x);
+
+				// SubProperty
+				SelectMode
+					.Subscribe(x => SelectModeTooltip.Value = SelectModeToTooltipString(x));
+				SelectModeToggleCommand
+					.Subscribe(_ =>
+					{
+						var newMode = (ManagerServices.JukeboxManager.SelectMode.Value == JukeboxManager.SelectionMode.Filename) ?
+							JukeboxManager.SelectionMode.Random :
+							JukeboxManager.SelectionMode.Filename;
+						ManagerServices.JukeboxManager.SelectMode.Value = newMode;
+					});
+				IsRepeat
+					.Subscribe(x => RepeatTooltip.Value = RepeatModeToTooltipString(x));
+				RepeatToggleCommand
+					.Subscribe(_ =>
+					{
+						var newRepeat = !ManagerServices.JukeboxManager.IsRepeat.Value;
+						ManagerServices.JukeboxManager.IsRepeat.Value = newRepeat;
+					});
+				IsPaused
+					.Subscribe(x => StateTooltip.Value = PlayStateToTooltipString(x));
+				StateToggleCommand
+					.Subscribe(_ => ManagerServices.AudioPlayerManager.PlayPause());
+				Observable.Merge(
+					MediaListItemViewModel._isTitleFromFilePathChangedAsObservable(),
+					Observable.Return(Unit.Default))
+					.Select(_ => MediaListItemViewModel.IsTitleFromFilePath)
+					.CombineLatest(CurrentMedia, IsLoading,
+						(x, y, z) => new { IsTitleFromFilePath = x, CurrentMedia = y, IsLoading = z, })
+					.Subscribe(x => Title.Value = CurrentMediaToTitleString(x.CurrentMedia, x.IsLoading, x.IsTitleFromFilePath));
+				CurrentMedia
+					.CombineLatest(IsLoading, (x, y) => new { CurrentMedia = x, IsLoading = y, })
+					.Subscribe(x => TitleTooltip.Value = CurrentMediaToTitleTooltipString(x.CurrentMedia, x.IsLoading));
+				TitleTooltip
+					.Subscribe(x => TitleTooltipEnable.Value = !string.IsNullOrWhiteSpace(x));
+				TitleSkipCommand
+					.Subscribe(_ => Task.Run(() => ManagerServices.JukeboxManager.SelectNext(true)));
+				Volume
+					.Subscribe(x =>
+					{
+						VolumeLevel.Value = VolumeToVolumeLevelString(x);
+						VolumeTooltip.Value = VolumeToTooltipString(x);
+					});
+				PositionTicks
+					.CombineLatest(DurationTicks, (x, y) => new { PositionTicks = x, DurationTicks = y, })
+					.Subscribe(x => PositionString.Value = PositionToString(x.PositionTicks, x.DurationTicks));
+				PositionString
+					.CombineLatest(DurationTicks, (x, y) => new { PosString = x, DurTicks = y })
+					.Subscribe(x => SeekTooltip.Value = PositionToTooltipString(x.PosString, x.DurTicks));
+			});
 		}
 
 		void OnSavePreferences()
@@ -225,9 +228,9 @@ namespace SmartAudioPlayerFx.Views
 
 		public void JukeboxStart()
 		{
-			TaskEx.Run(() =>
+			Task.Run(async () =>
 			{
-				ManagerServices.JukeboxManager.Start();
+				await ManagerServices.JukeboxManager.Start();
 			});
 		}
 		public void SetPlayerPosition(TimeSpan value)

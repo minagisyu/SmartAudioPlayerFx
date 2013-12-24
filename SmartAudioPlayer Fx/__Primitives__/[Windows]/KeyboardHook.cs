@@ -1,11 +1,11 @@
-using System;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.Runtime.InteropServices;
-using System.Windows.Forms;
-
 namespace __Primitives__
 {
+	using System;
+	using System.ComponentModel;
+	using System.Diagnostics;
+	using System.Runtime.InteropServices;
+	using System.Windows.Forms;
+
 	//
 	// ‚Ç‚±‚¼‚æ‚èƒRƒsƒy
 	//

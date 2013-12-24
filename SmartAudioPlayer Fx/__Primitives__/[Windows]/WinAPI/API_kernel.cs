@@ -1,13 +1,13 @@
-using System;
-using System.Runtime.InteropServices;
-using System.Security;
-using System.Text;
-
-// 「warning CS0649: フィールド 'xxx' は割り当てられません。常に既定値 を使用します。」の抑制。
-#pragma warning disable 649
-
 namespace __Primitives__
 {
+	using System;
+	using System.Runtime.InteropServices;
+	using System.Security;
+	using System.Text;
+
+	// 「warning CS0649: フィールド 'xxx' は割り当てられません。常に既定値 を使用します。」の抑制。
+	#pragma warning disable 649
+
 	using HANDLE = System.IntPtr;
 	using HMODULE = System.IntPtr;
 	using DWORD = System.UInt32;
