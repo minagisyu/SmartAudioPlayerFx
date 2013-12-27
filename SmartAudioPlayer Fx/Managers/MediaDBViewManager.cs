@@ -14,6 +14,7 @@ using __Primitives__;
 using Codeplex.Reactive;
 using Codeplex.Reactive.Extensions;
 using SmartAudioPlayerFx.Data;
+using SmartAudioPlayer;
 
 namespace SmartAudioPlayerFx.Managers
 {

@@ -13,6 +13,7 @@
 	using Codeplex.Reactive.Extensions;
 	using SmartAudioPlayerFx.Data;
 	using SmartAudioPlayerFx.Managers;
+	using SmartAudioPlayer;
 
 	// リスト用エントリー要素
 	interface IListEntry

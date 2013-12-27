@@ -4,6 +4,7 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
 	xmlns:pb="clr-namespace:__Primitives__"
+	xmlns:sap="clr-namespace:SmartAudioPlayer;assembly=spc_ui"
 	xmlns:v="clr-namespace:SmartAudioPlayerFx.Views"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -12,8 +13,8 @@
 	AllowsTransparency="True" Background="Transparent" WindowStyle="None"
 	ShowActivated="False" ShowInTaskbar="False" Topmost="True">
     <i:Interaction.Behaviors>
-        <pb:UnvisibleResizeBorderBehavior Left="5" Right="5" />
-        <pb:WindowDragMoveBehavior x:Name="wdmbehavior" IsSnapped="True" />
+        <sap:UnvisibleResizeBorderBehavior Left="5" Right="5" />
+        <sap:WindowDragMoveBehavior x:Name="wdmbehavior" IsSnapped="True" />
         <v:NoActivateBehavior />
         <v:ToolWindowBehavior />
     </i:Interaction.Behaviors>
@@ -118,7 +119,7 @@
                     <Expander.Content>
                         <!-- [MEMO] Slider.IsMoveToPointEnabled=Trueにすると
 						Thumb意外の部分でマウスイベントを受信出来なくなる...-->
-                        <pb:SliderEx
+                        <sap:SliderEx
 							x:Name="seekSlider"
 							Focusable="False"
 							IsMoveToPointEnabled="True"
@@ -128,12 +129,12 @@
                             <i:Interaction.Behaviors>
                                 <v:SliderTooltipAutoAdjastBehavior />
                             </i:Interaction.Behaviors>
-                        </pb:SliderEx>
+                        </sap:SliderEx>
                     </Expander.Content>
                 </Expander>
                 <Expander x:Name="volumeExpander" Grid.Column="6">
                     <Expander.Content>
-                        <pb:SliderEx
+                        <sap:SliderEx
 							x:Name="volumeSlider"
 							Focusable="False"
 							IsMoveToPointEnabled="True"
@@ -145,7 +146,7 @@
                             <i:Interaction.Behaviors>
                                 <v:SliderTooltipAutoAdjastBehavior />
                             </i:Interaction.Behaviors>
-                        </pb:SliderEx>
+                        </sap:SliderEx>
                     </Expander.Content>
                     <Expander.Style>
                         <Style BasedOn="{StaticResource RightSlideExpander}" TargetType="Expander">

@@ -12,6 +12,7 @@
 	using System.Windows.Media;
 	using __Primitives__;
 	using Codeplex.Reactive.Extensions;
+	using SmartAudioPlayer;
 	using SmartAudioPlayerFx.Data;
 	using SmartAudioPlayerFx.Managers;
 	using Drawing = System.Drawing;

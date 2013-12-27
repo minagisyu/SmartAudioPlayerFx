@@ -12,6 +12,7 @@ using __Primitives__;
 using SmartAudioPlayerFx.Data;
 using SmartAudioPlayerFx.Views;
 using SmartAudioPlayerFx.Views.Options;
+using SmartAudioPlayer;
 
 namespace SmartAudioPlayerFx.Managers
 {

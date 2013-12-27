@@ -17,6 +17,7 @@
 	using Microsoft.Win32;
 	using SmartAudioPlayerFx.Managers;
 	using WinForms = System.Windows.Forms;
+	using SmartAudioPlayer;
 
 	partial class MainWindow : Window
 	{

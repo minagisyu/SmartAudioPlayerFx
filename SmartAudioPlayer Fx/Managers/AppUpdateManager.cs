@@ -17,6 +17,7 @@ using Codeplex.Reactive.Extensions;
 using Ionic.Zip;
 using SmartAudioPlayerFx.Views;
 using WinForms = System.Windows.Forms;
+using SmartAudioPlayer;
 
 namespace SmartAudioPlayerFx.Managers
 {

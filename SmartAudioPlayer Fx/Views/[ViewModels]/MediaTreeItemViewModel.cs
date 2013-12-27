@@ -14,6 +14,7 @@
 	using Codeplex.Reactive.Extensions;
 	using SmartAudioPlayerFx.Data;
 	using SmartAudioPlayerFx.Managers;
+	using SmartAudioPlayer;
 
 	// 特殊検索条件ツリー用のマーキング用
 	interface ISpecialMediaTreeItem

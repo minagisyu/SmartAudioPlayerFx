@@ -5,6 +5,7 @@ namespace SmartAudioPlayerFx.Views.Options
 	using System.IO;
 	using System.Linq;
 	using System.Windows.Forms;
+	using SmartAudioPlayer;
 	using SmartAudioPlayerFx.Data;
 	using SmartAudioPlayerFx.Managers;
 	using __Primitives__;

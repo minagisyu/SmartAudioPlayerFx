@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SmartAudioPlayer;
+using System;
 using System.Reactive.Disposables;
 using System.Threading;
 using System.Threading.Tasks;
@@ -64,21 +65,4 @@ namespace SmartAudioPlayerFx.Managers
 
 	}
 
-	// Managerは何も依存しない
-	[AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
-	sealed class StandaloneAttribute : Attribute
-	{
-		public StandaloneAttribute()
-		{
-		}
-	}
-
-	// ManagerはTypeに依存する
-	[AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
-	sealed class RequireAttribute : Attribute
-	{
-		public RequireAttribute(Type requireType)
-		{
-		}
-	}
 }

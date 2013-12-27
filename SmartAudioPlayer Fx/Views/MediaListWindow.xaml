@@ -5,6 +5,7 @@
 	xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
 	xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions"
 	xmlns:pb="clr-namespace:__Primitives__"
+	xmlns:sap="clr-namespace:SmartAudioPlayer;assembly=spc_ui"
 	xmlns:v="clr-namespace:SmartAudioPlayerFx.Views"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d"
@@ -16,7 +17,7 @@
 	Height="{Binding Height.Value, Mode=TwoWay}"
 	Visibility="{Binding Visibility.Value}">
 	<i:Interaction.Behaviors>
-		<pb:UnvisibleResizeBorderBehavior x:Name="resizeBorder" />
+		<sap:UnvisibleResizeBorderBehavior x:Name="resizeBorder" />
 		<v:ToolWindowBehavior />
 	</i:Interaction.Behaviors>
 

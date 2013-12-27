@@ -8,6 +8,7 @@ using System.Xml.Linq;
 using __Primitives__;
 using Codeplex.Reactive.Extensions;
 using SmartAudioPlayerFx.Data;
+using SmartAudioPlayer;
 
 namespace SmartAudioPlayerFx.Managers
 {

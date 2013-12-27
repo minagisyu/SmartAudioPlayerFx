@@ -12,6 +12,7 @@
 	using SmartAudioPlayerFx.Managers;
 	using SmartAudioPlayerFx.Views;
 	using WinForms = System.Windows.Forms;
+	using SmartAudioPlayer;
 
 	partial class App : Application
 	{

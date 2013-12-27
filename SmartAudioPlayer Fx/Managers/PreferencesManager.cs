@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using __Primitives__;
 using Codeplex.Reactive;
+using SmartAudioPlayer;
 
 namespace SmartAudioPlayerFx.Managers
 {

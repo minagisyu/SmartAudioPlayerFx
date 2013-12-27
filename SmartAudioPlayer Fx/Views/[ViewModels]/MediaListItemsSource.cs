@@ -14,6 +14,7 @@
 	using Codeplex.Reactive.Extensions;
 	using SmartAudioPlayerFx.Data;
 	using SmartAudioPlayerFx.Managers;
+	using SmartAudioPlayer;
 
 	sealed class MediaListItemsSource : IDisposable
 	{

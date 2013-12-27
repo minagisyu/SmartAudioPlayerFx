@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>SmartAudioPlayerFx</RootNamespace>
     <AssemblyName>SmartAudioPlayer Fx</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
     <TargetFrameworkProfile>
     </TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
@@ -104,9 +104,6 @@
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="DbExecutor">
-      <HintPath>..\packages\DbExecutor.2.0.0.1\lib\Net40\DbExecutor.dll</HintPath>
-    </Reference>
     <Reference Include="Ionic.Zip, Version=1.9.1.8, Culture=neutral, PublicKeyToken=edbe51ad942a3f5c, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\DotNetZip.1.9.1.8\lib\net20\Ionic.Zip.dll</HintPath>
@@ -124,14 +121,6 @@
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Data" />
-    <Reference Include="System.Data.SQLite, Version=1.0.89.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\System.Data.SQLite.1.0.89.0\lib\net45\System.Data.SQLite.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Data.SQLite.Linq, Version=1.0.89.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\System.Data.SQLite.1.0.89.0\lib\net45\System.Data.SQLite.Linq.dll</HintPath>
-    </Reference>
     <Reference Include="System.Drawing" />
     <Reference Include="System.Reactive.Core, Version=2.2.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -174,14 +163,12 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Data\VersionedCollection.cs" />
+    <Compile Include="Data\MediaDBViewFocus.cs" />
     <Compile Include="Managers\AudioPlayerManager.cs" />
-    <Compile Include="Managers\MediaDBManager.cs" />
-    <Compile Include="Data\FileSystemUtil.cs" />
     <Compile Include="Managers\MediaDBViewManager.cs" />
     <Compile Include="Managers\RecentsManager.cs" />
+    <Compile Include="Managers\TaskIconManager.cs" />
     <Compile Include="Managers\_ManagerServices.cs" />
-    <Compile Include="Utils.cs" />
     <Compile Include="Views\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
     </Compile>
@@ -201,10 +188,6 @@
     </Compile>
     <Compile Include="Views\[Behaviors]\SelectAllTextOnFocusBehavior.cs" />
     <Compile Include="Views\[Behaviors]\NoActivateBehavior.cs" />
-    <Compile Include="__Primitives__\[Windows]\DelegateCommand.cs" />
-    <Compile Include="__Primitives__\[Windows]\NotificationObject.cs" />
-    <Compile Include="__Primitives__\[Extensions]\[System.Linq]\EnumerableExtension.cs" />
-    <Compile Include="__Primitives__\[Extensions]\[System.Windows]\WindowExtensions.cs" />
     <Compile Include="Views\[Dialogs]\MessageDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -212,99 +195,7 @@
       <DependentUpon>MessageDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="Views\[Behaviors]\SliderTooltipAutoAdjastBehavior.cs" />
-    <Compile Include="__Primitives__\[Extensions]\EventAsObservable.cs" />
-    <Compile Include="__Primitives__\[Extensions]\[System.Windows.Controls.Primitives]\IItemsContainerGeneratorExtension.cs" />
-    <Compile Include="__Primitives__\[Windows]\DynamicWindowBounds.cs" />
-    <Compile Include="__Primitives__\[Windows]\FolderBrowseDialogEx.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="__Primitives__\[Windows]\KeyboardHook.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="__Primitives__\[Windows]\SliderEx.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\API.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\API_adv.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\API_comctl.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\API_dwmapi.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\API_gdi.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\API_kernel.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\API_msacm.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\API_shell.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\API_user.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\API_windowsX.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\API_winmm.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\COMDefinitions.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IAsyncReader.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IBaseFilter.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IBasicAudio.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IBasicVideo.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IBasicVideo2.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IBindCtx.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IContextMenu.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IDeskBand.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IDockingWindow.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IEnumFilters.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IEnumIDList.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IEnumMediaTypes.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IEnumMoniker.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IEnumPins.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IEnumShellItems.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IEnumString.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IFileDialog.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IFileDialogEvents.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IFileOpenDialog.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IFilterGraph.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IGraphBuilder.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IInputObject.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IInputObjectSite.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IMediaControl.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IMediaEvent.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IMediaEventEx.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IMediaEventSink.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IMediaFilter.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IMediaPosition.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IMediaSample.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IMediaSeeking.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IMemAllocator.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IModalWindow.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IMoniker.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\INSSBuffer.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IObjectWithSite.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IOleWindow.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IPersist.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IPersistStream.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IPin.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IQualityControl.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IReferenceClock.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IRunningObjectTable.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\ISequentialStream.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IShellFolder.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IShellItem.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IShellItemArray.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IShellItemFilter.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IStream.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IVideoWindow.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IWMMediaProps.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IWMOutputMediaProps.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IWMReader.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IWMReaderAdvanced.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IWMReaderAdvanced2.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IWMReaderAllocatorEx.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IWMReaderCallback.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IWMStatusCallback.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IWMSyncReader.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IWMSyncReader2.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\Win32Definitions.cs" />
-    <Compile Include="__Primitives__\[Extensions]\[System.Xml.Linq]\XAttributeExtension.cs" />
-    <Compile Include="__Primitives__\[Extensions]\[System.Xml.Linq]\XElementExtension.cs" />
-    <Compile Include="__Primitives__\[Behavior]\WindowDragMoveBehavior.cs" />
-    <Compile Include="__Primitives__\[Data]\Logger.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Data\MediaItem.cs" />
     <Compile Include="Managers\MediaItemFilterManager.cs" />
-    <Compile Include="__Primitives__\[Data]\PreferenceSerializer.cs" />
-    <Compile Include="Data\MediaDBViewFocus.cs" />
     <Compile Include="Managers\JukeboxManager.cs" />
     <Compile Include="Managers\ShortcutKeyManager.cs" />
     <Compile Include="Managers\PreferencesManager.cs" />
@@ -320,7 +211,6 @@
     <Compile Include="Views\Options\OptionDialog_DB.Designer.cs">
       <DependentUpon>OptionDialog_DB.cs</DependentUpon>
     </Compile>
-    <Compile Include="Managers\TaskIconManager.cs" />
     <Compile Include="Views\[ViewModels]\MediaTreeItemViewModel.cs" />
     <Compile Include="Views\[ViewModels]\MediaListItemViewModel.cs" />
     <Compile Include="Views\[ViewModels]\MediaListItemsSource.cs" />
@@ -361,7 +251,6 @@
       <DependentUpon>MediaListWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="__Primitives__\[Behavior]\UnvisibleResizeBorderBehavior.cs" />
     <Compile Include="Views\[Behaviors]\ToolWindowBehavior.cs" />
     <Compile Include="Managers\AppUpdateManager.cs" />
     <Compile Include="Views\[Dialogs]\UpdateMessageBox.cs">
@@ -370,8 +259,6 @@
     <Compile Include="Views\[Dialogs]\UpdateMessageBox.Designer.cs">
       <DependentUpon>UpdateMessageBox.cs</DependentUpon>
     </Compile>
-    <Compile Include="Data\MediaTagUtil.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\API_shlwapi.cs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">
@@ -497,21 +384,20 @@
       <Project>{1fa4492a-829d-4cd6-86e0-d224ab19377e}</Project>
       <Name>ReactiveProperty</Name>
     </ProjectReference>
+    <ProjectReference Include="..\spc_libraries\spc_core\spc_core.csproj">
+      <Project>{44036ba0-bf39-43af-826b-4c2f538d52d5}</Project>
+      <Name>spc_core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\spc_libraries\spc_mediadb\spc_mediadb.csproj">
+      <Project>{0472b75a-2777-46c9-a920-03f0106e0f22}</Project>
+      <Name>spc_mediadb</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\spc_libraries\spc_ui\spc_ui.csproj">
+      <Project>{a534cbd4-3434-495c-bdab-eae0e11f25c1}</Project>
+      <Name>spc_ui</Name>
+    </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Content Include="x64\mp3infp.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="x64\SQLite.Interop.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="x86\mp3infp.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="x86\SQLite.Interop.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
