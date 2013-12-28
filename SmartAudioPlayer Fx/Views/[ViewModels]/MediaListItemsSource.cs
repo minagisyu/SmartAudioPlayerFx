@@ -1,21 +1,21 @@
-﻿namespace SmartAudioPlayerFx.Views
-{
-	using System;
-	using System.Collections.Generic;
-	using System.Collections.ObjectModel;
-	using System.Diagnostics;
-	using System.IO;
-	using System.Linq;
-	using System.Reactive.Concurrency;
-	using System.Reactive.Disposables;
-	using System.Reactive.Linq;
-	using System.Threading;
-	using WinAPIs;
-	using Codeplex.Reactive.Extensions;
-	using SmartAudioPlayerFx.Data;
-	using SmartAudioPlayerFx.Managers;
-	using SmartAudioPlayer;
+﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Reactive.Concurrency;
+using System.Reactive.Disposables;
+using System.Reactive.Linq;
+using System.Threading;
+using WinAPIs;
+using Codeplex.Reactive.Extensions;
+using SmartAudioPlayerFx.Data;
+using SmartAudioPlayerFx.Managers;
+using SmartAudioPlayer;
 
+namespace SmartAudioPlayerFx.Views
+{
 	sealed class MediaListItemsSource : IDisposable
 	{
 		readonly object lockObj = new object();

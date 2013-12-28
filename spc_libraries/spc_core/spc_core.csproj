@@ -50,7 +50,7 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AsyncLock.cs" />
+    <Compile Include="AsyncSemLock.cs" />
     <Compile Include="EnumerableExtension.cs" />
     <Compile Include="FileSystemUtil.cs" />
     <Compile Include="Logger.cs" />

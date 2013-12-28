@@ -1,10 +1,10 @@
+using System.Text;
+using System.Windows.Forms;
+using WinAPIs;
+using SmartAudioPlayerFx.Managers;
+
 namespace SmartAudioPlayerFx.Views.Options
 {
-	using System.Text;
-	using System.Windows.Forms;
-	using WinAPIs;
-	using SmartAudioPlayerFx.Managers;
-
 	sealed class KeySettingListView : ListView
 	{
 		int keyset = 0;

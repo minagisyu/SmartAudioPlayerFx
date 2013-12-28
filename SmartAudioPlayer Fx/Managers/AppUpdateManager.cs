@@ -108,7 +108,7 @@ namespace SmartAudioPlayerFx.Managers
 		#endregion
 
 		XElement last_checked_update_info = null;
-		AsyncLock check_update_sync = new AsyncLock();
+		AsyncSemLock check_update_sync = new AsyncSemLock();
 
 		/// <summary>
 		/// アップデートが使用できる場合はtrue

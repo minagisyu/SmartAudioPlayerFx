@@ -1,7 +1,7 @@
-﻿namespace SmartAudioPlayerFx.Views.Options
-{
-	using System.Windows.Forms;
+﻿using System.Windows.Forms;
 
+namespace SmartAudioPlayerFx.Views.Options
+{
 	sealed partial class DoubleBufferedControl : Control
 	{
 		public DoubleBufferedControl()

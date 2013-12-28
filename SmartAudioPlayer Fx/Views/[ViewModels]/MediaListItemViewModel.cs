@@ -1,20 +1,18 @@
-﻿namespace SmartAudioPlayerFx.Views
-{
-	using System;
-	using System.Diagnostics;
-	using System.IO;
-	using System.Linq;
-	using System.Reactive;
-	using System.Reactive.Disposables;
-	using System.Reactive.Linq;
-	using System.Windows;
-	using System.Windows.Media;
-	using WinAPIs;
-	using Codeplex.Reactive.Extensions;
-	using SmartAudioPlayerFx.Data;
-	using SmartAudioPlayerFx.Managers;
-	using SmartAudioPlayer;
+﻿using System;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Reactive;
+using System.Reactive.Disposables;
+using System.Reactive.Linq;
+using System.Windows;
+using System.Windows.Media;
+using Codeplex.Reactive.Extensions;
+using SmartAudioPlayer;
+using SmartAudioPlayerFx.Managers;
 
+namespace SmartAudioPlayerFx.Views
+{
 	// リスト用エントリー要素
 	interface IListEntry
 	{

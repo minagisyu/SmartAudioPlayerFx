@@ -1,10 +1,10 @@
+using System;
+using System.Windows.Forms;
+using Codeplex.Reactive.Extensions;
+using SmartAudioPlayerFx.Managers;
+
 namespace SmartAudioPlayerFx.Views.Options
 {
-	using System;
-	using System.Windows.Forms;
-	using Codeplex.Reactive.Extensions;
-	using SmartAudioPlayerFx.Managers;
-
 	sealed partial class OptionDialog_Update : OptionPage
 	{
 		public OptionDialog_Update()

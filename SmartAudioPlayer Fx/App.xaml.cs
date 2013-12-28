@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reactive.Linq;
+using System.Threading;
 using System.Windows;
 using Codeplex.Reactive;
 using Codeplex.Reactive.Extensions;

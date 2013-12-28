@@ -1,10 +1,10 @@
+using System;
+using System.Reactive.Linq;
+using System.Threading.Tasks;
+using SmartAudioPlayerFx.Managers;
+
 namespace SmartAudioPlayerFx.Views.Options
 {
-	using System;
-	using System.Reactive.Linq;
-	using System.Threading.Tasks;
-	using SmartAudioPlayerFx.Managers;
-
 	sealed partial class OptionDialog_DB : OptionPage
 	{
 		public OptionDialog_DB()

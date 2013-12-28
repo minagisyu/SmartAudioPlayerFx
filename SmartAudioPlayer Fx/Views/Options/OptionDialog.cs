@@ -1,15 +1,15 @@
+using System;
+using System.Collections.Generic;
+using System.Reflection;
+using System.Windows.Forms;
+using System.Xml.Linq;
+using WinAPIs;
+using SmartAudioPlayer;
+using SmartAudioPlayerFx.Data;
+using SmartAudioPlayerFx.Managers;
+
 namespace SmartAudioPlayerFx.Views.Options
 {
-	using System;
-	using System.Collections.Generic;
-	using System.Reflection;
-	using System.Windows.Forms;
-	using System.Xml.Linq;
-	using WinAPIs;
-	using SmartAudioPlayer;
-	using SmartAudioPlayerFx.Data;
-	using SmartAudioPlayerFx.Managers;
-
 	sealed partial class OptionDialog : Form
 	{
 		List<OptionPage> optionPages;
