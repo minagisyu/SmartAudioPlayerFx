@@ -1,19 +1,15 @@
-﻿namespace SmartAudioPlayerFx
-{
-	using System;
-	using System.Diagnostics;
-	using System.Reactive.Linq;
-	using System.Threading;
-	using System.Threading.Tasks;
-	using System.Windows;
-	using __Primitives__;
-	using Codeplex.Reactive;
-	using Codeplex.Reactive.Extensions;
-	using SmartAudioPlayerFx.Managers;
-	using SmartAudioPlayerFx.Views;
-	using WinForms = System.Windows.Forms;
-	using SmartAudioPlayer;
+﻿using System;
+using System.Reactive.Linq;
+using System.Windows;
+using Codeplex.Reactive;
+using Codeplex.Reactive.Extensions;
+using SmartAudioPlayer;
+using SmartAudioPlayerFx.Managers;
+using SmartAudioPlayerFx.Views;
+using WinForms = System.Windows.Forms;
 
+namespace SmartAudioPlayerFx
+{
 	partial class App : Application
 	{
 		protected override void OnStartup(StartupEventArgs e)

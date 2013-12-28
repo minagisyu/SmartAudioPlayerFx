@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Windows.Forms;
-using System.Runtime.InteropServices;
 using Microsoft.WindowsAPICodePack.Dialogs;
 
 namespace SmartAudioPlayer

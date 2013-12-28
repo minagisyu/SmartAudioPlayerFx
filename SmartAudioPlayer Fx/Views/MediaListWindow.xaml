@@ -4,7 +4,7 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
 	xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions"
-	xmlns:pb="clr-namespace:__Primitives__"
+	xmlns:pb="clr-namespace:WinAPIs"
 	xmlns:sap="clr-namespace:SmartAudioPlayer;assembly=spc_ui"
 	xmlns:v="clr-namespace:SmartAudioPlayerFx.Views"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"

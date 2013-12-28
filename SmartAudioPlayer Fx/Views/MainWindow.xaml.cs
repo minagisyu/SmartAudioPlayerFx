@@ -1,24 +1,24 @@
-﻿namespace SmartAudioPlayerFx.Views
-{
-	using System;
-	using System.Reactive.Linq;
-	using System.Reflection;
-	using System.Runtime.InteropServices;
-	using System.Threading.Tasks;
-	using System.Windows;
-	using System.Windows.Controls;
-	using System.Windows.Data;
-	using System.Windows.Input;
-	using System.Windows.Interop;
-	using System.Windows.Media.Animation;
-	using System.Windows.Threading;
-	using __Primitives__;
-	using Codeplex.Reactive.Extensions;
-	using Microsoft.Win32;
-	using SmartAudioPlayerFx.Managers;
-	using WinForms = System.Windows.Forms;
-	using SmartAudioPlayer;
+﻿using System;
+using System.Reactive.Linq;
+using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Input;
+using System.Windows.Interop;
+using System.Windows.Media.Animation;
+using System.Windows.Threading;
+using WinAPIs;
+using Codeplex.Reactive.Extensions;
+using Microsoft.Win32;
+using SmartAudioPlayer;
+using SmartAudioPlayerFx.Managers;
+using WinForms = System.Windows.Forms;
 
+namespace SmartAudioPlayerFx.Views
+{
 	partial class MainWindow : Window
 	{
 		public MainWindowViewModel ViewModel { get; private set; }

@@ -12,12 +12,11 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Interop;
 using System.Xml.Linq;
-using __Primitives__;
 using Codeplex.Reactive.Extensions;
 using Ionic.Zip;
+using SmartAudioPlayer;
 using SmartAudioPlayerFx.Views;
 using WinForms = System.Windows.Forms;
-using SmartAudioPlayer;
 
 namespace SmartAudioPlayerFx.Managers
 {
@@ -109,7 +108,7 @@ namespace SmartAudioPlayerFx.Managers
 		#endregion
 
 		XElement last_checked_update_info = null;
-		readonly object check_update_sync = new object();
+		AsyncLock check_update_sync = new AsyncLock();
 
 		/// <summary>
 		/// アップデートが使用できる場合はtrue
@@ -134,9 +133,9 @@ namespace SmartAudioPlayerFx.Managers
 				return null;
 			}
 
-			return await Task.Run(() =>
+			return await Task.Run(async () =>
 			{
-				lock (check_update_sync)
+				using (var _ = await check_update_sync.LockAsync())
 				{
 					string update_xml;
 #if UPDATE_TEST

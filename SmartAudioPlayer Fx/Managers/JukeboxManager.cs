@@ -7,11 +7,10 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-using __Primitives__;
 using Codeplex.Reactive;
 using Codeplex.Reactive.Extensions;
-using SmartAudioPlayerFx.Data;
 using SmartAudioPlayer;
+using SmartAudioPlayerFx.Data;
 
 namespace SmartAudioPlayerFx.Managers
 {

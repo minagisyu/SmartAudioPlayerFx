@@ -1,11 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 2013
+VisualStudioVersion = 12.0.21005.1
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartAudioPlayer Fx", "SmartAudioPlayer Fx\SmartAudioPlayer Fx.csproj", "{584670B1-25C8-48FF-9568-5033C4CD21CC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartAudioPlayerFx.Test", "SmartAudioPlayerFx.Test\SmartAudioPlayerFx.Test.csproj", "{44593803-3441-4D77-B2D5-F850956DD451}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReactiveProperty", "ReactiveProperty\ReactiveProperty.csproj", "{1FA4492A-829D-4CD6-86E0-D224AB19377E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "spc_libraries", "spc_libraries", "{24B88BC9-6606-408A-B568-C6F04E409120}"
 EndProject
@@ -47,18 +47,6 @@ Global
 		{44593803-3441-4D77-B2D5-F850956DD451}.UpdateTest|Any CPU.ActiveCfg = Release|x86
 		{44593803-3441-4D77-B2D5-F850956DD451}.UpdateTest|Mixed Platforms.ActiveCfg = Release|x86
 		{44593803-3441-4D77-B2D5-F850956DD451}.UpdateTest|Mixed Platforms.Build.0 = Release|x86
-		{1FA4492A-829D-4CD6-86E0-D224AB19377E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1FA4492A-829D-4CD6-86E0-D224AB19377E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1FA4492A-829D-4CD6-86E0-D224AB19377E}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{1FA4492A-829D-4CD6-86E0-D224AB19377E}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{1FA4492A-829D-4CD6-86E0-D224AB19377E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1FA4492A-829D-4CD6-86E0-D224AB19377E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1FA4492A-829D-4CD6-86E0-D224AB19377E}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{1FA4492A-829D-4CD6-86E0-D224AB19377E}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{1FA4492A-829D-4CD6-86E0-D224AB19377E}.UpdateTest|Any CPU.ActiveCfg = Release|Any CPU
-		{1FA4492A-829D-4CD6-86E0-D224AB19377E}.UpdateTest|Any CPU.Build.0 = Release|Any CPU
-		{1FA4492A-829D-4CD6-86E0-D224AB19377E}.UpdateTest|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{1FA4492A-829D-4CD6-86E0-D224AB19377E}.UpdateTest|Mixed Platforms.Build.0 = Release|Any CPU
 		{0472B75A-2777-46C9-A920-03F0106E0F22}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{0472B75A-2777-46C9-A920-03F0106E0F22}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0472B75A-2777-46C9-A920-03F0106E0F22}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU

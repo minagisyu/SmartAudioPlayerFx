@@ -5,7 +5,7 @@ using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Xml.Linq;
-using __Primitives__;
+using WinAPIs;
 using Codeplex.Reactive.Extensions;
 using SmartAudioPlayerFx.Data;
 using SmartAudioPlayer;

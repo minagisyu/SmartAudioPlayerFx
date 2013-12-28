@@ -1,22 +1,19 @@
-﻿namespace SmartAudioPlayerFx.Views
-{
-	using System;
-	using System.Collections.ObjectModel;
-	using System.IO;
-	using System.Linq;
-	using System.Reactive;
-	using System.Reactive.Linq;
-	using System.Threading.Tasks;
-	using System.Windows;
-	using System.Windows.Media;
-	using System.Xml.Linq;
-	using __Primitives__;
-	using Codeplex.Reactive;
-	using Codeplex.Reactive.Extensions;
-	using SmartAudioPlayerFx.Data;
-	using SmartAudioPlayerFx.Managers;
-	using SmartAudioPlayer;
+﻿using System;
+using System.Collections.ObjectModel;
+using System.IO;
+using System.Linq;
+using System.Reactive;
+using System.Reactive.Linq;
+using System.Windows;
+using System.Windows.Media;
+using System.Xml.Linq;
+using Codeplex.Reactive;
+using Codeplex.Reactive.Extensions;
+using SmartAudioPlayer;
+using SmartAudioPlayerFx.Managers;
 
+namespace SmartAudioPlayerFx.Views
+{
 	sealed class MediaListWindowViewModel
 	{
 		public IObservable<Unit> Initialized{get;private set;}

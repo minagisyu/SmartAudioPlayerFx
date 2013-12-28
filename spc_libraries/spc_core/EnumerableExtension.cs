@@ -7,7 +7,6 @@ namespace SmartAudioPlayer
 	{
 		// IEnumerable(T) から n 個ずつ要素を取得
 		// http://blog.recyclebin.jp/archives/2373
-
 		public static IEnumerable<IEnumerable<TSource>> TakeBy<TSource>(this IEnumerable<TSource> source, int count)
 		{
 			if (source == null)

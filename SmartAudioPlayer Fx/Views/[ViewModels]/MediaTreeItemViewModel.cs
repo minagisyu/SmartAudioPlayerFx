@@ -10,7 +10,7 @@
 	using System.Reactive.Linq;
 	using System.Threading;
 	using System.Windows;
-	using __Primitives__;
+	using WinAPIs;
 	using Codeplex.Reactive.Extensions;
 	using SmartAudioPlayerFx.Data;
 	using SmartAudioPlayerFx.Managers;

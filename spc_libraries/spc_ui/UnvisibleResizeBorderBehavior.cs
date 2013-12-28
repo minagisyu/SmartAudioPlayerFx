@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Windows;
 using System.Windows.Interactivity;
 using System.Windows.Interop;
-using __Primitives__;
+using WinAPIs;
 
 namespace SmartAudioPlayer
 {

@@ -51,7 +51,6 @@
   <ItemGroup>
     <Compile Include="MediaDBManager.cs" />
     <Compile Include="MediaTagUtil.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="x64\mp3infp.dll">
@@ -75,6 +74,9 @@
       <Project>{44036ba0-bf39-43af-826b-4c2f538d52d5}</Project>
       <Name>spc_core</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Properties\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

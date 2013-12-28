@@ -4,7 +4,7 @@
 	using System.Windows;
 	using System.Windows.Interactivity;
 	using System.Windows.Interop;
-	using __Primitives__;
+	using WinAPIs;
 
 	/// <summary>
 	/// WS_EX_TOOLWINDOWを設定するビヘイビア。

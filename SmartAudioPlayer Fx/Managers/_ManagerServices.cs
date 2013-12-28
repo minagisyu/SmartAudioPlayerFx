@@ -1,10 +1,5 @@
-﻿using SmartAudioPlayer;
-using System;
-using System.Reactive.Disposables;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Threading;
+﻿using System.Reactive.Disposables;
+using SmartAudioPlayer;
 
 namespace SmartAudioPlayerFx.Managers
 {

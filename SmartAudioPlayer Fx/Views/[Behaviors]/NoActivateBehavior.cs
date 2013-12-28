@@ -6,7 +6,7 @@
 	using System.Windows;
 	using System.Windows.Interactivity;
 	using System.Windows.Interop;
-	using __Primitives__;
+	using WinAPIs;
 
 	/// <summary>
 	/// ウィンドウのアクティブ化を防ぐビヘイビア。

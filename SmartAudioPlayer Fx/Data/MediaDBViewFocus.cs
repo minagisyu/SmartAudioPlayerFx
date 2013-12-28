@@ -3,11 +3,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reactive.Disposables;
-using System.Xml.Linq;
-using __Primitives__;
 using Codeplex.Reactive.Extensions;
-using SmartAudioPlayerFx.Managers;
 using SmartAudioPlayer;
+using SmartAudioPlayerFx.Managers;
 
 namespace SmartAudioPlayerFx.Data
 {

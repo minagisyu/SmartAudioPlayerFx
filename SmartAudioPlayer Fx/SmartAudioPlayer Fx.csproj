@@ -108,8 +108,8 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\DotNetZip.1.9.1.8\lib\net20\Ionic.Zip.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Expression.Interactions, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\_ref\Microsoft.Expression.Interactions.dll</HintPath>
+    <Reference Include="Microsoft.Expression.Interactions, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Unofficial.Blend.Interactivity.1.0.0\lib\net45\Microsoft.Expression.Interactions.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.VisualBasic" />
     <Reference Include="Microsoft.WindowsAPICodePack, Version=1.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -117,6 +117,16 @@
     </Reference>
     <Reference Include="Microsoft.WindowsAPICodePack.Shell, Version=1.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\_ref\Microsoft.WindowsAPICodePack.Shell.dll</HintPath>
+    </Reference>
+    <Reference Include="ReactiveProperty, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\ReactiveProperty.0.4.0-rc1\lib\net45\ReactiveProperty.dll</HintPath>
+    </Reference>
+    <Reference Include="ReactiveProperty.DataAnnotations">
+      <HintPath>..\packages\ReactiveProperty.0.4.0-rc1\lib\net45\ReactiveProperty.DataAnnotations.dll</HintPath>
+    </Reference>
+    <Reference Include="ReactiveProperty.NET45">
+      <HintPath>..\packages\ReactiveProperty.0.4.0-rc1\lib\net45\ReactiveProperty.NET45.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
@@ -138,12 +148,13 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Rx-PlatformServices.2.2.2\lib\net45\System.Reactive.PlatformServices.dll</HintPath>
     </Reference>
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Windows.Interactivity, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+    <Reference Include="System.Windows.Interactivity, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\_ref\System.Windows.Interactivity.dll</HintPath>
+      <HintPath>C:\Program Files (x86)\Microsoft SDKs\Expression\Blend\.NETFramework\v4.5\Libraries\System.Windows.Interactivity.dll</HintPath>
     </Reference>
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
@@ -380,10 +391,6 @@
     <None Include="メモ.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ReactiveProperty\ReactiveProperty.csproj">
-      <Project>{1fa4492a-829d-4cd6-86e0-d224ab19377e}</Project>
-      <Name>ReactiveProperty</Name>
-    </ProjectReference>
     <ProjectReference Include="..\spc_libraries\spc_core\spc_core.csproj">
       <Project>{44036ba0-bf39-43af-826b-4c2f538d52d5}</Project>
       <Name>spc_core</Name>

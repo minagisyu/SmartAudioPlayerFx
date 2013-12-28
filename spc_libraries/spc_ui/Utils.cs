@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows;
 using System.Windows.Threading;
-using __Primitives__;
+using WinAPIs;
 using WinForms = System.Windows.Forms;
 
 namespace SmartAudioPlayer

@@ -2,7 +2,6 @@
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Security;
-using System.Threading.Tasks;
 
 namespace SmartAudioPlayer
 {

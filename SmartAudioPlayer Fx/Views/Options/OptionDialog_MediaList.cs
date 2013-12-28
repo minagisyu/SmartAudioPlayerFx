@@ -8,7 +8,7 @@ namespace SmartAudioPlayerFx.Views.Options
 	using SmartAudioPlayer;
 	using SmartAudioPlayerFx.Data;
 	using SmartAudioPlayerFx.Managers;
-	using __Primitives__;
+	using WinAPIs;
 
 	sealed partial class OptionDialog_MediaList : OptionPage
 	{
