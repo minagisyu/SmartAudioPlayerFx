@@ -29,3 +29,8 @@ UI-Pattern MEMO:
   ** 非同期はここで実装、UIは全部同期メソッド？
 
 
+  MEMO:
+  MediaTag.
+  MediaInfo.dllを試してみたが日本語が文字化けする
+  MediaInfo内部の問題か.NETのマーシャリングの問題か。
+ 

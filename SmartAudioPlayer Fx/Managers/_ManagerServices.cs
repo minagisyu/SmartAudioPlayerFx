@@ -1,4 +1,5 @@
 ﻿using System.Reactive.Disposables;
+using System.Threading.Tasks;
 using SmartAudioPlayer;
 
 namespace SmartAudioPlayerFx.Managers
@@ -15,7 +16,6 @@ namespace SmartAudioPlayerFx.Managers
 		public static RecentsManager RecentsManager { get; private set; }
 		public static JukeboxManager JukeboxManager { get; private set; }
 		public static ShortcutKeyManager ShortcutKeyManager { get; private set; }
-		static CompositeDisposable _disposable;
 
 		public static void Initialize(string dbFilename)
 		{
@@ -41,21 +41,20 @@ namespace SmartAudioPlayerFx.Managers
 			JukeboxManager = new JukeboxManager();
 			// require Preferences+AudioPlayer+Jukebox
 			ShortcutKeyManager = new ShortcutKeyManager();
-
-			_disposable = new CompositeDisposable(
-				PreferencesManager, MediaDBManager,
-				AudioPlayerManager, TaskIconManager,
-				AppUpdateManager,
-				MediaItemFilterManager, MediaDBViewManager, RecentsManager,
-				JukeboxManager, ShortcutKeyManager);
 		}
 
 		public static void Dispose()
 		{
-			if (_disposable != null)
-			{
-				_disposable.Dispose();
-			}
+			PreferencesManager.Dispose();
+			MediaDBManager.Dispose();
+			AudioPlayerManager.Dispose();
+			TaskIconManager.Dispose();
+			AppUpdateManager.Dispose();
+			MediaItemFilterManager.Dispose();
+			MediaDBViewManager.Dispose();
+			RecentsManager.Dispose();
+			JukeboxManager.Dispose();
+			ShortcutKeyManager.Dispose();
 		}
 
 	}

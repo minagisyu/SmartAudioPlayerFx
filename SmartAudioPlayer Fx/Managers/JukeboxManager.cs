@@ -87,7 +87,7 @@ namespace SmartAudioPlayerFx.Managers
 			// CurrentMediaが更新
 			CurrentMedia
 				.ObserveOnUIDispatcher()
-				.Subscribe(OnSetCurrentMedia)
+				.Subscribe((x) => OnSetCurrentMedia(x))
 				.AddTo(_disposables);
 		}
 		public void Dispose()

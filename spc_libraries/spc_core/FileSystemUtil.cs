@@ -11,6 +11,7 @@ namespace SmartAudioPlayer
 		/// <summary>
 		/// 指定パスの全ファイルを列挙する。
 		/// 例外処理によりアクセス出来ないファイルやディレクトリは除外される。
+		/// 戻り値はEnumerateFilesNotifyで、フォルダパス(string)とそのフォルダに含まれるファイル(IEnumerable)が取得可能です。
 		/// </summary>
 		/// <param name="path"></param>
 		/// <param name="token"></param>
