@@ -41,27 +41,23 @@ namespace SmartAudioPlayerFx.Views
 				MediaListWindow.WindowRelayout();
 			};
 		}
-		async void InitializeViewModel()
+		void InitializeViewModel()
 		{
-			ViewModel = new MainWindowViewModel();
-
 			// ViewModel非依存
 			SourceInitialized += (_, __) =>
 			{
 				LayoutRoot.Opacity = 0;
 			};
-			Loaded += async (_, __) =>
+
+			ViewModel = new MainWindowViewModel();
+			Loaded += async delegate
 			{
 				await ViewModel.Initialized;
+
 				// WindowPlacementを設定してから起動アニメーション、同時にJukeboxをスタートする
 				this.SetWindowPlacement(ViewModel.WindowPlacement.Value);
 				StartupAnimation();
-			};
-
-			//
-			await ViewModel.Initialized;
-			await Task.Run(() =>
-			{
+				//
 				//=[ Startup, Shutdown ]
 				Closing += (_, ev) =>
 				{
@@ -79,26 +75,26 @@ namespace SmartAudioPlayerFx.Views
 				};
 
 				//=[ Size Changing ]
-				SystemEvents.DisplaySettingsChanged += (_, __) =>
+				SystemEvents.DisplaySettingsChanged += delegate
 				{
 					// 画面サイズが変わったらWindowPlacementを再設定/再取得する
 					var rect = new Int32Rect((int)Left, (int)Top, (int)RenderSize.Width, (int)RenderSize.Height);
 					this.SetWindowPlacement(rect);
 					ViewModel.WindowPlacement.Value = this.GetWindowPlacement();
 				};
-				LocationChanged += (_, __) =>
+				LocationChanged += delegate
 				{
 					// ウィンドウの位置が変更されたらMediaListWindowの位置を調整する
 					MediaListWindow.WindowRelayout();
 				};
-				SizeChanged += (_, __) =>
+				SizeChanged += delegate
 				{
 					// ウィンドウのサイズが(ry
 					MediaListWindow.WindowRelayout();
 				};
 
 				//=[ LayoutRoot ]
-				LayoutRoot.MouseEnter += (_, __) =>
+				LayoutRoot.MouseEnter += delegate
 				{
 					// カーソルオンでアニメーション
 					OpacityAnimation(ViewModel.InactiveOpacity.Value, 200, null);
@@ -121,20 +117,20 @@ namespace SmartAudioPlayerFx.Views
 				};
 
 				//=[ Title, Seek, Volume ]
-				titleButton.Click += (_, __) =>
+				titleButton.Click += delegate
 				{
 					// クリックされたらMediaListWindowを開いたり閉じたり
 					// スキップ操作はXAML側でCommandをバインディング
 					ShowHideMediaListWindow();
 				};
-				seekExpander.PreviewMouseLeftButtonDown += (_, __) =>
+				seekExpander.PreviewMouseLeftButtonDown += delegate
 				{
 					// シーク選択中にINPCで変更通知を受け取らないようにバインディングを変更する
 					Mouse.Capture(seekSlider, CaptureMode.SubTree);
 					seekSlider.SetBinding(Slider.ValueProperty,
 						new Binding("PositionTicks.Value") { Mode = BindingMode.OneTime, });
 				};
-				seekExpander.PreviewMouseLeftButtonUp += (_, __) =>
+				seekExpander.PreviewMouseLeftButtonUp += async delegate
 				{
 					Mouse.Capture(null);
 					// シーク選択が終了したら手動でプレーヤー再生位置を修正して...
@@ -169,9 +165,10 @@ namespace SmartAudioPlayerFx.Views
 				ManagerServices.ShortcutKeyManager.Window_ShowHide_RequestAsObservable()
 					.ObserveOnUIDispatcher()
 					.Subscribe(_ => WindowShowHideToggle());
-			});
-			DataContext = ViewModel;
-			ViewModel.JukeboxStart();
+				//
+				DataContext = ViewModel;
+				await ViewModel.JukeboxStart();
+			};
 		}
 
 		//=[ ContextMenu ]

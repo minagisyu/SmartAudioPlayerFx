@@ -57,40 +57,40 @@ namespace SmartAudioPlayerFx.Views
 
 		public MainWindowViewModel()
 		{
+			WindowPlacement = new ReactiveProperty<Int32Rect>(new Int32Rect(0, 0, 0, 0));
+			InactiveOpacity = new ReactiveProperty<double>(0.8);
+			DeactiveOpacity = new ReactiveProperty<double>(0.65);
+			IsVisible = new ReactiveProperty<bool>(true);
+			PlayPauseCommand = new ReactiveCommand();
+
+			// Common Property
+			IsLoading = new ReactiveProperty<bool>(false);
+			SelectMode = new ReactiveProperty<JukeboxManager.SelectionMode>(JukeboxManager.SelectionMode.Random);
+			IsRepeat = new ReactiveProperty<bool>(false);
+			IsPaused = new ReactiveProperty<bool>();
+			CurrentMedia = new ReactiveProperty<MediaItem>();
+			PositionTicks = new ReactiveProperty<long>();
+			DurationTicks = new ReactiveProperty<long>();
+			Volume = new ReactiveProperty<double>();
+
+			// Sub Property
+			SelectModeTooltip = new ReactiveProperty<string>();
+			SelectModeToggleCommand = new ReactiveCommand();
+			RepeatTooltip = new ReactiveProperty<string>();
+			RepeatToggleCommand = new ReactiveCommand();
+			StateTooltip = new ReactiveProperty<string>();
+			StateToggleCommand = new ReactiveCommand();
+			Title = new ReactiveProperty<string>();
+			TitleTooltip = new ReactiveProperty<string>();
+			TitleTooltipEnable = new ReactiveProperty<bool>();
+			TitleSkipCommand = new ReactiveCommand();
+			VolumeLevel = new ReactiveProperty<string>();
+			VolumeTooltip = new ReactiveProperty<string>();
+			PositionString = new ReactiveProperty<string>();
+			SeekTooltip = new ReactiveProperty<string>();
+
 			Initialized = Observable.Start(() =>
 			{
-				WindowPlacement = new ReactiveProperty<Int32Rect>(new Int32Rect(0, 0, 0, 0));
-				InactiveOpacity = new ReactiveProperty<double>(0.8);
-				DeactiveOpacity = new ReactiveProperty<double>(0.65);
-				IsVisible = new ReactiveProperty<bool>(true);
-				PlayPauseCommand = new ReactiveCommand();
-
-				// Common Property
-				IsLoading = new ReactiveProperty<bool>(false);
-				SelectMode = new ReactiveProperty<JukeboxManager.SelectionMode>(JukeboxManager.SelectionMode.Random);
-				IsRepeat = new ReactiveProperty<bool>(false);
-				IsPaused = new ReactiveProperty<bool>();
-				CurrentMedia = new ReactiveProperty<MediaItem>();
-				PositionTicks = new ReactiveProperty<long>();
-				DurationTicks = new ReactiveProperty<long>();
-				Volume = new ReactiveProperty<double>();
-
-				// Sub Property
-				SelectModeTooltip = new ReactiveProperty<string>();
-				SelectModeToggleCommand = new ReactiveCommand();
-				RepeatTooltip = new ReactiveProperty<string>();
-				RepeatToggleCommand = new ReactiveCommand();
-				StateTooltip = new ReactiveProperty<string>();
-				StateToggleCommand = new ReactiveCommand();
-				Title = new ReactiveProperty<string>();
-				TitleTooltip = new ReactiveProperty<string>();
-				TitleTooltipEnable = new ReactiveProperty<bool>();
-				TitleSkipCommand = new ReactiveCommand();
-				VolumeLevel = new ReactiveProperty<string>();
-				VolumeTooltip = new ReactiveProperty<string>();
-				PositionString = new ReactiveProperty<string>();
-				SeekTooltip = new ReactiveProperty<string>();
-
 				// Preferences
 				ManagerServices.PreferencesManager.WindowSettings
 					.Subscribe(x => OnLoadWindowPrefernces(x));
@@ -225,12 +225,9 @@ namespace SmartAudioPlayerFx.Views
 			ManagerServices.PreferencesManager.Save();
 		}
 
-		public void JukeboxStart()
+		public async Task JukeboxStart()
 		{
-			Task.Run(async () =>
-			{
-				await ManagerServices.JukeboxManager.Start();
-			});
+			await ManagerServices.JukeboxManager.Start();
 		}
 		public void SetPlayerPosition(TimeSpan value)
 		{

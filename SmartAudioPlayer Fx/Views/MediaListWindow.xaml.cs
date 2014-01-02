@@ -26,12 +26,13 @@ namespace SmartAudioPlayerFx.Views
 			InitializeComponent();
 			InitializeViewModel();
 		}
-		async void InitializeViewModel()
+		void InitializeViewModel()
 		{
 			ViewModel = new MediaListWindowViewModel();
-			await ViewModel.Initialized;
-			await Task.Run(() =>
+			Task.Run(async () =>
 			{
+				await ViewModel.Initialized;
+
 				//=[ Window ]
 				App.Current.Deactivated += delegate
 				{
@@ -169,8 +170,9 @@ namespace SmartAudioPlayerFx.Views
 							panel.SetVerticalOffset(0);
 						}
 					});
+
+				DataContext = ViewModel;
 			});
-			DataContext = ViewModel;
 		}
 		void RaiseTextChanged(MediaListItemsSource prevSearchListFocus)
 		{

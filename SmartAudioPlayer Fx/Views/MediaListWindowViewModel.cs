@@ -53,34 +53,34 @@ namespace SmartAudioPlayerFx.Views
 
 		public MediaListWindowViewModel()
 		{
+			// Window
+			Width = new ReactiveProperty<double>(750);
+			Height = new ReactiveProperty<double>(350);
+			Visibility = new ReactiveProperty<Visibility>(System.Windows.Visibility.Hidden);
+			TreeWidth = new ReactiveProperty<GridLength>(new GridLength(250));
+			VideoDrawingBrush = new ReactiveProperty<Brush>(Brushes.Transparent);
+
+			// MiniOption
+			IsVideoDrawing = new ReactiveProperty<bool>(true);
+			IsEnableSoundFadeEffect = new ReactiveProperty<bool>(true);
+			IsTitleFromFileName = new ReactiveProperty<bool>(false);
+			IsAutoCloseWhenInactive = new ReactiveProperty<bool>(false);
+			IsAutoCloseWhenListSelected = new ReactiveProperty<bool>(false);
+
+			//=[ Jukebox ViewModel (common) ]
+			CurrentMedia = new ReactiveProperty<MediaItem>();
+			StatusBarVisibility = new ReactiveProperty<System.Windows.Visibility>(System.Windows.Visibility.Collapsed);
+			StatusBarText = new ReactiveProperty<string>();
+
+			//=[ Sub Property ]
+			CurrentMediaName = new ReactiveProperty<string>();
+			TreeItems = new ObservableCollection<MediaTreeItemViewModel>();
+			ListFocus = new ReactiveProperty<MediaListItemsSource>();
+			ListItems = new ReactiveProperty<ObservableCollection<IListEntry>>();
+			ListSelectedCommand = new ReactiveCommand<IListEntry>();
+
 			Initialized = Observable.Start(() =>
 			{
-				// Window
-				Width = new ReactiveProperty<double>(750);
-				Height = new ReactiveProperty<double>(350);
-				Visibility = new ReactiveProperty<Visibility>(System.Windows.Visibility.Hidden);
-				TreeWidth = new ReactiveProperty<GridLength>(new GridLength(250));
-				VideoDrawingBrush = new ReactiveProperty<Brush>(Brushes.Transparent);
-
-				// MiniOption
-				IsVideoDrawing = new ReactiveProperty<bool>(true);
-				IsEnableSoundFadeEffect = new ReactiveProperty<bool>(true);
-				IsTitleFromFileName = new ReactiveProperty<bool>(false);
-				IsAutoCloseWhenInactive = new ReactiveProperty<bool>(false);
-				IsAutoCloseWhenListSelected = new ReactiveProperty<bool>(false);
-
-				//=[ Jukebox ViewModel (common) ]
-				CurrentMedia = new ReactiveProperty<MediaItem>();
-				StatusBarVisibility = new ReactiveProperty<System.Windows.Visibility>(System.Windows.Visibility.Collapsed);
-				StatusBarText = new ReactiveProperty<string>();
-
-				//=[ Sub Property ]
-				CurrentMediaName = new ReactiveProperty<string>();
-				TreeItems = new ObservableCollection<MediaTreeItemViewModel>();
-				ListFocus = new ReactiveProperty<MediaListItemsSource>();
-				ListItems = new ReactiveProperty<ObservableCollection<IListEntry>>();
-				ListSelectedCommand = new ReactiveCommand<IListEntry>();
-
 				// setup events
 				IsVideoDrawing
 					.ObserveOnUIDispatcher()
