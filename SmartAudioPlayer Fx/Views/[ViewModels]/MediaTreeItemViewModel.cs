@@ -8,8 +8,8 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Windows;
-using __Primitives__;
 using Codeplex.Reactive.Extensions;
+using SmartAudioPlayer;
 using SmartAudioPlayerFx.Data;
 using SmartAudioPlayerFx.Managers;
 
@@ -98,7 +98,7 @@ namespace SmartAudioPlayerFx.Views
 				{
 					_OpenExplorerCommand = new DelegateCommand<string>(x =>
 					{
-						App.OpenToExplorer(x);
+						OutProcess.OpenToExplorer(x);
 					});
 				}
 				return _OpenExplorerCommand;
@@ -132,7 +132,7 @@ namespace SmartAudioPlayerFx.Views
 					{
 						var list = ManagerServices.MediaItemFilterManager.IgnoreWords.ToList();
 						list.RemoveAll(i => string.Equals(i.Word, x, StringComparison.CurrentCultureIgnoreCase));
-						list.Add(new MediaItemFilterManager.IgnoreWord(true, x));
+						list.Add(new MediaItemFilter.IgnoreWord(true, x));
 						ManagerServices.MediaItemFilterManager.SetIgnoreWords(list.ToArray());
 					});
 				}
@@ -357,7 +357,7 @@ namespace SmartAudioPlayerFx.Views
 				return;
 			if (dirName.Length == BasePath.Length && dirName.Equals(BasePath, StringComparison.CurrentCultureIgnoreCase))
 				return;	// 指定されたパスが基準パスと同一(自分自身は追加できないし)
-			if (!MediaItemExtension.ContainsDirPath(dirName, BasePath))
+			if (!MediaItemCache.ContainsDirPath(dirName, BasePath))
 				return;	// 指定されたパスが基準パスと異なる
 			AppendByDirectoryPath_Core(dirName);
 		}
@@ -400,7 +400,7 @@ namespace SmartAudioPlayerFx.Views
 				return;
 			if (dirName.Length == BasePath.Length && dirName.Equals(BasePath, StringComparison.CurrentCultureIgnoreCase))
 				return;	// 指定されたパスが基準パスと同一(自分自身は追加できないし)
-			if (!MediaItemExtension.ContainsDirPath(dirName, BasePath))
+			if (!MediaItemCache.ContainsDirPath(dirName, BasePath))
 				return;	// 指定されたパスが基準パスと異なる
 			RemoveByDirectoryPath_Core(dirName);
 		}
@@ -468,7 +468,7 @@ namespace SmartAudioPlayerFx.Views
 		{
 			if (path.Length == BasePath.Length && path.Equals(BasePath, StringComparison.CurrentCultureIgnoreCase))
 				return null;	// 指定されたパスが基準パスと同一(自分自身は追加できないし)
-			if (!MediaItemExtension.ContainsDirPath(path, BasePath))
+			if (!MediaItemCache.ContainsDirPath(path, BasePath))
 				return null;	// 指定されたパスが基準パスと異なる
 			return FindItemRoad_Core(path);
 		}

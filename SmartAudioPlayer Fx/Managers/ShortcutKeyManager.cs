@@ -6,29 +6,37 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Windows.Forms;
 using System.Xml.Linq;
-using __Primitives__;
+using WinAPIs;
 using Codeplex.Reactive.Extensions;
+using SmartAudioPlayer;
 
 namespace SmartAudioPlayerFx.Managers
 {
 	/// <summary>
 	/// HotKeyServiceを使って特定のキーが押された時の反応を管理する
 	/// </summary>
-	[Require(typeof(PreferencesManager))]
+	[Require(typeof(Preferences))]
 	[Require(typeof(AudioPlayerManager))]
 	[Require(typeof(JukeboxManager))]
 	sealed class ShortcutKeyManager : IDisposable
 	{
 		#region ctor
 
-		HotKey hotkey = new HotKey();
+		IHotKey hotkey;
 		Dictionary<Features, Keys> shortcuts = new Dictionary<Features, Keys>();
-		readonly CompositeDisposable _disposables;
+		readonly CompositeDisposable _disposables = new CompositeDisposable();
 
 		public ShortcutKeyManager()
 		{
 			ResetShortcuts();
-			_disposables = new CompositeDisposable(hotkey);
+
+#if DEBUG
+			// デバッグ時にキーフックが邪魔になるので無効にする
+			hotkey = new NullHotKey();
+#else
+			hotkey = new HotKey();
+#endif
+			_disposables.Add(hotkey);
 
 			ManagerServices.PreferencesManager.PlayerSettings
 				.Subscribe(x => LoadPreferences(x))
@@ -185,7 +193,7 @@ namespace SmartAudioPlayerFx.Managers
 				case Features.Player_PlayPause:
 					return () => ManagerServices.AudioPlayerManager.PlayPause();
 				case Features.Player_Skip:
-					return () => ManagerServices.JukeboxManager.SelectNext(true);
+					return async () => await ManagerServices.JukeboxManager.SelectNext(true);
 				case Features.Player_Replay:
 					return () => ManagerServices.AudioPlayerManager.Replay();
 				case Features.Player_Previous:
@@ -223,10 +231,28 @@ namespace SmartAudioPlayerFx.Managers
 			App_Exit,
 		}
 
+		interface IHotKey : IDisposable
+		{
+			bool SuspressKeyEvent { get; set; }
+			Keys LastDownKey { get; }
+			void SetHotKey(Keys key, Action action);
+			void RemoveHotKey(Keys key);
+			void RemoveAll();
+		}
+		sealed class NullHotKey : IHotKey
+		{
+			public bool SuspressKeyEvent { get; set; }
+			public Keys LastDownKey { get { return Keys.None; } }
+			public void SetHotKey(Keys key, Action action) { }
+			public void RemoveHotKey(Keys key) { }
+			public void RemoveAll() { }
+			public void Dispose() { }
+		}
+
 		/// <summary>
 		/// キーを押されたときにデリゲートを呼び出す
 		/// </summary>
-		sealed class HotKey : IDisposable
+		sealed class HotKey : IHotKey
 		{
 			readonly KeyboardHook hook;
 			readonly Dictionary<Keys, Action> registered_keys;
@@ -364,15 +390,11 @@ namespace SmartAudioPlayerFx.Managers
 	{
 		public static IObservable<Unit> Window_ShowHide_RequestAsObservable(this ShortcutKeyManager manager)
 		{
-			return Observable.FromEvent(
-				v => manager.Window_ShowHide_Request += v,
-				v => manager.Window_ShowHide_Request -= v);
+			return Observable.FromEvent(v => manager.Window_ShowHide_Request += v, v => manager.Window_ShowHide_Request -= v);
 		}
 		public static IObservable<Unit> Window_Move_On_RightDown_RequestAsObservable(this ShortcutKeyManager manager)
 		{
-			return Observable.FromEvent(
-				v => manager.Window_Move_On_RightDown_Request += v,
-				v => manager.Window_Move_On_RightDown_Request -= v);
+			return Observable.FromEvent(v => manager.Window_Move_On_RightDown_Request += v, v => manager.Window_Move_On_RightDown_Request -= v);
 		}
 
 	}

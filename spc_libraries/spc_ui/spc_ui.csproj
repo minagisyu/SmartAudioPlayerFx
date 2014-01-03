@@ -1,0 +1,209 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{A534CBD4-3434-495C-BDAB-EAE0E11F25C1}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>SmartAudioPlayer</RootNamespace>
+    <AssemblyName>spc_ui</AssemblyName>
+    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Ionic.Zip">
+      <HintPath>..\..\packages\DotNetZip.1.9.2-rc1\lib\net20\Ionic.Zip.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Expression.Effects, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\_ref\Microsoft.Expression.Effects.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Expression.Interactions, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Unofficial.Blend.Interactivity.1.0.0\lib\net45\Microsoft.Expression.Interactions.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.WindowsAPICodePack, Version=1.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <Private>True</Private>
+      <HintPath>..\..\packages\Windows7APICodePack-Core.1.1.0.0\lib\Microsoft.WindowsAPICodePack.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.WindowsAPICodePack.Shell, Version=1.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <Private>True</Private>
+      <HintPath>..\..\packages\Windows7APICodePack-Shell.1.1.0.0\lib\Microsoft.WindowsAPICodePack.Shell.dll</HintPath>
+    </Reference>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="ReactiveProperty, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\ReactiveProperty.0.4.0.1\lib\net45\ReactiveProperty.dll</HintPath>
+    </Reference>
+    <Reference Include="ReactiveProperty.DataAnnotations">
+      <HintPath>..\..\packages\ReactiveProperty.0.4.0.1\lib\net45\ReactiveProperty.DataAnnotations.dll</HintPath>
+    </Reference>
+    <Reference Include="ReactiveProperty.NET45">
+      <HintPath>..\..\packages\ReactiveProperty.0.4.0.1\lib\net45\ReactiveProperty.NET45.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Reactive.Core">
+      <HintPath>..\..\packages\Rx-Core.2.2.2\lib\net45\System.Reactive.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Reactive.Interfaces">
+      <HintPath>..\..\packages\Rx-Interfaces.2.2.2\lib\net45\System.Reactive.Interfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Reactive.Linq">
+      <HintPath>..\..\packages\Rx-Linq.2.2.2\lib\net45\System.Reactive.Linq.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Reactive.PlatformServices">
+      <HintPath>..\..\packages\Rx-PlatformServices.2.2.2\lib\net45\System.Reactive.PlatformServices.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Windows.Interactivity, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Unofficial.Blend.Interactivity.1.0.0\lib\net45\System.Windows.Interactivity.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Windows.Presentation" />
+    <Reference Include="System.Xaml" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+    <Reference Include="WindowsBase" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AudioPlayerManager.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TaskIconManager.cs" />
+    <Compile Include="UnvisibleResizeBorderBehavior.cs" />
+    <Compile Include="Utils.cs" />
+    <Compile Include="WinAPI\API.cs" />
+    <Compile Include="WinAPI\API_adv.cs" />
+    <Compile Include="WinAPI\API_comctl.cs" />
+    <Compile Include="WinAPI\API_dwmapi.cs" />
+    <Compile Include="WinAPI\API_gdi.cs" />
+    <Compile Include="WinAPI\API_kernel.cs" />
+    <Compile Include="WinAPI\API_msacm.cs" />
+    <Compile Include="WinAPI\API_shell.cs" />
+    <Compile Include="WinAPI\API_shlwapi.cs" />
+    <Compile Include="WinAPI\API_user.cs" />
+    <Compile Include="WinAPI\API_windowsX.cs" />
+    <Compile Include="WinAPI\API_winmm.cs" />
+    <Compile Include="WinAPI\COM\COMDefinitions.cs" />
+    <Compile Include="WinAPI\COM\IAsyncReader.cs" />
+    <Compile Include="WinAPI\COM\IBaseFilter.cs" />
+    <Compile Include="WinAPI\COM\IBasicAudio.cs" />
+    <Compile Include="WinAPI\COM\IBasicVideo.cs" />
+    <Compile Include="WinAPI\COM\IBasicVideo2.cs" />
+    <Compile Include="WinAPI\COM\IBindCtx.cs" />
+    <Compile Include="WinAPI\COM\IContextMenu.cs" />
+    <Compile Include="WinAPI\COM\IDeskBand.cs" />
+    <Compile Include="WinAPI\COM\IDockingWindow.cs" />
+    <Compile Include="WinAPI\COM\IEnumFilters.cs" />
+    <Compile Include="WinAPI\COM\IEnumIDList.cs" />
+    <Compile Include="WinAPI\COM\IEnumMediaTypes.cs" />
+    <Compile Include="WinAPI\COM\IEnumMoniker.cs" />
+    <Compile Include="WinAPI\COM\IEnumPins.cs" />
+    <Compile Include="WinAPI\COM\IEnumShellItems.cs" />
+    <Compile Include="WinAPI\COM\IEnumString.cs" />
+    <Compile Include="WinAPI\COM\IFileDialog.cs" />
+    <Compile Include="WinAPI\COM\IFileDialogEvents.cs" />
+    <Compile Include="WinAPI\COM\IFileOpenDialog.cs" />
+    <Compile Include="WinAPI\COM\IFilterGraph.cs" />
+    <Compile Include="WinAPI\COM\IGraphBuilder.cs" />
+    <Compile Include="WinAPI\COM\IInputObject.cs" />
+    <Compile Include="WinAPI\COM\IInputObjectSite.cs" />
+    <Compile Include="WinAPI\COM\IMediaControl.cs" />
+    <Compile Include="WinAPI\COM\IMediaEvent.cs" />
+    <Compile Include="WinAPI\COM\IMediaEventEx.cs" />
+    <Compile Include="WinAPI\COM\IMediaEventSink.cs" />
+    <Compile Include="WinAPI\COM\IMediaFilter.cs" />
+    <Compile Include="WinAPI\COM\IMediaPosition.cs" />
+    <Compile Include="WinAPI\COM\IMediaSample.cs" />
+    <Compile Include="WinAPI\COM\IMediaSeeking.cs" />
+    <Compile Include="WinAPI\COM\IMemAllocator.cs" />
+    <Compile Include="WinAPI\COM\IModalWindow.cs" />
+    <Compile Include="WinAPI\COM\IMoniker.cs" />
+    <Compile Include="WinAPI\COM\INSSBuffer.cs" />
+    <Compile Include="WinAPI\COM\IObjectWithSite.cs" />
+    <Compile Include="WinAPI\COM\IOleWindow.cs" />
+    <Compile Include="WinAPI\COM\IPersist.cs" />
+    <Compile Include="WinAPI\COM\IPersistStream.cs" />
+    <Compile Include="WinAPI\COM\IPin.cs" />
+    <Compile Include="WinAPI\COM\IQualityControl.cs" />
+    <Compile Include="WinAPI\COM\IReferenceClock.cs" />
+    <Compile Include="WinAPI\COM\IRunningObjectTable.cs" />
+    <Compile Include="WinAPI\COM\ISequentialStream.cs" />
+    <Compile Include="WinAPI\COM\IShellFolder.cs" />
+    <Compile Include="WinAPI\COM\IShellItem.cs" />
+    <Compile Include="WinAPI\COM\IShellItemArray.cs" />
+    <Compile Include="WinAPI\COM\IShellItemFilter.cs" />
+    <Compile Include="WinAPI\COM\IStream.cs" />
+    <Compile Include="WinAPI\COM\IVideoWindow.cs" />
+    <Compile Include="WinAPI\COM\IWMMediaProps.cs" />
+    <Compile Include="WinAPI\COM\IWMOutputMediaProps.cs" />
+    <Compile Include="WinAPI\COM\IWMReader.cs" />
+    <Compile Include="WinAPI\COM\IWMReaderAdvanced.cs" />
+    <Compile Include="WinAPI\COM\IWMReaderAdvanced2.cs" />
+    <Compile Include="WinAPI\COM\IWMReaderAllocatorEx.cs" />
+    <Compile Include="WinAPI\COM\IWMReaderCallback.cs" />
+    <Compile Include="WinAPI\COM\IWMStatusCallback.cs" />
+    <Compile Include="WinAPI\COM\IWMSyncReader.cs" />
+    <Compile Include="WinAPI\COM\IWMSyncReader2.cs" />
+    <Compile Include="WinAPI\Win32Definitions.cs" />
+    <Compile Include="WindowDragMoveBehavior.cs" />
+    <Compile Include="EventAsObservable.cs" />
+    <Compile Include="IItemsContainerGeneratorExtension.cs" />
+    <Compile Include="WindowExtensions.cs" />
+    <Compile Include="DelegateCommand.cs" />
+    <Compile Include="DynamicWindowBounds.cs" />
+    <Compile Include="FolderBrowseDialogEx.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="KeyboardHook.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="NotificationObject.cs" />
+    <Compile Include="SliderEx.cs" />
+    <Compile Include="[Behaviors]\NoActivateBehavior.cs" />
+    <Compile Include="[Behaviors]\SelectAllTextOnFocusBehavior.cs" />
+    <Compile Include="[Behaviors]\SliderTooltipAutoAdjastBehavior.cs" />
+    <Compile Include="[Behaviors]\ToolWindowBehavior.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\spc_core\spc_core.csproj">
+      <Project>{44036ba0-bf39-43af-826b-4c2f538d52d5}</Project>
+      <Name>spc_core</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

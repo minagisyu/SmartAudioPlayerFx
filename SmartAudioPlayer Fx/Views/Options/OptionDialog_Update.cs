@@ -31,7 +31,7 @@ namespace SmartAudioPlayerFx.Views.Options
 			{
 				MessageBox.Show("新しいアップデートはありませんでした", "SmartAudioPlayer Fx");
 			}
-			else if (ManagerServices.AppUpdateManager.ShowUpdateMessage(ParentDialog.Handle))
+			else if (await ManagerServices.AppUpdateManager.ShowUpdateMessage(ParentDialog.Handle))
 			{
 				App.Current.Shutdown();
 			}

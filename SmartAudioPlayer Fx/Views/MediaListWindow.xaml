@@ -4,8 +4,8 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
 	xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions"
-	xmlns:pb="clr-namespace:__Primitives__"
-	xmlns:v="clr-namespace:SmartAudioPlayerFx.Views"
+	xmlns:pb="clr-namespace:WinAPIs"
+	xmlns:sap="clr-namespace:SmartAudioPlayer;assembly=spc_ui"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d"
 	Title="SmartAudioPlayer Fx - MediaList"
@@ -16,8 +16,8 @@
 	Height="{Binding Height.Value, Mode=TwoWay}"
 	Visibility="{Binding Visibility.Value}">
 	<i:Interaction.Behaviors>
-		<pb:UnvisibleResizeBorderBehavior x:Name="resizeBorder" />
-		<v:ToolWindowBehavior />
+		<sap:UnvisibleResizeBorderBehavior x:Name="resizeBorder" />
+		<sap:ToolWindowBehavior />
 	</i:Interaction.Behaviors>
 
 	<Grid>

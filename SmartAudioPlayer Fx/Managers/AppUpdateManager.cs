@@ -6,22 +6,21 @@ using System.Net;
 using System.Net.NetworkInformation;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
-using System.Reactive.Threading.Tasks;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Interop;
 using System.Xml.Linq;
-using __Primitives__;
 using Codeplex.Reactive.Extensions;
 using Ionic.Zip;
+using SmartAudioPlayer;
 using SmartAudioPlayerFx.Views;
 using WinForms = System.Windows.Forms;
 
 namespace SmartAudioPlayerFx.Managers
 {
-	[Require(typeof(PreferencesManager))]
+	[Require(typeof(Preferences))]
 	[Require(typeof(TaskIconManager))]
 	sealed class AppUpdateManager : IDisposable
 	{
@@ -50,19 +49,19 @@ namespace SmartAudioPlayerFx.Managers
 			// タスクトレイ連携
 			ManagerServices.TaskIconManager.BaloonTipClickedAsObservable()
 				.Where(x => x == TasktrayTag)
-				.Subscribe(_ =>
+				.Subscribe(async x =>
 				{
-					if (App.Current.MainWindow == null) return;
-					if (ShowUpdateMessage(new WindowInteropHelper(App.Current.MainWindow).EnsureHandle()))
-					{
+					if (App.Current.MainWindow == null)
+						return;
+
+					if (await ShowUpdateMessage(new WindowInteropHelper(App.Current.MainWindow).EnsureHandle()))
 						App.Current.MainWindow.Close();
-					}
 				})
 				.AddTo(_disposables);
 
 			// 定期チェック
 			Observable.Timer(TimeSpan.Zero, TimeSpan.FromDays(1))
-				.Subscribe(_ => OnAutoUpdateCheck())
+				.Subscribe(async _ => await OnAutoUpdateCheck())
 				.AddTo(_disposables);
 		}
 		public void Dispose()
@@ -87,29 +86,29 @@ namespace SmartAudioPlayerFx.Managers
 				.SetAttributeValueEx("CheckIntervalDays", CheckIntervalDays)
 				.SetAttributeValueEx("IsAutoUpdateCheckEnabled", IsAutoUpdateCheckEnabled);
 		}
-		void OnAutoUpdateCheck()
+		async Task OnAutoUpdateCheck()
 		{
 			if (IsAutoUpdateCheckEnabled == false) return;
 			if (LastCheckDate.AddDays(CheckIntervalDays) >= DateTime.UtcNow) return;
-			CheckUpdate()
-				.ToObservable()
-				.Where(x=>x!=null)
-				.Where(_ => IsUpdateReady)
-				.Where(x => x >= LastCheckVersion)
-				.ObserveOnUIDispatcher()
-				.Subscribe(x =>
-				{
-					ManagerServices.TaskIconManager.ShowBaloonTip(TimeSpan.FromSeconds(10), WinForms.ToolTipIcon.Info,
-						"新しいバージョンが利用可能です！",
-						"アップデートするにはここをクリックするか、メニューから選択してください。",
-						TasktrayTag);
-				});
+			
+			var version = await CheckUpdate();
+			if (version != null &&
+				IsUpdateReady &&
+				version >= LastCheckVersion)
+			{
+				ManagerServices.TaskIconManager.ShowBaloonTip(
+					TimeSpan.FromSeconds(10),
+					WinForms.ToolTipIcon.Info,
+					"新しいバージョンが利用可能です！",
+					"アップデートするにはここをクリックするか、メニューから選択してください。",
+					TasktrayTag);
+			}
 		}
 
 		#endregion
 
 		XElement last_checked_update_info = null;
-		readonly object check_update_sync = new object();
+		SemaphoreLock check_update_sync = new SemaphoreLock();
 
 		/// <summary>
 		/// アップデートが使用できる場合はtrue
@@ -130,19 +129,21 @@ namespace SmartAudioPlayerFx.Managers
 
 			if (!NetworkInterface.GetIsNetworkAvailable())
 			{
-				Logger.AddDebugLog(" - Network not available.");
+				Logger.AddInfoLog(" - Network not available.");
 				return null;
 			}
 
-			return await TaskEx.Run(() =>
+			return await Task.Run(async () =>
 			{
-				lock (check_update_sync)
+				using (var _ = await check_update_sync.LockAsync())
 				{
+					string update_xml;
 #if UPDATE_TEST
-					try { last_checked_update_info = XElement.Load("http://update.intre.net/sapfx/update_test.xml"); }
+						update_xml = "http://update.intre.net/sapfx/update_test.xml";
 #else
-					try { last_checked_update_info = XElement.Load(UpdateInfo.ToString()); }
+						update_xml = UpdateInfo.ToString();
 #endif
+					try { last_checked_update_info = XElement.Load(update_xml); }
 					catch (Exception e)
 					{
 						Logger.AddErrorLog(" - update.xml取得中にエラーが発生しました", e);
@@ -176,14 +177,14 @@ namespace SmartAudioPlayerFx.Managers
 		///  - 更新するならtrue (この場合、呼び出し側の責任でアプリケーションを終了すること)
 		/// </summary>
 		/// <returns></returns>
-		public bool ShowUpdateMessage(IntPtr hWndParent)
+		public async Task<bool> ShowUpdateMessage(IntPtr hWndParent)
 		{
 			if (hWndParent == IntPtr.Zero) throw new ArgumentException("hWndParent == 0", "hWndParent");
 			if (IsShowingUpdateMessage) throw new InvalidOperationException("message showing...");
 
 			if (last_checked_update_info == null)
 			{
-				CheckUpdate().Wait();	// 実行終了を待つ
+				await CheckUpdate();
 				if (last_checked_update_info == null)
 					return false;
 			}
@@ -197,7 +198,7 @@ namespace SmartAudioPlayerFx.Managers
 				IsShowingUpdateMessage = true;
 				using (var dlg = new UpdateMessageBox())
 				{
-					App.CenterWindow(dlg.Handle, hWndParent);
+					dlg.CenterWindow(hWndParent);
 					dlg.TopMost = true;
 					dlg.CurrentVersionString = currentVersion.ToString();
 					dlg.NewVersionString = newVersion.ToString();
@@ -211,11 +212,11 @@ namespace SmartAudioPlayerFx.Managers
 							case WinForms.DialogResult.Yes:
 								// Update
 								LastCheckVersion = newVersion;
-								return ToUpdate(last_checked_update_info);
+								return await ToUpdate(last_checked_update_info);
 							case WinForms.DialogResult.No:
 								// Download
 								LastCheckVersion = newVersion;
-								ToDownload(last_checked_update_info, nativeWindow);
+								await ToDownload(last_checked_update_info, nativeWindow);
 								return false;
 							case WinForms.DialogResult.Ignore:
 								// Skip
@@ -233,7 +234,7 @@ namespace SmartAudioPlayerFx.Managers
 		}
 
 		// ダウンロードのみ
-		void ToDownload(XElement xml, System.Windows.Forms.IWin32Window dialogOwner)
+		async Task ToDownload(XElement xml, System.Windows.Forms.IWin32Window dialogOwner)
 		{
 			// ファイルの用意
 			using (var dlg = new System.Windows.Forms.SaveFileDialog())
@@ -250,14 +251,14 @@ namespace SmartAudioPlayerFx.Managers
 				var filename = xml.GetAttributeValueEx("File", string.Empty);
 				var downloadUri = new Uri(UpdateInfo, "./" + filename);
 				var zipFilePath = dlg.FileName;
-				DownloadAndCheckZipFile(downloadUri, zipFilePath)
-					.Where(x => x)
-					.Subscribe(x => WinForms.MessageBox.Show("ダウンロードが完了しました", "SmartAudioPlayer Fx"));
+				var result = await DownloadAndCheckZipFile(downloadUri, zipFilePath);
+				if(result)
+					WinForms.MessageBox.Show("ダウンロードが完了しました", "SmartAudioPlayer Fx");
 			}
 		}
 
 		// アップデート準備
-		bool ToUpdate(XElement xml)
+		async Task<bool> ToUpdate(XElement xml)
 		{
 			// 作業用フォルダ作成
 			var tempdir = Path.Combine(Path.GetTempPath(), "sap_update_");
@@ -278,7 +279,7 @@ namespace SmartAudioPlayerFx.Managers
 			var zipFilePath = Path.Combine(tempdir, filename);
 			var newFilesPath = Path.Combine(tempdir, version);
 			Directory.CreateDirectory(tempdir);
-			if (DownloadAndCheckZipFile(downloadUri, zipFilePath).First() == false)
+			if(await DownloadAndCheckZipFile(downloadUri, zipFilePath) == false)
 				return false;	// キャンセルされた
 
 			using (var zip = new ZipFile(zipFilePath))
@@ -320,9 +321,10 @@ namespace SmartAudioPlayerFx.Managers
 		/// <param name="downloadUri"></param>
 		/// <param name="zipFilePath"></param>
 		/// <returns>true=正常完了、false=キャンセルされた</returns>
-		IObservable<bool> DownloadAndCheckZipFile(Uri downloadUri, string zipFilePath)
+		async Task<bool> DownloadAndCheckZipFile(Uri downloadUri, string zipFilePath)
 		{
-			if (downloadUri == null || string.IsNullOrEmpty(downloadUri.AbsolutePath) ||
+			if (downloadUri == null ||
+				string.IsNullOrEmpty(downloadUri.AbsolutePath) ||
 				string.IsNullOrEmpty(zipFilePath))
 				throw new ArgumentException();
 
@@ -330,14 +332,14 @@ namespace SmartAudioPlayerFx.Managers
 			Directory.CreateDirectory(newFilesPath);
 
 			// シーケンスのbool?はresult値: true=成功/false=失敗/null=リトライ
-			return Observable.Using(
-				() => new WebClient(),
-				x => Observable.Start<bool?>(() =>
+			using (var client = new WebClient())
+			{
+			ReTry:
+				try
 				{
-					x.DownloadFile(downloadUri, zipFilePath);
-					return true;	// リトライは要らないのでフラグ立てない
-				}))
-				.Catch<bool?, WebException>(ex =>
+					await client.DownloadFileTaskAsync(downloadUri, zipFilePath);
+				}
+				catch (WebException ex)
 				{
 					Logger.AddErrorLog(" - ダウンロード中にエラーが発生しました", ex);
 					var result = WinForms.MessageBox.Show(
@@ -350,49 +352,42 @@ namespace SmartAudioPlayerFx.Managers
 					// リトライフラグを立ててretuen
 					// false or nullだとWhereで値が通らないのでRepeatされる
 					if (result == DialogResult.Retry)
-						return Observable.Return<bool?>(null);
-					else
-						return Observable.Return<bool?>(false);
-				})
-				.Where(x =>
-				{
-					// リトライフラグ(値を持ってない)なら通さない = 次のRepeatで処理繰り返し
-					if (x.HasValue == false) return false;
-					// ダウンロードが正常終了し、zipファイルをチェックして破損してたら繰り返すか聞く
-					if (x.Value == true)
 					{
-						bool validZip;
-						try { validZip = ZipFile.CheckZip(zipFilePath); }
-						catch { validZip = false; }
-						if (validZip == false)
-						{
-							Logger.AddErrorLog(" - ダウンロードしたファイルが破損していました");
-							var result = WinForms.MessageBox.Show(
-								"ダウンロードしたファイルが破損していました", "SmartAudioPlayer Fx",
-								WinForms.MessageBoxButtons.RetryCancel, WinForms.MessageBoxIcon.Error);
-							try { File.Delete(zipFilePath); }
-							catch (IOException) { }
-							// リトライなら値を通さない (次でリピート)
-							if (result == DialogResult.Retry)
-								return false;
-							// キャンセルなら例外
-							throw new Exception();
-						}
+						goto ReTry;
 					}
-					return true; // 通す (正常終了 or キャンセル)
-				})
-				.Catch<bool?, Exception>(_ => Observable.Return<bool?>(false))	// 例外出たら失敗を返す
-				.Repeat()
-				.Take(1)
-				.Select(x => x.Value)
-				.Do(x =>
-				{
-					if (x)
-						Logger.AddInfoLog(" - ダウンロードが完了しました ({0} => {1})", downloadUri, zipFilePath);
 					else
+					{
 						Logger.AddInfoLog(" - ダウンロードをキャンセルしました ({0} => {1})", downloadUri, zipFilePath);
-				});
+						return false;
+					}
+				}
+
+				// ダウンロードが正常終了し、zipファイルをチェックして破損してたら繰り返すか聞く
+				bool validZip;
+				try { validZip = ZipFile.CheckZip(zipFilePath); }
+				catch { validZip = false; }
+				if (validZip == false)
+				{
+					Logger.AddErrorLog(" - ダウンロードしたファイルが破損していました");
+					var result = WinForms.MessageBox.Show(
+						"ダウンロードしたファイルが破損していました", "SmartAudioPlayer Fx",
+						WinForms.MessageBoxButtons.RetryCancel, WinForms.MessageBoxIcon.Error);
+					try { if (File.Exists(zipFilePath)) File.Delete(zipFilePath); }
+					catch (IOException) { }
+					// リトライなら値を通さない (次でリピート)
+					if (result == DialogResult.Retry)
+					{
+						goto ReTry;
+					}
+					// キャンセル
+					return false;
+				}
+			}
+			Logger.AddInfoLog(" - ダウンロードが完了しました ({0} => {1})", downloadUri, zipFilePath);
+			return true;
 		}
+
+		#region App UpdateHandling
 
 		/// <summary>
 		/// コマンドライン引数(--update)の処理
@@ -400,11 +395,11 @@ namespace SmartAudioPlayerFx.Managers
 		/// true: update終了、プログラム終了要求
 		/// </summary>
 		/// <param name="args"></param>
-		public bool OnUpdate(string[] args)
+		public static bool OnUpdate(string[] args)
 		{
 			if (args == null || args.Length == 0) return false;
 			var currentAppExe = args
-				.SkipWhile(i=>!string.Equals(i, "--update", StringComparison.CurrentCultureIgnoreCase))
+				.SkipWhile(i => !string.Equals(i, "--update", StringComparison.CurrentCultureIgnoreCase))
 				.Skip(1)
 				.FirstOrDefault();
 			if (string.IsNullOrWhiteSpace(currentAppExe))
@@ -464,7 +459,7 @@ namespace SmartAudioPlayerFx.Managers
 		/// (新しい実行ファイルから処理されるように設計されています)
 		/// </summary>
 		/// <param name="args"></param>
-		public void OnPostUpdate(string[] args)
+		public static void OnPostUpdate(string[] args)
 		{
 			if (args == null || args.Length == 0) return;
 			var tempAppExe = args.AsEnumerable()
@@ -497,5 +492,6 @@ namespace SmartAudioPlayerFx.Managers
 			WinForms.MessageBox.Show("アップデートが完了しました", "SmartAudioPlayer Fx", WinForms.MessageBoxButtons.OK, WinForms.MessageBoxIcon.Information);
 		}
 
+		#endregion
 	}
 }

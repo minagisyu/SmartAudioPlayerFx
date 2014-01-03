@@ -4,13 +4,15 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Threading;
-using __Primitives__;
+using WinAPIs;
 using Codeplex.Reactive.Extensions;
 using SmartAudioPlayerFx.Data;
 using SmartAudioPlayerFx.Managers;
+using SmartAudioPlayer;
 
 namespace SmartAudioPlayerFx.Views
 {
@@ -34,10 +36,11 @@ namespace SmartAudioPlayerFx.Views
 			// Viewの変更を処理
 			viewFocus.Items
 				.GetNotifyObservable()
+				.ObserveOn(TaskPoolScheduler.Default)
 				.Subscribe(x =>
 				{
 					_reloadViewItems_wait.Wait();
-					App.UIThreadBeginInvoke(() =>
+					new Action(() =>
 					{
 						if (x.Item != null)
 						{
@@ -52,7 +55,7 @@ namespace SmartAudioPlayerFx.Views
 						{
 							ClearListItems();
 						}
-					});
+					}).UIThreadBeginInvoke();
 				})
 				.AddTo(_disposables);
 
@@ -77,7 +80,7 @@ namespace SmartAudioPlayerFx.Views
 			if (item == null) return;
 			_reloadViewItems_wait.Wait();
 			MediaListItemViewModel vm = null;
-			App.UIThreadBeginInvoke(() =>
+			new Action(() =>
 			{
 				lock (_items_cache)
 				{
@@ -86,7 +89,7 @@ namespace SmartAudioPlayerFx.Views
 						(Items[index] as MediaListItemViewModel) :
 						null;
 				}
-			});
+			}).UIThreadBeginInvoke();
 			if (vm == null) return;	// ヘッダは処理しないので
 
 			// アイテムを更新

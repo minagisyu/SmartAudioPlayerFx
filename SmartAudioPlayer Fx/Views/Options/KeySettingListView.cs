@@ -1,6 +1,6 @@
 using System.Text;
 using System.Windows.Forms;
-using __Primitives__;
+using WinAPIs;
 using SmartAudioPlayerFx.Managers;
 
 namespace SmartAudioPlayerFx.Views.Options

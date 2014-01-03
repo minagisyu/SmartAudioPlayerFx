@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
@@ -10,8 +10,9 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>SmartAudioPlayerFx</RootNamespace>
     <AssemblyName>SmartAudioPlayer Fx</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
+    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <WarningLevel>4</WarningLevel>
@@ -50,28 +51,6 @@
     <PublishWizardCompleted>true</PublishWizardCompleted>
     <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
-    <PlatformTarget>x86</PlatformTarget>
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <UseVSHostingProcess>false</UseVSHostingProcess>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
-    <PlatformTarget>x86</PlatformTarget>
-    <DebugType>none</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>Resources\SAPFx.ico</ApplicationIcon>
   </PropertyGroup>
@@ -79,7 +58,8 @@
     <SignAssembly>false</SignAssembly>
   </PropertyGroup>
   <PropertyGroup>
-    <AssemblyOriginatorKeyFile>sapfx.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>
+    </AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <PropertyGroup>
     <GenerateManifests>false</GenerateManifests>
@@ -92,64 +72,83 @@
   </PropertyGroup>
   <PropertyGroup />
   <PropertyGroup />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'UpdateTest|x86'">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;UPDATE_TEST</DefineConstants>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
     <DebugType>full</DebugType>
     <PlatformTarget>x86</PlatformTarget>
     <UseVSHostingProcess>false</UseVSHostingProcess>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <Prefer32Bit>false</Prefer32Bit>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'UpdateTest|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\UpdateTest\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;UPDATE_TEST</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="DbExecutor">
-      <HintPath>..\packages\DbExecutor.2.0.0.1\lib\Net40\DbExecutor.dll</HintPath>
-    </Reference>
     <Reference Include="Ionic.Zip, Version=1.9.1.8, Culture=neutral, PublicKeyToken=edbe51ad942a3f5c, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\DotNetZip.1.9.1.8\lib\net20\Ionic.Zip.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.CompilerServices.AsyncTargetingPack.Net4">
-      <HintPath>..\packages\Microsoft.CompilerServices.AsyncTargetingPack.1.0.0\lib\net40\Microsoft.CompilerServices.AsyncTargetingPack.Net4.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Expression.Interactions, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\_ref\Microsoft.Expression.Interactions.dll</HintPath>
+    <Reference Include="Microsoft.Expression.Interactions, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Unofficial.Blend.Interactivity.1.0.0\lib\net45\Microsoft.Expression.Interactions.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.VisualBasic" />
-    <Reference Include="Microsoft.WindowsAPICodePack, Version=1.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\_ref\Microsoft.WindowsAPICodePack.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.WindowsAPICodePack.Shell, Version=1.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\_ref\Microsoft.WindowsAPICodePack.Shell.dll</HintPath>
-    </Reference>
-    <Reference Include="ReactiveProperty.NET40, Version=0.3.2.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="ReactiveProperty, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\ReactiveProperty.0.3.2.0\lib\NET40\ReactiveProperty.NET40.dll</HintPath>
+      <HintPath>..\packages\ReactiveProperty.0.4.0-rc1\lib\net45\ReactiveProperty.dll</HintPath>
+    </Reference>
+    <Reference Include="ReactiveProperty.DataAnnotations">
+      <HintPath>..\packages\ReactiveProperty.0.4.0-rc1\lib\net45\ReactiveProperty.DataAnnotations.dll</HintPath>
+    </Reference>
+    <Reference Include="ReactiveProperty.NET45">
+      <HintPath>..\packages\ReactiveProperty.0.4.0-rc1\lib\net45\ReactiveProperty.NET45.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Data" />
-    <Reference Include="System.Data.SQLite, Version=1.0.81.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=x86">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\System.Data.SQLite.1.0.81.0\lib\net40\System.Data.SQLite.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Data.SQLite.Linq, Version=1.0.81.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\System.Data.SQLite.1.0.81.0\lib\net40\System.Data.SQLite.Linq.dll</HintPath>
-    </Reference>
     <Reference Include="System.Drawing" />
-    <Reference Include="System.Reactive, Version=1.0.10621.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+    <Reference Include="System.Reactive.Core, Version=2.2.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Rx-Main.1.0.11226\lib\Net4\System.Reactive.dll</HintPath>
+      <HintPath>..\packages\Rx-Core.2.2.2\lib\net45\System.Reactive.Core.dll</HintPath>
     </Reference>
+    <Reference Include="System.Reactive.Interfaces, Version=2.2.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Rx-Interfaces.2.2.2\lib\net45\System.Reactive.Interfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Reactive.Linq, Version=2.2.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Rx-Linq.2.2.2\lib\net45\System.Reactive.Linq.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Reactive.PlatformServices, Version=2.2.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Rx-PlatformServices.2.2.2\lib\net45\System.Reactive.PlatformServices.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Windows.Interactivity, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+    <Reference Include="System.Windows.Interactivity, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\ReactiveProperty.0.3.2.0\lib\NET40\System.Windows.Interactivity.dll</HintPath>
+      <HintPath>C:\Program Files (x86)\Microsoft SDKs\Expression\Blend\.NETFramework\v4.5\Libraries\System.Windows.Interactivity.dll</HintPath>
     </Reference>
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
@@ -169,11 +168,8 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Data\VersionedCollection.cs" />
-    <Compile Include="Managers\AudioPlayerManager.cs" />
-    <Compile Include="Managers\MediaDBManager.cs" />
-    <Compile Include="Data\FileSystemUtil.cs" />
-    <Compile Include="Managers\MediaDBViewManager.cs" />
+    <Compile Include="Data\MediaDBViewFocus.cs" />
+    <Compile Include="Managers\AppUpdateManager.cs" />
     <Compile Include="Managers\RecentsManager.cs" />
     <Compile Include="Managers\_ManagerServices.cs" />
     <Compile Include="Views\MainWindow.xaml.cs">
@@ -193,117 +189,14 @@
     <Compile Include="Views\Options\OptionDialog_MediaList2.Designer.cs">
       <DependentUpon>OptionDialog_MediaList2.cs</DependentUpon>
     </Compile>
-    <Compile Include="Views\[Behaviors]\OverflowToolTipBehavior.cs" />
-    <Compile Include="Views\[Behaviors]\SelectAllTextOnFocusBehavior.cs" />
-    <Compile Include="Views\[Behaviors]\NoActivateBehavior.cs" />
-    <Compile Include="__Primitives__\[Windows]\DelegateCommand.cs" />
-    <Compile Include="__Primitives__\[Windows]\NotificationObject.cs" />
-    <Compile Include="__Primitives__\[Extensions]\[System.Linq]\EnumerableExtension.cs" />
-    <Compile Include="__Primitives__\[Extensions]\[System.Windows]\WindowExtensions.cs" />
     <Compile Include="Views\[Dialogs]\MessageDialog.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Views\[Dialogs]\MessageDialog.Designer.cs">
       <DependentUpon>MessageDialog.cs</DependentUpon>
     </Compile>
-    <Compile Include="Views\[Behaviors]\SliderTooltipAutoAdjastBehavior.cs" />
-    <Compile Include="__Primitives__\[Data]\CustomEqualityComparer.cs" />
-    <Compile Include="__Primitives__\[Extensions]\EventAsObservable.cs" />
-    <Compile Include="__Primitives__\[Extensions]\[System.Windows.Controls.Primitives]\IItemsContainerGeneratorExtension.cs" />
-    <Compile Include="__Primitives__\[Windows]\DynamicWindowBounds.cs" />
-    <Compile Include="__Primitives__\[Windows]\FolderBrowseDialogEx.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="__Primitives__\[Windows]\KeyboardHook.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="__Primitives__\[Windows]\SliderEx.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\API.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\API_adv.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\API_comctl.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\API_dwmapi.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\API_gdi.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\API_kernel.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\API_msacm.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\API_shell.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\API_user.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\API_windowsX.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\API_winmm.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\COMDefinitions.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IAsyncReader.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IBaseFilter.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IBasicAudio.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IBasicVideo.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IBasicVideo2.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IBindCtx.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IContextMenu.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IDeskBand.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IDockingWindow.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IEnumFilters.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IEnumIDList.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IEnumMediaTypes.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IEnumMoniker.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IEnumPins.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IEnumShellItems.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IEnumString.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IFileDialog.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IFileDialogEvents.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IFileOpenDialog.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IFilterGraph.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IGraphBuilder.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IInputObject.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IInputObjectSite.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IMediaControl.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IMediaEvent.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IMediaEventEx.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IMediaEventSink.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IMediaFilter.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IMediaPosition.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IMediaSample.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IMediaSeeking.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IMemAllocator.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IModalWindow.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IMoniker.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\INSSBuffer.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IObjectWithSite.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IOleWindow.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IPersist.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IPersistStream.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IPin.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IQualityControl.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IReferenceClock.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IRunningObjectTable.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\ISequentialStream.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IShellFolder.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IShellItem.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IShellItemArray.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IShellItemFilter.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IStream.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IVideoWindow.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IWMMediaProps.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IWMOutputMediaProps.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IWMReader.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IWMReaderAdvanced.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IWMReaderAdvanced2.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IWMReaderAllocatorEx.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IWMReaderCallback.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IWMStatusCallback.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IWMSyncReader.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\COM\IWMSyncReader2.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\Win32Definitions.cs" />
-    <Compile Include="__Primitives__\[Extensions]\[System.Xml.Linq]\XAttributeExtension.cs" />
-    <Compile Include="__Primitives__\[Extensions]\[System.Xml.Linq]\XElementExtension.cs" />
-    <Compile Include="__Primitives__\[Behavior]\WindowDragMoveBehavior.cs" />
-    <Compile Include="__Primitives__\[Data]\Logger.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Data\MediaItem.cs" />
-    <Compile Include="Managers\MediaItemFilterManager.cs" />
-    <Compile Include="__Primitives__\[Data]\PreferenceSerializer.cs" />
-    <Compile Include="Data\MediaDBViewFocus.cs" />
     <Compile Include="Managers\JukeboxManager.cs" />
     <Compile Include="Managers\ShortcutKeyManager.cs" />
-    <Compile Include="Managers\PreferencesManager.cs" />
     <Compile Include="Views\Options\OptionDialog_Update.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -316,7 +209,6 @@
     <Compile Include="Views\Options\OptionDialog_DB.Designer.cs">
       <DependentUpon>OptionDialog_DB.cs</DependentUpon>
     </Compile>
-    <Compile Include="Managers\TaskIconManager.cs" />
     <Compile Include="Views\[ViewModels]\MediaTreeItemViewModel.cs" />
     <Compile Include="Views\[ViewModels]\MediaListItemViewModel.cs" />
     <Compile Include="Views\[ViewModels]\MediaListItemsSource.cs" />
@@ -357,17 +249,12 @@
       <DependentUpon>MediaListWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="__Primitives__\[Behavior]\UnvisibleResizeBorderBehavior.cs" />
-    <Compile Include="Views\[Behaviors]\ToolWindowBehavior.cs" />
-    <Compile Include="Managers\AppUpdateManager.cs" />
     <Compile Include="Views\[Dialogs]\UpdateMessageBox.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Views\[Dialogs]\UpdateMessageBox.Designer.cs">
       <DependentUpon>UpdateMessageBox.cs</DependentUpon>
     </Compile>
-    <Compile Include="Data\MediaTagUtil.cs" />
-    <Compile Include="__Primitives__\[Windows]\WinAPI\API_shlwapi.cs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">
@@ -398,10 +285,6 @@
     <Resource Include="Resources\検索：削除-デフォルト.png" />
     <Resource Include="Resources\検索：削除-フォーカス.png" />
     <Resource Include="Resources\カスタマイズ.png" />
-    <None Include="..\_ref\mp3infp.dll">
-      <Link>mp3infp.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Include="SmartAudioPlayer Fx.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -409,7 +292,6 @@
       <SubType>Designer</SubType>
     </None>
     <None Include="packages.config" />
-    <None Include="sapfx.snk" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Views\Options\OptionDialog.resx">
@@ -493,6 +375,21 @@
   <ItemGroup>
     <None Include="メモ.txt" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\spc_libraries\spc_core\spc_core.csproj">
+      <Project>{44036ba0-bf39-43af-826b-4c2f538d52d5}</Project>
+      <Name>spc_core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\spc_libraries\spc_mediadb\spc_mediadb.csproj">
+      <Project>{0472b75a-2777-46c9-a920-03f0106e0f22}</Project>
+      <Name>spc_mediadb</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\spc_libraries\spc_ui\spc_ui.csproj">
+      <Project>{a534cbd4-3434-495c-bdab-eae0e11f25c1}</Project>
+      <Name>spc_ui</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

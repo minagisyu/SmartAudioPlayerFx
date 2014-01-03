@@ -8,8 +8,8 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
-using __Primitives__;
 using Codeplex.Reactive.Extensions;
+using SmartAudioPlayer;
 using SmartAudioPlayerFx.Data;
 using SmartAudioPlayerFx.Managers;
 using Drawing = System.Drawing;
@@ -24,145 +24,153 @@ namespace SmartAudioPlayerFx.Views
 		public MediaListWindow()
 		{
 			InitializeComponent();
-			DataContext = ViewModel = new MediaListWindowViewModel();
-			SetupEvents();
+			InitializeViewModel();
 		}
-		void SetupEvents()
+		void InitializeViewModel()
 		{
-			//=[ Window ]
-			App.Current.Deactivated += delegate
+			DataContext = ViewModel = new MediaListWindowViewModel();
+			Task.Run(async () =>
 			{
-				// 非アクティブになった時、許可されていればウィンドウを閉じる
-				if (ViewModel.IsAutoCloseWhenInactive.Value)
-					Hide();
-			};
+				await ViewModel.Initialized;
 
-			//=[ Toolbar ]
-			currentMediaTitle.MouseLeftButtonUp += delegate
-			{
-				var item = ViewModel.CurrentMedia.Value;
-				if (item == null) return;
-
-				// itemに対応するTreeItem郡を取得
-				var dir = item.GetFilePathDir();
-				var treeitems = ViewModel.GetTreeItems(dir);
-				if (treeitems != null)
+				//=[ Window ]
+				App.Current.Deactivated += delegate
 				{
-					// ツリーを順に開いていく
-					// 同時にItemContainerGeneratorでコンテナを取得(BringIntoViewするため)
-					ItemsControl container = treeView;
-					treeitems.ForEach(i =>
+					// 非アクティブになった時、許可されていればウィンドウを閉じる
+					if (ViewModel.IsAutoCloseWhenInactive.Value)
+						Hide();
+				};
+
+				//=[ Toolbar ]
+				currentMediaTitle.MouseLeftButtonUp += delegate
+				{
+					var item = ViewModel.CurrentMedia.Value;
+					if (item == null) return;
+
+					// itemに対応するTreeItem郡を取得
+					var dir = item.GetFilePathDir();
+					var treeitems = ViewModel.GetTreeItems(dir);
+					if (treeitems != null)
 					{
-						i.IsExpanded = true;
-
-						// MEMO:
-						// WPF内部でまだコンテナが生成されていない場合、強制的に作成
-						if (container.ItemContainerGenerator.Status == GeneratorStatus.NotStarted)
+						// ツリーを順に開いていく
+						// 同時にItemContainerGeneratorでコンテナを取得(BringIntoViewするため)
+						ItemsControl container = treeView;
+						treeitems.ForEach(i =>
 						{
-							ItemsContainerForceGenerate(container.ItemContainerGenerator);
-						}
+							i.IsExpanded = true;
 
-						var tmp = container
-							.ItemContainerGenerator
-							.ContainerFromItem(i) as ItemsControl;
-						if (tmp != null)
-							container = tmp;
+							// MEMO:
+							// WPF内部でまだコンテナが生成されていない場合、強制的に作成
+							if (container.ItemContainerGenerator.Status == GeneratorStatus.NotStarted)
+							{
+								ItemsContainerForceGenerate(container.ItemContainerGenerator);
+							}
+
+							var tmp = container
+								.ItemContainerGenerator
+								.ContainerFromItem(i) as ItemsControl;
+							if (tmp != null)
+								container = tmp;
+						});
+						var treeLastItem = treeitems.Last();
+						treeLastItem.IsSelected = true;
+						if (container != null)
+							container.BringIntoView();
+					}
+
+					// itemに対応するListItemを取得
+					var path = item.FilePath;
+					var listItem = ViewModel.GetListItem(path);
+					if (listItem != null)
+					{
+						r_listbox.ScrollIntoView(listItem);
+					}
+				};
+
+				//=[ SearchText ]
+				MediaListItemsSource _prevSearchListFocus = null;
+				Observable.FromEventPattern<RoutedEventHandler, RoutedEventArgs>(v => searchTextBox.GotFocus += v, v => searchTextBox.GotFocus -= v)
+					.Zip(Observable.FromEventPattern<MouseButtonEventHandler, MouseButtonEventArgs>(v => searchTextBox.PreviewMouseUp += v, v => searchTextBox.PreviewMouseUp -= v),
+						(_, __) => RoutedEventArgs.Empty)
+					.Subscribe(_ =>
+					{
+						// 検索テキストボックスのテキスト全選択処理
+						// GotFocus後、PreviewMouseUpが飛んできてからSelectAll()を実行する
+						searchTextBox.SelectAll();
 					});
-					var treeLastItem = treeitems.Last();
-					treeLastItem.IsSelected = true;
-					if(container != null)
-						container.BringIntoView();
-				}
-
-				// itemに対応するListItemを取得
-				var path = item.FilePath;
-				var listItem = ViewModel.GetListItem(path);
-				if (listItem != null)
+				searchTextBox.TextChanged += delegate
 				{
-					r_listbox.ScrollIntoView(listItem);
-				}
-			};
-
-			//=[ SearchText ]
-			MediaListItemsSource _prevSearchListFocus = null;
-			Observable.FromEventPattern<RoutedEventHandler, RoutedEventArgs>(v => searchTextBox.GotFocus += v, v => searchTextBox.GotFocus -= v)
-				.Zip(Observable.FromEventPattern<MouseButtonEventHandler, MouseButtonEventArgs>(v => searchTextBox.PreviewMouseUp += v, v => searchTextBox.PreviewMouseUp -= v),
-					(_, __) => RoutedEventArgs.Empty)
-				.Subscribe(_ =>
+					// フォーカス オン・オフで枠の色を変える, プレースホルダの表示を切り替える
+					var isEmpty = string.IsNullOrEmpty(searchTextBox.Text);
+					searchTextDelete.Visibility = isEmpty ? Visibility.Collapsed : Visibility.Visible;
+					searchTextBox.Background = isEmpty ? (Brush)searchTextBorder.Resources["PlaceHolderStringBrush"] : Brushes.Transparent;
+				};
+				searchTextBox.GotFocus += delegate
 				{
-					// 検索テキストボックスのテキスト全選択処理
-					// GotFocus後、PreviewMouseUpが飛んできてからSelectAll()を実行する
-					searchTextBox.SelectAll();
-				});
-			searchTextBox.TextChanged += delegate
-			{
-				// フォーカス オン・オフで枠の色を変える, プレースホルダの表示を切り替える
-				var isEmpty = string.IsNullOrEmpty(searchTextBox.Text);
-				searchTextDelete.Visibility = isEmpty ? Visibility.Collapsed : Visibility.Visible;
-				searchTextBox.Background = isEmpty ? (Brush)searchTextBorder.Resources["PlaceHolderStringBrush"] : Brushes.Transparent;
-			};
-			searchTextBox.GotFocus += delegate
-			{
-				// フォーカスもらったら、検索用リストに切り替える為にTextChangedを呼ぶ
-				// ListFocusが設定されてるならバックアップ
-				if (ViewModel.ListFocus.Value != null)
+					// フォーカスもらったら、検索用リストに切り替える為にTextChangedを呼ぶ
+					// ListFocusが設定されてるならバックアップ
+					if (ViewModel.ListFocus.Value != null)
+					{
+						_prevSearchListFocus = ViewModel.ListFocus.Value;
+					}
+					RaiseTextChanged(_prevSearchListFocus);
+				};
+				searchTextBox.TextChanged += delegate
 				{
-					_prevSearchListFocus = ViewModel.ListFocus.Value;
-				}
-				RaiseTextChanged(_prevSearchListFocus);
-			};
-			searchTextBox.TextChanged += delegate
-			{
-				RaiseTextChanged(_prevSearchListFocus);
-			};
+					RaiseTextChanged(_prevSearchListFocus);
+				};
 
-			//=[ TreeView ]
-			MediaListItemsSource _selectedTreeListFocus = null;
-			treeView.GotFocus += delegate
-			{
-				ViewModel.ListFocus.Value = _selectedTreeListFocus;
-			};
-			treeView.SelectedItemChanged += delegate
-			{
-				// 選択項目が変化したら専用のListFocusConditionを生成させて設定する (prevListFocusも上書き)
-				var selected_item = treeView.SelectedItem as MediaTreeItemViewModel;
-				if (selected_item == null) return;
-				TaskEx.Run(() =>
+				//=[ TreeView ]
+				MediaListItemsSource _selectedTreeListFocus = null;
+				treeView.GotFocus += delegate
 				{
-					var old = ViewModel.ListFocus.Value;
-					if (old != null)
-						old.Dispose();	// ちょっと重いので非同期で？
-				});
-				_selectedTreeListFocus = selected_item.CreateListItemsSource();
-				ViewModel.ListFocus.Value = _selectedTreeListFocus;
-			};
-
-			//=[ ListBox ]
-			r_listbox.MouseDoubleClick += (_, ev) =>
-			{
-				if (ev.ChangedButton != MouseButton.Left) return;
-				var selected_item = r_listbox.SelectedItem as IListEntry;
-				if (selected_item == null) return;
-
-				// ダブルクリックされた位置が本当に自分か調べる(イベントの透過を考慮する処理)
-				var element = r_listbox.ItemContainerGenerator.ContainerFromItem(selected_item) as UIElement;
-				if (element.InputHitTest(ev.GetPosition(element)) == null)
-					return; // ダブルクリックされた IInputElement がない
-
-				// コマンド実行
-				ViewModel.ListSelectedCommand.Execute(selected_item);
-			};
-			ViewModel.ListFocus.Subscribe(_ =>
-			{
-				// ListFocusを変更したらリストを上へ変更
-				var generator = r_listbox.ItemContainerGenerator;
-				var panel = generator.FindItemsHostPanel(r_listbox) as VirtualizingStackPanel;
-				if (panel != null)
+					ViewModel.ListFocus.Value = _selectedTreeListFocus;
+				};
+				treeView.SelectedItemChanged += delegate
 				{
-					// 1回だと失敗するときがあるので2回やってみる
-					panel.SetVerticalOffset(0);
-					panel.SetVerticalOffset(0);
-				}
+					// 選択項目が変化したら専用のListFocusConditionを生成させて設定する (prevListFocusも上書き)
+					var selected_item = treeView.SelectedItem as MediaTreeItemViewModel;
+					if (selected_item == null) return;
+					Task.Run(() =>
+					{
+						var old = ViewModel.ListFocus.Value;
+						if (old != null)
+							old.Dispose();	// ちょっと重いので非同期で？
+					});
+					_selectedTreeListFocus = selected_item.CreateListItemsSource();
+					ViewModel.ListFocus.Value = _selectedTreeListFocus;
+				};
+
+				//=[ ListBox ]
+				r_listbox.MouseDoubleClick += (_, ev) =>
+				{
+					if (ev.ChangedButton != MouseButton.Left) return;
+					var selected_item = r_listbox.SelectedItem as IListEntry;
+					if (selected_item == null) return;
+
+					// ダブルクリックされた位置が本当に自分か調べる(イベントの透過を考慮する処理)
+					var element = r_listbox.ItemContainerGenerator.ContainerFromItem(selected_item) as UIElement;
+					if (element.InputHitTest(ev.GetPosition(element)) == null)
+						return; // ダブルクリックされた IInputElement がない
+
+					// コマンド実行
+					ViewModel.ListSelectedCommand.Execute(selected_item);
+				};
+				ViewModel.ListFocus
+					.ObserveOnUIDispatcher()
+					.Subscribe(_ =>
+					{
+						// ListFocusを変更したらリストを上へ変更
+						var generator = r_listbox.ItemContainerGenerator;
+						var panel = generator.FindItemsHostPanel(r_listbox) as VirtualizingStackPanel;
+						if (panel != null)
+						{
+							// 1回だと失敗するときがあるので2回やってみる
+							panel.SetVerticalOffset(0);
+							panel.SetVerticalOffset(0);
+						}
+					});
+
 			});
 		}
 		void RaiseTextChanged(MediaListItemsSource prevSearchListFocus)

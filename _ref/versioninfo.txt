@@ -1,0 +1,29 @@
+* Expression Blend SDK for .NET 4 Libraries
+ - Microsoft.Expression.*.dll
+ - System.Windows.Interactivity.dll
+ - Blend SDK Lisence?
+ - Libraryフォルダ内は自由に配布して良い？
+ 
+* Windows API Code Pack
+ - Microsoft.WindowsAPICodePack*.dll
+ - MS-PL?
+
+* mp3infp
+ - mp3infp.dll
+ - 2.54i/u7 (2.54.91.0)
+ - x86 native
+ - LGPL?
+ - 掲示板で配布されている有志によるアップデート版?
+
+* DotNetZip Library (nuget)
+ - Ionic.Zip.dll
+ - 1.9
+ - .NET 2.0?
+ - Ms-PL
+
+* Reactive Property
+* System.data.SQLite (x86)
+* Reactive Extension (Rx)
+* Interactive Extension (Ix)
+
+* Diagona Icons (http://p.yusukekamiyamane.com/)

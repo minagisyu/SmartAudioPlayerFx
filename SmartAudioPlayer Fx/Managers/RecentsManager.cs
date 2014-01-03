@@ -3,14 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Xml.Linq;
-using __Primitives__;
+using WinAPIs;
 using Codeplex.Reactive.Extensions;
 using SmartAudioPlayerFx.Data;
+using SmartAudioPlayer;
 
 namespace SmartAudioPlayerFx.Managers
 {
-	[Require(typeof(PreferencesManager))]
-	[Require(typeof(MediaDBViewManager))]
+	[Require(typeof(Preferences))]
+	[Require(typeof(MediaDBView))]
 	sealed class RecentsManager : IDisposable
 	{
 		#region ctor
@@ -29,7 +30,6 @@ namespace SmartAudioPlayerFx.Managers
 			ManagerServices.PreferencesManager.SerializeRequestAsObservable()
 				.Subscribe(_ => SavePreferences(ManagerServices.PreferencesManager.PlayerSettings.Value))
 				.AddTo(_disposables);
-
 			LoadRecentsPlayItemsFromDB();
 			ManagerServices.MediaDBViewManager.FocusPath
 				.Subscribe(x => AddRecentsOpenedFolder(x))

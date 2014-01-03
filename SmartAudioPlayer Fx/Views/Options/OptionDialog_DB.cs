@@ -18,7 +18,7 @@ namespace SmartAudioPlayerFx.Views.Options
 
 		void button1_Click(object sender, EventArgs e)
 		{
-			TaskEx.Run(() => ManagerServices.MediaDBManager.Recycle(true));
+			Task.Run(() => ManagerServices.MediaDBManager.Recycle(true));
 		}
 
 		public override void Save()

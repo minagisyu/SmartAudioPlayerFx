@@ -7,16 +7,16 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-using __Primitives__;
 using Codeplex.Reactive;
 using Codeplex.Reactive.Extensions;
+using SmartAudioPlayer;
 using SmartAudioPlayerFx.Data;
 
 namespace SmartAudioPlayerFx.Managers
 {
-	[Require(typeof(PreferencesManager))]
+	[Require(typeof(Preferences))]
 	[Require(typeof(AudioPlayerManager))]
-	[Require(typeof(MediaDBViewManager))]
+	[Require(typeof(MediaDBView))]
 	sealed class JukeboxManager : IDisposable
 	{
 		#region ctor
@@ -42,6 +42,7 @@ namespace SmartAudioPlayerFx.Managers
 
 			// Preferences
 			ManagerServices.PreferencesManager.PlayerSettings
+				.ObserveOnUIDispatcher()
 				.Subscribe(x => LoadPreferences(x))
 				.AddTo(_disposables);
 			ManagerServices.PreferencesManager.SerializeRequestAsObservable()
@@ -50,12 +51,12 @@ namespace SmartAudioPlayerFx.Managers
 
 			// 再生が完了したら次の曲を再生
 			ManagerServices.AudioPlayerManager.PlayEndedAsObservable()
-				.Subscribe(x =>
+				.Subscribe(async x =>
 				{
 					var by_error = x.ErrorReason != null;	// エラーが発生した？
 					if (by_error && CurrentMedia.Value != null && PlayError != null)
 						PlayError(CurrentMedia.Value);
-					SelectNext(false, by_error);
+					await SelectNext(false, by_error);
 				})
 				.AddTo(_disposables);
 
@@ -80,13 +81,13 @@ namespace SmartAudioPlayerFx.Managers
 			// MediaDBViewManagerによるスキャンが完了したとき、再生してなかったら自動再生を試みる
 			ManagerServices.MediaDBViewManager.ItemCollect_CoreScanFinishedAsObservable()
 				.Where(_ => CurrentMedia.Value == null || CurrentMedia.Value.IsNotExist == true)
-				.Subscribe(_ => SelectNext(true))
+				.Subscribe(async _ => await SelectNext(true))
 				.AddTo(_disposables);
 
 			// CurrentMediaが更新
 			CurrentMedia
 				.ObserveOnUIDispatcher()
-				.Subscribe(OnSetCurrentMedia)
+				.Subscribe((x) => OnSetCurrentMedia(x))
 				.AddTo(_disposables);
 		}
 		public void Dispose()
@@ -112,8 +113,8 @@ namespace SmartAudioPlayerFx.Managers
 				false,
 				element.GetAttributeValueEx("IsPaused", false),
 				element.GetAttributeValueEx("Position", (TimeSpan?)null));
-			CurrentMedia.Value = ManagerServices.MediaDBViewManager.GetOrCreate(
-				element.GetAttributeValueEx("CurrentMedia", (string)null));
+			CurrentMedia.Value = ManagerServices.MediaDBViewManager
+				.GetOrCreate(element.GetAttributeValueEx("CurrentMedia", (string)null));
 
 			MediaDBViewFocus_LatestAddOnly.RecentIntervalDays =
 				Math.Max(1, element.GetAttributeValueEx("RecentIntervalDays", 60));
@@ -160,12 +161,12 @@ namespace SmartAudioPlayerFx.Managers
 
 		#endregion
 
-		public void Start()
+		public async Task Start()
 		{
 			IsServiceStarted.Value = true;
 			if (CurrentMedia.Value == null)
 			{
-				SelectNext(true);
+				await SelectNext(true);
 			}
 			else
 			{
@@ -192,28 +193,26 @@ namespace SmartAudioPlayerFx.Managers
 				ManagerServices.AudioPlayerManager.PlayFrom(item.FilePath, attr.PlayOnPaused, attr.PlayOnPosition, () =>
 				{
 					// 再生カウント更新
-					TaskEx.Run(() =>
+					Task.Run(async () =>
 					{
-						lock (item)
+						var args = new List<Expression<Func<MediaItem, object>>>();
+						item.LastUpdate = DateTime.UtcNow.Ticks;
+						args.Add(_ => _.LastUpdate);
+						if (attr.UpdateLastPlay)
 						{
-							var args = new List<Expression<Func<MediaItem, object>>>();
-							item.LastUpdate = DateTime.UtcNow.Ticks;
-							args.Add(_ => _.LastUpdate);
-							if (attr.UpdateLastPlay)
-							{
-								item.LastPlay = DateTime.UtcNow.Ticks;
-								args.Add(_ => _.LastPlay);
-							}
-							if (attr.UpdatePlayCount)
-							{
-								item.PlayCount++;
-								args.Add(_ => _.PlayCount);
-							}
-							ManagerServices.MediaDBViewManager.RaiseDBUpdateAsync(item, args.ToArray());
+							item.LastPlay = DateTime.UtcNow.Ticks;
+							args.Add(_ => _.LastPlay);
 						}
+						if (attr.UpdatePlayCount)
+						{
+							item.PlayCount++;
+							args.Add(_ => _.PlayCount);
+						}
+						ManagerServices.MediaDBViewManager.RaiseDBUpdate(item, args.ToArray());
+
 						// 曲情報更新
 						if (item != null && item.ID != 0)
-							RefreshMediaItemInfo(item, true);
+							await RefreshMediaItemInfo(item, true);
 
 						// 再生リストを更新
 						if (attr.UpdateLastPlay)
@@ -223,10 +222,10 @@ namespace SmartAudioPlayerFx.Managers
 			}
 		}
 
-		IObservable<MediaItem> RefreshMediaItemInfo(MediaItem item, bool update_db)
+		async Task<MediaItem> RefreshMediaItemInfo(MediaItem item, bool update_db)
 		{
 			if (item == null) throw new ArgumentNullException();
-			return Observable.Start(() =>
+			return await Task.Run(() =>
 			{
 				var finfo = new FileInfo(item.FilePath);
 				var tag = MediaTagUtil.Get(item.FilePath);
@@ -246,7 +245,7 @@ namespace SmartAudioPlayerFx.Managers
 				}
 				if (update_db)
 				{
-					ManagerServices.MediaDBViewManager.RaiseDBUpdateAsync(item,
+					ManagerServices.MediaDBViewManager.RaiseDBUpdate(item,
 						_ => _.FilePath,
 						_ => _.Title, _ => _.Artist, _ => _.Album, _ => _.Comment, _ => _.SearchHint,
 						_ => _.CreatedDate, _ => _.LastUpdate, _ => _.LastWrite, _ => _.IsNotExist);
@@ -260,7 +259,7 @@ namespace SmartAudioPlayerFx.Managers
 		/// </summary>
 		/// <param name="skipMode"></param>
 		/// <param name="by_error">現在の曲が再生エラーによって終了した場合true(リピード動作に影響)</param>
-		public void SelectNext(bool skipMode, bool by_error = false)
+		public async Task SelectNext(bool skipMode, bool by_error = false)
 		{
 			// ViewFocusPathがないと選べない
 			if (string.IsNullOrWhiteSpace(ViewFocus.Value.FocusPath))
@@ -274,15 +273,12 @@ namespace SmartAudioPlayerFx.Managers
 				ManagerServices.AudioPlayerManager.Replay();
 				// 再生カウント更新
 				var item = CurrentMedia.Value;
-				Task.Factory.StartNew(() =>
+				await Task.Run(() =>
 				{
-					lock (item)
-					{
-						item.PlayCount++;
-						item.LastPlay = DateTime.UtcNow.Ticks;
-						item.LastUpdate = DateTime.UtcNow.Ticks;
-						ManagerServices.MediaDBViewManager.RaiseDBUpdateAsync(item, _ => _.PlayCount, _ => _.LastPlay, _ => _.LastUpdate);
-					}
+					item.PlayCount++;
+					item.LastPlay = DateTime.UtcNow.Ticks;
+					item.LastUpdate = DateTime.UtcNow.Ticks;
+					ManagerServices.MediaDBViewManager.RaiseDBUpdate(item, _ => _.PlayCount, _ => _.LastPlay, _ => _.LastUpdate);
 				});
 				return;
 			}
@@ -311,6 +307,15 @@ namespace SmartAudioPlayerFx.Managers
 			// 1曲しかないなら先頭を再生
 			if (items.Length == 1)
 			{
+				// エラーが原因で呼び出されたので、この曲は再生できない
+				// nullにして終わる
+				if (by_error)
+				{
+					Logger.AddDebugLog("SelectNext: one items, by_error==true, set CurrenyMedia = null.");
+					CurrentMedia.Value = null;
+					return;
+				}
+
 				Logger.AddDebugLog("SelectNext: one items.");
 				CurrentMedia.Value = items[0];
 				return;
@@ -320,7 +325,7 @@ namespace SmartAudioPlayerFx.Managers
 			{
 				CurrentMedia.Value.SkipCount++;
 				CurrentMedia.Value.LastUpdate = DateTime.UtcNow.Ticks;
-				ManagerServices.MediaDBViewManager.RaiseDBUpdateAsync(CurrentMedia.Value, _ => _.SkipCount, _ => _.LastUpdate);
+				ManagerServices.MediaDBViewManager.RaiseDBUpdate(CurrentMedia.Value, _ => _.SkipCount, _ => _.LastUpdate);
 			}
 
 			// 再生エラーが無いアイテム群。
