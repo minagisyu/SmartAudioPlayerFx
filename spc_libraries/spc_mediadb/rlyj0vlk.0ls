@@ -10,42 +10,41 @@ using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-using WinAPIs;
 using Codeplex.Reactive;
 using Codeplex.Reactive.Extensions;
-using SmartAudioPlayerFx.Data;
-using SmartAudioPlayer;
 
-namespace SmartAudioPlayerFx.Managers
+namespace SmartAudioPlayer
 {
 	[Require(typeof(MediaDBManager))]
-	[Require(typeof(PreferencesManager))]
-	[Require(typeof(MediaItemFilterManager))]
-	sealed class MediaDBViewManager : IDisposable
+	[Require(typeof(Preferences))]
+	[Require(typeof(MediaItemFilter))]
+	public sealed class MediaDBView : IDisposable
 	{
 		#region ctor
 
 		public ReactiveProperty<string> FocusPath { get; private set; }
 		public VersionedCollection<MediaItem> Items { get; private set; }
 		readonly CompositeDisposable _disposables;
+		readonly MediaDBManager _mediaDB;
 
-		public MediaDBViewManager()
+		public MediaDBView(Preferences preferences, MediaDBManager mediaDB, MediaItemFilter mediaItemFilter)
 		{
 			FocusPath = new ReactiveProperty<string>(mode: ReactivePropertyMode.RaiseLatestValueOnSubscribe);
 			Items = new VersionedCollection<MediaItem>(new MediaItemIDEqualityComparer());
+			_mediaDB = mediaDB;
 			_disposables = new CompositeDisposable(FocusPath);
 
 			// Preferences
-			ManagerServices.PreferencesManager.PlayerSettings
+			preferences.PlayerSettings
 				.Subscribe(x => LoadPreferences(x))
 				.AddTo(_disposables);
-			ManagerServices.PreferencesManager.SerializeRequestAsObservable()
-				.Subscribe(_ => SavePreferences(ManagerServices.PreferencesManager.PlayerSettings.Value))
+			preferences.SerializeRequestAsObservable()
+				.Subscribe(_ => SavePreferences(preferences.PlayerSettings.Value))
 				.AddTo(_disposables);
 
 			// MediaItemFilter
 			// 最後の通知から500ms後にItemsの再検証
-			ManagerServices.MediaItemFilterManager.PropertyChangedAsObservable()
+			mediaItemFilter.PropertyChangedAsObservable()
 				.Throttle(TimeSpan.FromMilliseconds(500))
 				.Subscribe(async _ => await RevalidateItems(FocusPath.Value))
 				.AddTo(_disposables);
@@ -131,7 +130,7 @@ namespace SmartAudioPlayerFx.Managers
 			var item = Items.GetLatest()
 				.Where(x => filepath.Equals(x.FilePath, StringComparison.InvariantCultureIgnoreCase))
 				.FirstOrDefault()
-				?? ManagerServices.MediaDBManager.Get(filepath);
+				?? _mediaDB.Get(filepath);
 
 			// リアルファイルは存在する？
 			var exists = File.Exists(filepath);
@@ -506,19 +505,19 @@ namespace SmartAudioPlayerFx.Managers
 
 	static class MediaDBViewManagerExtensions
 	{
-		public static IObservable<string> ItemsCollectingAsObservable(this MediaDBViewManager manager)
+		public static IObservable<string> ItemsCollectingAsObservable(this MediaDBView manager)
 		{
 			return Observable.FromEvent<string>(v => manager.ItemsCollecting += v, v => manager.ItemsCollecting -= v);
 		}
-		public static IObservable<Unit> ItemCollect_CoreScanFinishedAsObservable(this MediaDBViewManager manager)
+		public static IObservable<Unit> ItemCollect_CoreScanFinishedAsObservable(this MediaDBView manager)
 		{
 			return Observable.FromEvent(v => manager.ItemCollect_CoreScanFinished += v, v => manager.ItemCollect_CoreScanFinished -= v);
 		}
-		public static IObservable<Unit> ItemCollect_ScanFinishedAsObservable(this MediaDBViewManager manager)
+		public static IObservable<Unit> ItemCollect_ScanFinishedAsObservable(this MediaDBView manager)
 		{
 			return Observable.FromEvent(v => manager.ItemCollect_ScanFinished += v, v => manager.ItemCollect_ScanFinished -= v);
 		}
-		public static IObservable<Unit> ItemsLoadedAsObservable(this MediaDBViewManager manager)
+		public static IObservable<Unit> ItemsLoadedAsObservable(this MediaDBView manager)
 		{
 			return Observable.FromEvent(v => manager.ItemsLoaded += v, v => manager.ItemsLoaded -= v);
 		}

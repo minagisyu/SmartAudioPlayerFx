@@ -14,9 +14,9 @@ using SmartAudioPlayerFx.Data;
 
 namespace SmartAudioPlayerFx.Managers
 {
-	[Require(typeof(PreferencesManager))]
+	[Require(typeof(Preferences))]
 	[Require(typeof(AudioPlayerManager))]
-	[Require(typeof(MediaDBViewManager))]
+	[Require(typeof(MediaDBView))]
 	sealed class JukeboxManager : IDisposable
 	{
 		#region ctor

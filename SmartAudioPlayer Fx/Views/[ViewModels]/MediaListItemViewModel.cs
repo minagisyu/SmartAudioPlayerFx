@@ -84,7 +84,7 @@ namespace SmartAudioPlayerFx.Views
 					{
 						var list = ManagerServices.MediaItemFilterManager.IgnoreWords.ToList();
 						list.RemoveAll(i => string.Equals(i.Word, x, StringComparison.CurrentCultureIgnoreCase));
-						list.Add(new MediaItemFilterManager.IgnoreWord(true, x));
+						list.Add(new MediaItemFilter.IgnoreWord(true, x));
 						ManagerServices.MediaItemFilterManager.SetIgnoreWords(list.ToArray());
 					});
 				}
@@ -352,7 +352,7 @@ namespace SmartAudioPlayerFx.Views
 					{
 						var list = ManagerServices.MediaItemFilterManager.IgnoreWords.ToList();
 						list.RemoveAll(i => string.Equals(i.Word, x, StringComparison.CurrentCultureIgnoreCase));
-						list.Add(new MediaItemFilterManager.IgnoreWord(true, x));
+						list.Add(new MediaItemFilter.IgnoreWord(true, x));
 						ManagerServices.MediaItemFilterManager.SetIgnoreWords(list.ToArray());
 					});
 				}

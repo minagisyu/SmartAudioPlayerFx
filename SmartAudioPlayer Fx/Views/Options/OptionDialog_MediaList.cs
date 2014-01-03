@@ -35,13 +35,13 @@ namespace SmartAudioPlayerFx.Views.Options
 				.Where(i => !string.IsNullOrWhiteSpace(i.Value))
 				.Where(i => !ValueCheck_PeriodStart(i.Value))
 				.Where(i => !ValueCheck_HasValue(i.Value))
-				.Select(i => new MediaItemFilterManager.AcceptExtension(i.Key, i.Value))
+				.Select(i => new MediaItemFilter.AcceptExtension(i.Key, i.Value))
 				.ToArray();
 			ManagerServices.MediaItemFilterManager.SetAcceptExtensions(exts);
 			var words = GetDataGridViewItems(ignore_words)
 				.Where(i => !string.IsNullOrWhiteSpace(i.Value))
 				.Where(i => !ValueCheck_HasValue(i.Value))
-				.Select(i => new MediaItemFilterManager.IgnoreWord(i.Key, i.Value))
+				.Select(i => new MediaItemFilter.IgnoreWord(i.Key, i.Value))
 				.ToArray();
 			ManagerServices.MediaItemFilterManager.SetIgnoreWords(words);
 		}

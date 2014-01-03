@@ -11,15 +11,17 @@ using Codeplex.Data;
 namespace SmartAudioPlayer
 {
 	// media.db操作用
+	// SQLiteの非同期は1Connection=1スレッドなのでタスクを使うとダメ.
+	// 基本シングルにして非同期は外側に任せる
 	[Standalone]
-	public sealed class MediaDBManager : IDisposable
+	public sealed class MediaDB : IDisposable
 	{
 		#region ctor / Dispose
 
 		readonly FileStream _dbFileLock;
 		readonly ThreadLocal<DbExecutor> _dbconn;
 
-		public MediaDBManager(string db_filename)
+		public MediaDB(string db_filename)
 		{
 			// ファイルが削除出来ないように開きっぱなしにする
 			_dbFileLock = File.Open(db_filename, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite);

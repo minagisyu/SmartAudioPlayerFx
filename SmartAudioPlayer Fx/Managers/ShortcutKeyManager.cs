@@ -15,7 +15,7 @@ namespace SmartAudioPlayerFx.Managers
 	/// <summary>
 	/// HotKeyServiceを使って特定のキーが押された時の反応を管理する
 	/// </summary>
-	[Require(typeof(PreferencesManager))]
+	[Require(typeof(Preferences))]
 	[Require(typeof(AudioPlayerManager))]
 	[Require(typeof(JukeboxManager))]
 	sealed class ShortcutKeyManager : IDisposable

@@ -130,7 +130,7 @@ namespace SmartAudioPlayerFx.Views
 					seekSlider.SetBinding(Slider.ValueProperty,
 						new Binding("PositionTicks.Value") { Mode = BindingMode.OneTime, });
 				};
-				seekExpander.PreviewMouseLeftButtonUp += async delegate
+				seekExpander.PreviewMouseLeftButtonUp += delegate
 				{
 					Mouse.Capture(null);
 					// シーク選択が終了したら手動でプレーヤー再生位置を修正して...
@@ -189,7 +189,7 @@ namespace SmartAudioPlayerFx.Views
 			}
 
 			cmenu.MenuItems.Clear();
-			cmenu.MenuItems.AddRange(TaskIconManager.CreateWinFormsMenuItems(this));
+			cmenu.MenuItems.AddRange(App.CreateWinFormsMenuItems(this));
 
 			var helper = new WindowInteropHelper(this);
 			WinAPI.SetForegroundWindow(helper.Handle);

@@ -10,8 +10,8 @@ using SmartAudioPlayer;
 
 namespace SmartAudioPlayerFx.Managers
 {
-	[Require(typeof(PreferencesManager))]
-	[Require(typeof(MediaDBViewManager))]
+	[Require(typeof(Preferences))]
+	[Require(typeof(MediaDBView))]
 	sealed class RecentsManager : IDisposable
 	{
 		#region ctor

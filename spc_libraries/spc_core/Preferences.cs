@@ -2,16 +2,13 @@
 using System.Reactive;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
-using System.Threading.Tasks;
 using System.Xml.Linq;
-using WinAPIs;
 using Codeplex.Reactive;
-using SmartAudioPlayer;
 
-namespace SmartAudioPlayerFx.Managers
+namespace SmartAudioPlayer
 {
 	[Standalone]
-	sealed class PreferencesManager : IDisposable
+	public sealed class Preferences : IDisposable
 	{
 		const string DATADIRNAME = "data";
 		const string PLAYER_ELEMENTNAME = "Player";
@@ -31,7 +28,7 @@ namespace SmartAudioPlayerFx.Managers
 		/// </summary>
 		public event Action SerializeRequest;
 
-		public PreferencesManager(bool isLoad = false)
+		public Preferences(bool isLoad = false)
 		{
 			PlayerSettings = new ReactiveProperty<XElement>(new XElement(PLAYER_ELEMENTNAME));
 			WindowSettings = new ReactiveProperty<XElement>(new XElement(WINDOW_ELEMENTNAME));
@@ -70,9 +67,9 @@ namespace SmartAudioPlayerFx.Managers
 		}
 	}
 
-	static class PreferencesManagerExtensions
+	public static class PreferencesManagerExtensions
 	{
-		public static IObservable<Unit> SerializeRequestAsObservable(this PreferencesManager manager)
+		public static IObservable<Unit> SerializeRequestAsObservable(this Preferences manager)
 		{
 			return Observable.FromEvent(
 				v => manager.SerializeRequest += v,

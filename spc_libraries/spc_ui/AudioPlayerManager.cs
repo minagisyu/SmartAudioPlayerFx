@@ -7,16 +7,15 @@ using System.Windows;
 using System.Windows.Media;
 using System.Windows.Threading;
 using Microsoft.Win32;
-using SmartAudioPlayer;
 
-namespace SmartAudioPlayerFx.Managers
+namespace SmartAudioPlayer
 {
 	/// <summary>
 	/// 音楽を再生するためのプレーヤー
 	/// 内部でWPFのMediaPlayerクラスを利用するが、再生エラー時にレジストリ追加してリトライするなどの機能を実装。
 	/// </summary>
-	[Standalone]
-	sealed class AudioPlayerManager : IDisposable
+	[Standalone, UIThread]
+	public sealed class AudioPlayerManager : IDisposable
 	{
 		public static bool IsEnableSoundFadeEffect { get; set; }
 
@@ -33,7 +32,7 @@ namespace SmartAudioPlayerFx.Managers
 
 		public AudioPlayerManager()
 		{
-			if (App.Current != null && App.Current.Dispatcher != Dispatcher.CurrentDispatcher)
+			if (Application.Current != null && Application.Current.Dispatcher != Dispatcher.CurrentDispatcher)
 				throw new InvalidOperationException("call on UIThread!!");
 
 			player = new MediaPlayer();
@@ -468,7 +467,7 @@ namespace SmartAudioPlayerFx.Managers
 
 	}
 
-	static class AudioPlayerManagerExtensions
+	public static class AudioPlayerManagerExtensions
 	{
 		public static IObservable<Unit> OpenedAsObservable(this AudioPlayerManager manager)
 		{

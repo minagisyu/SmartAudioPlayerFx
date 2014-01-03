@@ -19,4 +19,13 @@ namespace SmartAudioPlayer
 		{
 		}
 	}
+
+	// ManagerはUIThreadに依存する
+	[AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
+	public sealed class UIThreadAttribute : Attribute
+	{
+		public UIThreadAttribute()
+		{
+		}
+	}
 }

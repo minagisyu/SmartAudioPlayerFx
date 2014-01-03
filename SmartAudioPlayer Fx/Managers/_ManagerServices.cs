@@ -1,4 +1,6 @@
-﻿using System.Reactive.Disposables;
+﻿using System;
+using System.Drawing;
+using System.Reactive.Disposables;
 using System.Threading.Tasks;
 using SmartAudioPlayer;
 
@@ -6,13 +8,13 @@ namespace SmartAudioPlayerFx.Managers
 {
 	static class ManagerServices
 	{
-		public static PreferencesManager PreferencesManager { get; private set; }
-		public static MediaDBManager MediaDBManager { get; private set; }
+		public static Preferences PreferencesManager { get; private set; }
+		public static MediaDB MediaDBManager { get; private set; }
 		public static AudioPlayerManager AudioPlayerManager { get; private set; }
 		public static TaskIconManager TaskIconManager { get; private set; }
 		public static AppUpdateManager AppUpdateManager { get; private set; }
-		public static MediaItemFilterManager MediaItemFilterManager { get; private set; }
-		public static MediaDBViewManager MediaDBViewManager { get; private set; }
+		public static MediaItemFilter MediaItemFilterManager { get; private set; }
+		public static MediaDBView MediaDBViewManager { get; private set; }
 		public static RecentsManager RecentsManager { get; private set; }
 		public static JukeboxManager JukeboxManager { get; private set; }
 		public static ShortcutKeyManager ShortcutKeyManager { get; private set; }
@@ -20,20 +22,22 @@ namespace SmartAudioPlayerFx.Managers
 		public static void Initialize(string dbFilename)
 		{
 			// Standalone
-			PreferencesManager = new PreferencesManager(isLoad: true);
-			MediaDBManager = new MediaDBManager(dbFilename);
+			PreferencesManager = new Preferences(isLoad: true);
+			MediaDBManager = new MediaDB(dbFilename);
 
 			// Standalone with UIThread
 			AudioPlayerManager = new AudioPlayerManager();
-			TaskIconManager = new TaskIconManager();
+			TaskIconManager = new TaskIconManager(
+				"SmartAudioPlayer Fx",
+				new Icon(App.GetResourceStream(new Uri("/Resources/SAPFx.ico", UriKind.Relative)).Stream));
 
 			// require Preferences+TaskIcon
 			AppUpdateManager = new AppUpdateManager();
 
 			// require Preferences
-			MediaItemFilterManager = new MediaItemFilterManager();
+			MediaItemFilterManager = new MediaItemFilter(PreferencesManager);
 			// require Preferences+MediaDB+MediaItemFilter
-			MediaDBViewManager = new MediaDBViewManager();
+			MediaDBViewManager = new MediaDBView(PreferencesManager, MediaDBManager, MediaItemFilterManager);
 			// require Preferences+MediaDBView
 			RecentsManager = new RecentsManager();
 

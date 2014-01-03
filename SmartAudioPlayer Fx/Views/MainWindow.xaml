@@ -5,7 +5,6 @@
 	xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
 	xmlns:pb="clr-namespace:WinAPIs"
 	xmlns:sap="clr-namespace:SmartAudioPlayer;assembly=spc_ui"
-	xmlns:v="clr-namespace:SmartAudioPlayerFx.Views"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	mc:Ignorable="d" d:DesignWidth="450" d:DesignHeight="40"
@@ -15,8 +14,8 @@
     <i:Interaction.Behaviors>
         <sap:UnvisibleResizeBorderBehavior Left="5" Right="5" />
         <sap:WindowDragMoveBehavior x:Name="wdmbehavior" IsSnapped="True" />
-        <v:NoActivateBehavior />
-        <v:ToolWindowBehavior />
+        <sap:NoActivateBehavior />
+        <sap:ToolWindowBehavior />
     </i:Interaction.Behaviors>
 
     <Grid x:Name="LayoutRoot" Height="24" VerticalAlignment="Top">
@@ -127,7 +126,7 @@
 							Style="{StaticResource MiniSlider}"
 							Value="{Binding PositionTicks.Value, Mode=OneWay}">
                             <i:Interaction.Behaviors>
-                                <v:SliderTooltipAutoAdjastBehavior />
+                                <sap:SliderTooltipAutoAdjastBehavior />
                             </i:Interaction.Behaviors>
                         </sap:SliderEx>
                     </Expander.Content>
@@ -144,7 +143,7 @@
 							ToolTip="{Binding VolumeTooltip.Value}"
 							Value="{Binding Volume.Value}">
                             <i:Interaction.Behaviors>
-                                <v:SliderTooltipAutoAdjastBehavior />
+                                <sap:SliderTooltipAutoAdjastBehavior />
                             </i:Interaction.Behaviors>
                         </sap:SliderEx>
                     </Expander.Content>

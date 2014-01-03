@@ -169,10 +169,8 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Data\MediaDBViewFocus.cs" />
-    <Compile Include="Managers\AudioPlayerManager.cs" />
-    <Compile Include="Managers\MediaDBViewManager.cs" />
+    <Compile Include="Managers\AppUpdateManager.cs" />
     <Compile Include="Managers\RecentsManager.cs" />
-    <Compile Include="Managers\TaskIconManager.cs" />
     <Compile Include="Managers\_ManagerServices.cs" />
     <Compile Include="Views\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
@@ -191,19 +189,14 @@
     <Compile Include="Views\Options\OptionDialog_MediaList2.Designer.cs">
       <DependentUpon>OptionDialog_MediaList2.cs</DependentUpon>
     </Compile>
-    <Compile Include="Views\[Behaviors]\SelectAllTextOnFocusBehavior.cs" />
-    <Compile Include="Views\[Behaviors]\NoActivateBehavior.cs" />
     <Compile Include="Views\[Dialogs]\MessageDialog.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Views\[Dialogs]\MessageDialog.Designer.cs">
       <DependentUpon>MessageDialog.cs</DependentUpon>
     </Compile>
-    <Compile Include="Views\[Behaviors]\SliderTooltipAutoAdjastBehavior.cs" />
-    <Compile Include="Managers\MediaItemFilterManager.cs" />
     <Compile Include="Managers\JukeboxManager.cs" />
     <Compile Include="Managers\ShortcutKeyManager.cs" />
-    <Compile Include="Managers\PreferencesManager.cs" />
     <Compile Include="Views\Options\OptionDialog_Update.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -256,8 +249,6 @@
       <DependentUpon>MediaListWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Views\[Behaviors]\ToolWindowBehavior.cs" />
-    <Compile Include="Managers\AppUpdateManager.cs" />
     <Compile Include="Views\[Dialogs]\UpdateMessageBox.cs">
       <SubType>Form</SubType>
     </Compile>

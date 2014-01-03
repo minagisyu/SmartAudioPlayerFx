@@ -20,7 +20,7 @@ using WinForms = System.Windows.Forms;
 
 namespace SmartAudioPlayerFx.Managers
 {
-	[Require(typeof(PreferencesManager))]
+	[Require(typeof(Preferences))]
 	[Require(typeof(TaskIconManager))]
 	sealed class AppUpdateManager : IDisposable
 	{
@@ -108,7 +108,7 @@ namespace SmartAudioPlayerFx.Managers
 		#endregion
 
 		XElement last_checked_update_info = null;
-		AsyncSemLock check_update_sync = new AsyncSemLock();
+		SemaphoreLock check_update_sync = new SemaphoreLock();
 
 		/// <summary>
 		/// アップデートが使用できる場合はtrue
