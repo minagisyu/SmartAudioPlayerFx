@@ -1,0 +1,357 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{584670B1-25C8-48FF-9568-5033C4CD21CC}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>SmartAudioPlayerFx</RootNamespace>
+    <AssemblyName>SmartAudioPlayer Fx</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <WarningLevel>4</WarningLevel>
+    <SccProjectName>
+    </SccProjectName>
+    <SccLocalPath>
+    </SccLocalPath>
+    <SccAuxPath>
+    </SccAuxPath>
+    <SccProvider>
+    </SccProvider>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <PublishUrl>publish\</PublishUrl>
+    <Install>false</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>true</UpdateEnabled>
+    <UpdateMode>Background</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <TargetCulture>ja</TargetCulture>
+    <ProductName>SmartAudioPlayer Fx</ProductName>
+    <PublisherName>minagisyu, intre.net</PublisherName>
+    <SuiteName>SmartAudioPlayer</SuiteName>
+    <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
+    <WebPage>publish.htm</WebPage>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <PublishWizardCompleted>true</PublishWizardCompleted>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+    <PlatformTarget>x86</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+    <PlatformTarget>x86</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>Resources\SAPFx.ico</ApplicationIcon>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>sapfx.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+  <PropertyGroup>
+    <GenerateManifests>false</GenerateManifests>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignManifests>false</SignManifests>
+  </PropertyGroup>
+  <PropertyGroup>
+    <TargetZone>LocalIntranet</TargetZone>
+  </PropertyGroup>
+  <PropertyGroup />
+  <PropertyGroup />
+  <ItemGroup>
+    <Reference Include="Ionic.Zip">
+      <HintPath>..\_ref\Ionic.Zip.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.VisualBasic" />
+    <Reference Include="System" />
+    <Reference Include="System.CoreEx, Version=1.0.2521.104, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\_ref\Quala\!!_Interop_dll_\System.CoreEx.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Data" />
+    <Reference Include="System.Data.SQLite, Version=1.0.65.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\_ref\Quala\!!_Interop_dll_\System.Data.SQLite.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Interactive, Version=1.0.2521.104, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\_ref\Quala\!!_Interop_dll_\System.Interactive.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Reactive, Version=1.0.2521.104, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\_ref\Quala\!!_Interop_dll_\System.Reactive.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Xaml">
+      <RequiredTargetFramework>4.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="WindowsBase" />
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+  </ItemGroup>
+  <ItemGroup>
+    <ApplicationDefinition Include="App.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </ApplicationDefinition>
+    <Compile Include="App.xaml.cs">
+      <DependentUpon>App.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Player\[Primitive]\AudioPlayer.cs" />
+    <Compile Include="Player\[Primitive]\MediaItemExtension.cs" />
+    <Compile Include="Player\[Primitive]\HotKeyManager.cs" />
+    <Compile Include="Player\[Primitive]\MediaItem.cs" />
+    <Compile Include="Player\[Primitive]\MediaItemFilteringManager.cs" />
+    <Compile Include="Player\MediaTagService.cs" />
+    <Compile Include="UI\Options\OptionDialog_Update.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="UI\Options\OptionDialog_Update.Designer.cs">
+      <DependentUpon>OptionDialog_Update.cs</DependentUpon>
+    </Compile>
+    <Compile Include="UI\Options\OptionDialog_DB.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="UI\Options\OptionDialog_DB.Designer.cs">
+      <DependentUpon>OptionDialog_DB.cs</DependentUpon>
+    </Compile>
+    <Compile Include="UI\UIService.cs" />
+    <Compile Include="UI\Views\HoverFocus.xaml.cs">
+      <DependentUpon>HoverFocus.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="UI\Views\SearchTextBox.xaml.cs">
+      <DependentUpon>SearchTextBox.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UI\Options\DoubleBufferedControl.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="UI\Options\DoubleBufferedControl.Designer.cs">
+      <DependentUpon>DoubleBufferedControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="UI\Options\OptionDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UI\Options\OptionDialog.Designer.cs">
+      <DependentUpon>OptionDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="UI\Options\OptionDialog_MediaList.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="UI\Options\OptionDialog_MediaList.Designer.cs">
+      <DependentUpon>OptionDialog_MediaList.cs</DependentUpon>
+    </Compile>
+    <Compile Include="UI\Options\OptionDialog_ShortcutKey.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="UI\Options\OptionDialog_ShortcutKey.Designer.cs">
+      <DependentUpon>OptionDialog_ShortcutKey.cs</DependentUpon>
+    </Compile>
+    <Compile Include="UI\Options\OptionDialog_Window.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="UI\Options\OptionDialog_Window.Designer.cs">
+      <DependentUpon>OptionDialog_Window.cs</DependentUpon>
+    </Compile>
+    <Compile Include="UI\Options\KeySettingListView.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="UI\Views\MediaListWindow.xaml.cs">
+      <DependentUpon>MediaListWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="UI\Views\MediaListWindow_Resources.xaml.cs">
+      <SubType>Code</SubType>
+      <DependentUpon>MediaListWindow_Resources.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UI\Views\PlayerWindow.xaml.cs">
+      <DependentUpon>PlayerWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="UI\[Primitive]\ItemsTreeViewModel.cs" />
+    <Compile Include="UI\[Primitive]\MediaItemViewModel.cs" />
+    <Compile Include="UI\[Primitive]\MediaListViewModel.cs" />
+    <Compile Include="UI\[Primitive]\PlayerServiceViewModel.cs" />
+    <Compile Include="UI\[Primitive]\MediaListViewSource.cs" />
+    <Compile Include="UI\[Primitive]\MediaTreeViewSource.cs" />
+    <Compile Include="Player\[Primitive]\MediaItemsCollection.cs" />
+    <Compile Include="Player\[Primitive]\MediaItemsCollectionViewFocus.cs" />
+    <Compile Include="Player\JukeboxService.cs" />
+    <Compile Include="Player\MediaDBService.cs" />
+    <Compile Include="Player\ShortcutKeyService.cs" />
+    <Compile Include="Player\TasktrayService.cs" />
+    <Compile Include="Update\UpdateService.cs" />
+    <Compile Include="Update\UpdateMessageBox.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Update\UpdateMessageBox.Designer.cs">
+      <DependentUpon>UpdateMessageBox.cs</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <AppDesigner Include="Properties\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="UI\Views\HoverFocus.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UI\Views\MediaListWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UI\Views\MediaListWindow_Resources.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UI\Views\PlayerWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UI\Views\PlayerWindowResources.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UI\Views\SearchTextBox.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\検索：メニュー.png" />
+    <Resource Include="Resources\検索：削除-デフォルト.png" />
+    <Resource Include="Resources\検索：削除-フォーカス.png" />
+    <Content Include="SmartAudioPlayer Fx.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
+    <Content Include="mp3infp.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Include="sapfx.snk" />
+    <None Include="メモ.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="UI\Options\OptionDialog.resx">
+      <DependentUpon>OptionDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UI\Options\OptionDialog_MediaList.resx">
+      <DependentUpon>OptionDialog_MediaList.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UI\Options\OptionDialog_ShortcutKey.resx">
+      <DependentUpon>OptionDialog_ShortcutKey.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UI\Options\OptionDialog_Window.resx">
+      <DependentUpon>OptionDialog_Window.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UI\Options\OptionDialog_Update.resx">
+      <DependentUpon>OptionDialog_Update.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UI\Options\OptionDialog_DB.resx">
+      <DependentUpon>OptionDialog_DB.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Update\UpdateMessageBox.resx">
+      <DependentUpon>UpdateMessageBox.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\_ref\Quala\Quala\Quala.csproj">
+      <Project>{7174DC4A-19B1-4A42-BA04-AB3BEA2C1572}</Project>
+      <Name>Quala</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include=".NETFramework,Version=v4.0,Profile=Client">
+      <Visible>False</Visible>
+      <ProductName>Microsoft .NET Framework 4 Client Profile %28x86 および x64%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
+      <Visible>False</Visible>
+      <ProductName>Windows インストーラー 3.1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\SAPFx.ico" />
+    <Resource Include="Resources\インフォ.png" />
+    <Resource Include="Resources\コメント.png" />
+    <Resource Include="Resources\スター：オフ.png" />
+    <Resource Include="Resources\スター：オン.png" />
+    <Resource Include="Resources\ステート：一時停止.png" />
+    <Resource Include="Resources\ステート：再生.png" />
+    <Resource Include="Resources\タイマー.png" />
+    <Resource Include="Resources\ツリーボタン.png" />
+    <Resource Include="Resources\フォルダ.png" />
+    <Resource Include="Resources\ボリューム：中.png" />
+    <Resource Include="Resources\ボリューム：大.png" />
+    <Resource Include="Resources\ボリューム：小.png" />
+    <Resource Include="Resources\ボリューム：消音.png" />
+    <Resource Include="Resources\モード：シーケンシャル.png" />
+    <Resource Include="Resources\モード：メドレー.png" />
+    <Resource Include="Resources\モード：ランダム.png" />
+    <Resource Include="Resources\モード：リピート.png" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
