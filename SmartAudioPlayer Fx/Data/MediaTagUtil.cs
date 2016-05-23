@@ -8,7 +8,7 @@ namespace SmartAudioPlayerFx.Data
 	/// <summary>
 	/// mp3infp.dllを使用してタグ情報を取得します
 	/// </summary>
-	static class MediaTagUtil
+	public static class MediaTagUtil
 	{
 		static readonly object getlock = new object();
 
@@ -17,19 +17,19 @@ namespace SmartAudioPlayerFx.Data
 		/// </summary>
 		/// <param name="filePath"></param>
 		/// <returns></returns>
-		public static MediaTagInfo Get(string filePath)
+		public static MediaTagInfo Get(this FileInfo filePath)
 		{
 			lock (getlock)
 			{
-				return new MediaTagInfo_Mp3infp(filePath);
+				return new MediaTagInfo_Mp3infp(filePath.FullName);
 			}
 		}
 
-		public static void TagEditGUI(string filepath)
+		public static void TagEditGUI(this FileInfo filepath)
 		{
 			var ret = MediaTagInfo_Mp3infp.Mp3infp.ViewPropEx(
 				IntPtr.Zero,
-				filepath,
+				filepath.FullName,
 				MediaTagInfo_Mp3infp.Mp3infp.ActivePage.ID3v2,
 				false, 0, 0);
 		}

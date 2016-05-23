@@ -5,7 +5,7 @@ using System.Linq;
 using System.Windows.Forms;
 using SmartAudioPlayerFx.Data;
 using SmartAudioPlayerFx.Managers;
-using __Primitives__;
+using Quala.Extensions;
 
 namespace SmartAudioPlayerFx.Views.Options
 {

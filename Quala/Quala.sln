@@ -1,0 +1,40 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25123.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Quala.AppService", "Quala.AppService\Quala.AppService.csproj", "{E9BB1CF4-AB7A-4B76-8BF0-0229CA90EACB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Quala.Extensions", "Quala.Extensions\Quala.Extensions.csproj", "{1790FACE-ED88-40FD-92FC-030D81EB9EEE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Quala.Win32", "Quala.Win32\Quala.Win32.csproj", "{AC33CEA6-8564-4247-8841-02FEC18ABA1E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Quala.WPF", "Quala.WPF\Quala.WPF.csproj", "{0CEADAF2-EE2F-4398-AE1F-274706A732FD}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E9BB1CF4-AB7A-4B76-8BF0-0229CA90EACB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E9BB1CF4-AB7A-4B76-8BF0-0229CA90EACB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E9BB1CF4-AB7A-4B76-8BF0-0229CA90EACB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E9BB1CF4-AB7A-4B76-8BF0-0229CA90EACB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1790FACE-ED88-40FD-92FC-030D81EB9EEE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1790FACE-ED88-40FD-92FC-030D81EB9EEE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1790FACE-ED88-40FD-92FC-030D81EB9EEE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1790FACE-ED88-40FD-92FC-030D81EB9EEE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AC33CEA6-8564-4247-8841-02FEC18ABA1E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AC33CEA6-8564-4247-8841-02FEC18ABA1E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AC33CEA6-8564-4247-8841-02FEC18ABA1E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AC33CEA6-8564-4247-8841-02FEC18ABA1E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0CEADAF2-EE2F-4398-AE1F-274706A732FD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0CEADAF2-EE2F-4398-AE1F-274706A732FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0CEADAF2-EE2F-4398-AE1F-274706A732FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0CEADAF2-EE2F-4398-AE1F-274706A732FD}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

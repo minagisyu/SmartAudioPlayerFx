@@ -7,10 +7,11 @@ using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Threading;
-using __Primitives__;
-using Codeplex.Reactive.Extensions;
 using SmartAudioPlayerFx.Data;
 using SmartAudioPlayerFx.Managers;
+using Reactive.Bindings.Extensions;
+using Quala;
+using Quala.Extensions;
 
 namespace SmartAudioPlayerFx.Views
 {
@@ -37,7 +38,7 @@ namespace SmartAudioPlayerFx.Views
 				.Subscribe(x =>
 				{
 					_reloadViewItems_wait.Wait();
-					App.UIThreadBeginInvoke(() =>
+					App.Current.UIThreadBeginInvoke(() =>
 					{
 						if (x.Item != null)
 						{
@@ -77,7 +78,7 @@ namespace SmartAudioPlayerFx.Views
 			if (item == null) return;
 			_reloadViewItems_wait.Wait();
 			MediaListItemViewModel vm = null;
-			App.UIThreadBeginInvoke(() =>
+			App.Current.UIThreadBeginInvoke(() =>
 			{
 				lock (_items_cache)
 				{
@@ -95,7 +96,7 @@ namespace SmartAudioPlayerFx.Views
 
 		private void ReloadListItems()
 		{
-			Logger.AddDebugLog("Call ReloadListItems", new object[0]);
+			AppService.Log.AddDebugLog("Call ReloadListItems", new object[0]);
 			Stopwatch sw = Stopwatch.StartNew();
 			this.ClearListItems();
 			Dictionary<string, MediaItem> tmp = new Dictionary<string, MediaItem>();
@@ -124,7 +125,7 @@ namespace SmartAudioPlayerFx.Views
 				return vm;
 			}));
 			sw.Stop();
-			Logger.AddDebugLog(" **ReloadListItems({0}items): {1}ms", new object[] { this._items_cache.Count, sw.ElapsedMilliseconds });
+			AppService.Log.AddDebugLog(" **ReloadListItems({0}items): {1}ms", new object[] { this._items_cache.Count, sw.ElapsedMilliseconds });
 		}
 
 		// アイテムを追加、必要ならヘッダも追加する

@@ -8,10 +8,12 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Windows;
-using __Primitives__;
-using Codeplex.Reactive.Extensions;
 using SmartAudioPlayerFx.Data;
 using SmartAudioPlayerFx.Managers;
+using Reactive.Bindings.Extensions;
+using Quala;
+using Quala.Extensions;
+using Quala.WPF;
 
 namespace SmartAudioPlayerFx.Views
 {
@@ -98,7 +100,7 @@ namespace SmartAudioPlayerFx.Views
 				{
 					_OpenExplorerCommand = new DelegateCommand<string>(x =>
 					{
-						App.OpenToExplorer(x);
+						App.Current.OpenToExplorer(x);
 					});
 				}
 				return _OpenExplorerCommand;
@@ -459,7 +461,7 @@ namespace SmartAudioPlayerFx.Views
 					.GroupBy(x => x.GetFilePathDir(false))
 					.Subscribe(g => this.AppendByDirectoryPath(g.Key));
 				sw.Stop();
-				Logger.AddDebugLog(" **ResetSubItems: {0}ms", new object[] { sw.ElapsedMilliseconds });
+				AppService.Log.AddDebugLog(" **ResetSubItems: {0}ms", new object[] { sw.ElapsedMilliseconds });
 			}
 		}
 

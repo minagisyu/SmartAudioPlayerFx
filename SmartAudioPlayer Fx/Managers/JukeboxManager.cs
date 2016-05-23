@@ -7,14 +7,15 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-using __Primitives__;
-using Codeplex.Reactive;
-using Codeplex.Reactive.Extensions;
 using SmartAudioPlayerFx.Data;
+using Reactive.Bindings;
+using Reactive.Bindings.Extensions;
+using Quala;
+using Quala.Extensions;
 
 namespace SmartAudioPlayerFx.Managers
 {
-	[Require(typeof(PreferencesManager))]
+	[Require(typeof(XmlPreferencesManager))]
 	[Require(typeof(AudioPlayerManager))]
 	[Require(typeof(MediaDBViewManager))]
 	sealed class JukeboxManager : IDisposable
@@ -100,6 +101,29 @@ namespace SmartAudioPlayerFx.Managers
 
 		void LoadPreferences(XElement element)
 		{
+			var ps = ManagerServices.PreferencesManagerJson.PlayerSettings;
+			ViewFocus.Value = ViewFocusFromString(
+				ps.GetValue("ViewMode", "Default"),
+				ps.GetValue("ViewFocusPath", (string)null));
+
+			SelectMode.Value = ps.GetValue("SelectMode", SelectionMode.Random);
+			IsRepeat.Value = ps.GetValue("IsRepeat", false);
+			ManagerServices.AudioPlayerManager.Volume = ps.GetValue("Volume", 0.5);
+			NextPlaingAttribute = new PlaingAttributeInfo(
+				false,
+				false,
+				ps.GetValue("IsPaused", false),
+				ps.GetValue("Position", (TimeSpan?)null));
+			// memo: 実行タイミングのずれで再生/一時停止を繰り返してしまうので、
+			//       暫定処理
+			System.Windows.Forms.Application.DoEvents();
+			CurrentMedia.Value = /*ManagerServices.MediaDBViewManager.GetOrCreate(
+				element.GetAttributeValueEx("CurrentMedia", (string)null))*/null;
+
+			MediaDBViewFocus_LatestAddOnly.RecentIntervalDays =
+				Math.Max(1, ps.GetValue("RecentIntervalDays", 60));
+			//
+			//
 			ViewFocus.Value = ViewFocusFromString(
 				element.GetAttributeValueEx("ViewMode", "Default"),
 				element.GetAttributeValueEx("ViewFocusPath", (string)null));
@@ -112,8 +136,11 @@ namespace SmartAudioPlayerFx.Managers
 				false,
 				element.GetAttributeValueEx("IsPaused", false),
 				element.GetAttributeValueEx("Position", (TimeSpan?)null));
-			CurrentMedia.Value = ManagerServices.MediaDBViewManager.GetOrCreate(
-				element.GetAttributeValueEx("CurrentMedia", (string)null));
+			// memo: 実行タイミングのずれで再生/一時停止を繰り返してしまうので、
+			//       暫定処理
+			System.Windows.Forms.Application.DoEvents();
+			CurrentMedia.Value = /*ManagerServices.MediaDBViewManager.GetOrCreate(
+				element.GetAttributeValueEx("CurrentMedia", (string)null))*/null;
 
 			MediaDBViewFocus_LatestAddOnly.RecentIntervalDays =
 				Math.Max(1, element.GetAttributeValueEx("RecentIntervalDays", 60));
@@ -121,6 +148,19 @@ namespace SmartAudioPlayerFx.Managers
 		}
 		void SavePreferences(XElement element)
 		{
+			ManagerServices.PreferencesManagerJson.PlayerSettings
+				.SetValue("SelectMode", SelectMode.Value)
+				.SetValue("IsRepeat", IsRepeat.Value)
+				.SetValue("IsPaused", ManagerServices.AudioPlayerManager.IsPaused)
+				.SetValue("Volume", ManagerServices.AudioPlayerManager.Volume.ToString("F3"))
+				.SetValue("Position", ManagerServices.AudioPlayerManager.Position.ToString()) // ToString()しないと戻せない
+				.SetValue("CurrentMedia", (CurrentMedia.Value != null) ? CurrentMedia.Value.FilePath : null)
+				.SetValue("ViewMode", ViewFocusToString(ViewFocus.Value))
+				.SetValue("ViewFocusPath", ViewFocus.Value.FocusPath)
+				.SetValue("RecentIntervalDays", MediaDBViewFocus_LatestAddOnly.RecentIntervalDays)
+				;
+			//
+			//
 			element
 				// this
 				.SetAttributeValueEx("SelectMode", SelectMode.Value)
@@ -192,7 +232,7 @@ namespace SmartAudioPlayerFx.Managers
 				ManagerServices.AudioPlayerManager.PlayFrom(item.FilePath, attr.PlayOnPaused, attr.PlayOnPosition, () =>
 				{
 					// 再生カウント更新
-					TaskEx.Run(() =>
+					Task.Run(() =>
 					{
 						lock (item)
 						{
@@ -229,7 +269,7 @@ namespace SmartAudioPlayerFx.Managers
 			return Observable.Start(() =>
 			{
 				var finfo = new FileInfo(item.FilePath);
-				var tag = MediaTagUtil.Get(item.FilePath);
+				var tag = MediaTagUtil.Get(finfo);
 				if (tag.IsTagLoaded)
 				{
 					item.FilePath = finfo.FullName;
@@ -298,12 +338,12 @@ namespace SmartAudioPlayerFx.Managers
 				if (by_error)
 				{
 					// 再生＆選択不可能なのでnull
-					Logger.AddDebugLog("SelectNext: no items. (by error)");
+					AppService.Log.AddDebugLog("SelectNext: no items. (by error)");
 					CurrentMedia.Value = null;
 				}
 				else
 				{
-					Logger.AddDebugLog("SelectNext: no items.");
+					AppService.Log.AddDebugLog("SelectNext: no items.");
 					CurrentMedia.Value = CurrentMedia.Value;
 				}
 				return;
@@ -311,7 +351,16 @@ namespace SmartAudioPlayerFx.Managers
 			// 1曲しかないなら先頭を再生
 			if (items.Length == 1)
 			{
-				Logger.AddDebugLog("SelectNext: one items.");
+				// エラーが原因で呼び出されたので、この曲は再生できない
+				// nullにして終わる
+				if (by_error)
+				{
+					AppService.Log.AddDebugLog("SelectNext: one items, by_error==true, set CurrenyMedia = null.");
+					CurrentMedia.Value = null;
+					return;
+				}
+
+				AppService.Log.AddDebugLog("SelectNext: one items.");
 				CurrentMedia.Value = items[0];
 				return;
 			}

@@ -5,16 +5,17 @@ using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Xml.Linq;
-using __Primitives__;
-using Codeplex.Reactive.Extensions;
 using SmartAudioPlayerFx.Data;
+using Reactive.Bindings.Extensions;
+using Quala.Extensions;
+using Quala;
 
 namespace SmartAudioPlayerFx.Managers
 {
 	/// <summary>
 	/// 拡張子と単語によるファイルフィルタリング
 	/// </summary>
-	[Require(typeof(PreferencesManager))]
+	[Require(typeof(XmlPreferencesManager))]
 	sealed class MediaItemFilterManager : IDisposable
 	{
 		readonly object lockObj = new object();
@@ -42,6 +43,11 @@ namespace SmartAudioPlayerFx.Managers
 
 		void LoadPreferences(XElement element)
 		{
+		/*	ManagerServices.PreferencesManagerJson.PlayerSettings
+				.GetValue<AcceptExtension[]>("AcceptExtensions", o => SetAcceptExtensions(o))
+				.GetValue<IgnoreWord[]>("IgnoreWords", o => SetIgnoreWords(o))
+				;
+		*/	//
 			SetAcceptExtensions(
 				element.GetArrayValues<AcceptExtension>("AcceptExtensions",
 					el => new AcceptExtension(el.GetAttributeValueEx<bool>("IsEnable", false),
@@ -54,6 +60,28 @@ namespace SmartAudioPlayerFx.Managers
 		}
 		void SavePreferences(XElement element)
 		{
+			var ae_list = new List<Dictionary<string, object>>();
+			foreach (var i in AcceptExtensions)
+			{
+				var dic = new Dictionary<string, object>();
+				dic["IsEnable"] = i.IsEnable;
+				dic["Extension"] = i.Extension;
+				ae_list.Add(dic);
+			}
+			var iw_list = new List<Dictionary<string, object>>();
+			foreach (var i in IgnoreWords)
+			{
+				var dic = new Dictionary<string, object>();
+				dic["IsEnable"] = i.IsEnable;
+				dic["Extension"] = i.Word;
+				iw_list.Add(dic);
+			}
+
+			ManagerServices.PreferencesManagerJson.PlayerSettings
+				.SetValue("AcceptExtensions", ae_list)
+				.SetValue("IgnoreWords", iw_list)
+				;
+			//
 			element
 				.SubElement("AcceptExtensions", true, elm =>
 				{

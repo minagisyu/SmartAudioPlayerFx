@@ -4,7 +4,7 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
 	xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions"
-	xmlns:pb="clr-namespace:__Primitives__"
+	xmlns:pb="clr-namespace:Quala.WPF.Behavior;assembly=Quala.WPF"
 	xmlns:v="clr-namespace:SmartAudioPlayerFx.Views"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d"
@@ -17,7 +17,7 @@
 	Visibility="{Binding Visibility.Value}">
 	<i:Interaction.Behaviors>
 		<pb:UnvisibleResizeBorderBehavior x:Name="resizeBorder" />
-		<v:ToolWindowBehavior />
+		<pb:ToolWindowBehavior />
 	</i:Interaction.Behaviors>
 
 	<Grid>

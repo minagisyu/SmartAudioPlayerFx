@@ -10,7 +10,8 @@ namespace SmartAudioPlayerFx.Managers
 		// Standalone
 		public static AudioPlayerManager AudioPlayerManager { get; private set; }
 		public static TaskIconManager TaskIconManager { get; private set; }
-		public static PreferencesManager PreferencesManager { get; private set; }
+		public static XmlPreferencesManager PreferencesManager { get; private set; }
+		public static JsonPreferencesManager PreferencesManagerJson { get; private set; }
 		public static MediaDBManager MediaDBManager { get; private set; }
 
 		// require Preferences+TaskIcon
@@ -31,7 +32,8 @@ namespace SmartAudioPlayerFx.Managers
 		public static void Initialize(string dbFilename)
 		{
 			// Standalone
-			PreferencesManager = new PreferencesManager(isLoad: true);
+			PreferencesManager = new XmlPreferencesManager(isLoad: true);
+			PreferencesManagerJson = new JsonPreferencesManager(isLoad: true);
 			MediaDBManager = new MediaDBManager(dbFilename);
 
 			// Standalone with UIThread
@@ -111,6 +113,11 @@ namespace SmartAudioPlayerFx.Managers
 				PreferencesManager.Dispose();
 				PreferencesManager = null;
 			}
+			if (PreferencesManagerJson != null)
+			{
+				PreferencesManagerJson.Dispose();
+				PreferencesManagerJson = null;
+			}
 			if (MediaDBManager != null)
 			{
 				MediaDBManager.Dispose();
@@ -122,7 +129,7 @@ namespace SmartAudioPlayerFx.Managers
 
 	// Managerは何も依存しない
 	[AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
-	sealed class StandaloneAttribute : Attribute
+	public sealed class StandaloneAttribute : Attribute
 	{
 		public StandaloneAttribute()
 		{
@@ -131,7 +138,7 @@ namespace SmartAudioPlayerFx.Managers
 
 	// ManagerはTypeに依存する
 	[AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
-	sealed class RequireAttribute : Attribute
+	public sealed class RequireAttribute : Attribute
 	{
 		public RequireAttribute(Type requireType)
 		{

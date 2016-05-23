@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Xml.Linq;
-using __Primitives__;
-using Codeplex.Reactive.Extensions;
 using SmartAudioPlayerFx.Data;
+using Reactive.Bindings.Extensions;
+using Quala.Extensions;
 
 namespace SmartAudioPlayerFx.Managers
 {
-	[Require(typeof(PreferencesManager))]
+	[Require(typeof(XmlPreferencesManager))]
 	[Require(typeof(MediaDBViewManager))]
 	sealed class RecentsManager : IDisposable
 	{

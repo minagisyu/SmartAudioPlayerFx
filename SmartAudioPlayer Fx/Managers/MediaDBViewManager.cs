@@ -10,15 +10,16 @@ using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-using __Primitives__;
-using Codeplex.Reactive;
-using Codeplex.Reactive.Extensions;
 using SmartAudioPlayerFx.Data;
+using Reactive.Bindings;
+using Reactive.Bindings.Extensions;
+using Quala;
+using Quala.Extensions;
 
 namespace SmartAudioPlayerFx.Managers
 {
 	[Require(typeof(MediaDBManager))]
-	[Require(typeof(PreferencesManager))]
+	[Require(typeof(XmlPreferencesManager))]
 	[Require(typeof(MediaItemFilterManager))]
 	sealed class MediaDBViewManager : IDisposable
 	{
@@ -76,10 +77,16 @@ namespace SmartAudioPlayerFx.Managers
 
 		void LoadPreferences(XElement element)
 		{
+			ManagerServices.PreferencesManagerJson.PlayerSettings
+				.GetValue("FocusPath", o => FocusPath.Value = o, default(string));
+			//
 			FocusPath.Value = element.GetAttributeValueEx("FocusPath", default(string));
 		}
 		void SavePreferences(XElement element)
 		{
+			ManagerServices.PreferencesManagerJson.PlayerSettings
+				.SetValue("FocusPath", FocusPath.Value);
+			//
 			element
 				.SetAttributeValueEx("FocusPath", FocusPath.Value);
 		}
@@ -124,7 +131,7 @@ namespace SmartAudioPlayerFx.Managers
 		/// <returns></returns>
 		public MediaItem GetOrCreate(string filepath)
 		{
-			Logger.AddDebugLog("Call GetOrCreate: filepath={0}", filepath);
+			AppService.Log.AddDebugLog("Call GetOrCreate: filepath={0}", filepath);
 			if (string.IsNullOrWhiteSpace(filepath)) return null;
 
 			// キャッシュ検索、無い場合はDBを検索
@@ -179,7 +186,7 @@ namespace SmartAudioPlayerFx.Managers
 
 			if (item == null) return null;
 			if (item.ID == 0) return null;
-			return _RaiseDBUpdate_Task = TaskEx.Run(()=>
+			return _RaiseDBUpdate_Task = Task.Run(()=>
 			{
 				ManagerServices.MediaDBManager.UseTransaction(dbaction =>
 				{
@@ -202,7 +209,7 @@ namespace SmartAudioPlayerFx.Managers
 			}
 
 			if (item == null) return null;
-			return _RaiseDBInsert_Task = TaskEx.Run(() =>
+			return _RaiseDBInsert_Task = Task.Run(() =>
 			{
 				ManagerServices.MediaDBManager.UseTransaction(dbaction =>
 				{
@@ -222,7 +229,7 @@ namespace SmartAudioPlayerFx.Managers
 
 		void LoadDBItems(string path)
 		{
-			Logger.AddDebugLog("Call LoadDBItems: path={0}", path);
+			AppService.Log.AddDebugLog("Call LoadDBItems: path={0}", path);
 
 			// 以前の非同期処理をキャンセルして終了を待つ
 			if (_LoadDBItems_CTS != null)
@@ -241,7 +248,7 @@ namespace SmartAudioPlayerFx.Managers
 			// 読み込み
 			var ct = _LoadDBItems_CTS.Token;
 			var itemsLoaded_ev = ItemsLoaded;
-			_LoadDBItems_Task = TaskEx.Run(() =>
+			_LoadDBItems_Task = Task.Run(() =>
 			{
 				if (string.IsNullOrWhiteSpace(path)) return;
 				if (Path.IsPathRooted(path) == false) return;
@@ -264,7 +271,7 @@ namespace SmartAudioPlayerFx.Managers
 						Items.AddOrReplace(x);
 					});
 				sw.Stop();
-				Logger.AddDebugLog(" **LoadDBItems({0}items): {1}ms", Items.Count, sw.ElapsedMilliseconds);
+				AppService.Log.AddDebugLog(" **LoadDBItems({0}items): {1}ms", Items.Count, sw.ElapsedMilliseconds);
 			})
 			.ContinueWith(_ =>
 			{
@@ -274,7 +281,7 @@ namespace SmartAudioPlayerFx.Managers
 					CollectFiles(null).Wait();
 				if (itemsLoaded_ev != null)
 					itemsLoaded_ev();
-				Logger.AddDebugLog(" **LoadDBItems(full-complete)");
+				AppService.Log.AddDebugLog(" **LoadDBItems(full-complete)");
 			});
 		}
 
@@ -285,7 +292,7 @@ namespace SmartAudioPlayerFx.Managers
 		Task _revalidateItems_Task;
 		void RevalidateItems(string path)
 		{
-			Logger.AddDebugLog("Call RevalidateItems: path={0}", path);
+			AppService.Log.AddDebugLog("Call RevalidateItems: path={0}", path);
 
 			// 以前の非同期操作をキャンセル
 			if (_revalidateItems_CTS != null)
@@ -299,15 +306,15 @@ namespace SmartAudioPlayerFx.Managers
 			_revalidateItems_CTS = new CancellationTokenSource();
 			var itemsLoaded_ev = ItemsLoaded;
 			var ct = _revalidateItems_CTS.Token;
-			_revalidateItems_Task = TaskEx.Run(() =>
+			_revalidateItems_Task = Task.Run(() =>
 			{
 				if (string.IsNullOrWhiteSpace(path)) return;
 
-				Logger.AddDebugLog(" ..RevalidateTask: items version:{0}", Items.Version);
+				AppService.Log.AddDebugLog(" ..RevalidateTask: items version:{0}", Items.Version);
 				var sw = Stopwatch.StartNew();
 
 				// phase remove: 既存の項目に対して、Validate()が通らないものを削除
-				Logger.AddDebugLog(" ..RevalidateTask-phase1: version:{0}", Items.Version);
+				AppService.Log.AddDebugLog(" ..RevalidateTask-phase1: version:{0}", Items.Version);
 				Items.GetLatest()
 					.TakeWhile(_ => ct.IsCancellationRequested == false)
 					.AsParallel()
@@ -315,7 +322,7 @@ namespace SmartAudioPlayerFx.Managers
 					.ForAll(x => Items.Remove(x));
 
 				// phase db_add: DBを再読み込みして追加or更新
-				Logger.AddDebugLog(" ..RevalidateTask-phase2: version:{0}", Items.Version);
+				AppService.Log.AddDebugLog(" ..RevalidateTask-phase2: version:{0}", Items.Version);
 				ManagerServices.MediaDBManager.GetFromFilePath_ExistsOnly(path)
 					.TakeWhile(_ => ct.IsCancellationRequested == false)
 					.AsParallel()
@@ -323,7 +330,7 @@ namespace SmartAudioPlayerFx.Managers
 					.ForAll(x => Items.AddOrReplace(x));
 
 				sw.Stop();
-				Logger.AddDebugLog(" **RevalidateItems: {0}ms", sw.ElapsedMilliseconds);
+				AppService.Log.AddDebugLog(" **RevalidateItems: {0}ms", sw.ElapsedMilliseconds);
 			})
 			.ContinueWith(_ =>
 			{
@@ -334,7 +341,7 @@ namespace SmartAudioPlayerFx.Managers
 					CollectFiles(null).Wait();
 				if (itemsLoaded_ev != null)
 					itemsLoaded_ev();
-				Logger.AddDebugLog(" **RevalidateItems(full-complete)");
+				AppService.Log.AddDebugLog(" **RevalidateItems(full-complete)");
 			});
 		}
 
@@ -345,7 +352,7 @@ namespace SmartAudioPlayerFx.Managers
 		Task _collectFiles_Task;
 		Task CollectFiles(string path)
 		{
-			Logger.AddDebugLog("Call CollectFiles: path={0}", path);
+			AppService.Log.AddDebugLog("Call CollectFiles: path={0}", path);
 
 			// 以前の検索をキャンセル
 			if (_collectFiles_CTS != null)
@@ -361,7 +368,7 @@ namespace SmartAudioPlayerFx.Managers
 			var notify = ItemsCollecting;
 			var corescan_finished = ItemCollect_CoreScanFinished;
 			var scan_finished = ItemCollect_ScanFinished;
-			_collectFiles_Task = TaskEx.Run(() =>
+			_collectFiles_Task = Task.Run(() =>
 			{
 				if (string.IsNullOrWhiteSpace(path) || Directory.Exists(path) == false)
 				{
@@ -376,7 +383,7 @@ namespace SmartAudioPlayerFx.Managers
 					}
 					return;
 				}
-				Logger.AddDebugLog(" - CollectItems start.");
+				AppService.Log.AddDebugLog(" - CollectItems start.");
 
 				// フォルダ監視を有効に
 				var fsw = new FileSystemWatcher(path)
@@ -392,7 +399,7 @@ namespace SmartAudioPlayerFx.Managers
 
 					// phase.1: ファイルシステムを検索してValidate()が通るものをDBへ追加、追加されたものをAdd
 					var add_count = 0;
-					foreach (var x in FileSystemUtil.EnumerateAllFiles(path, ct))
+					foreach (var x in new DirectoryInfo(path).EnumerateAllFiles())
 					{
 						if (notify != null)
 							notify("[1] " + x.DirectoryName);
@@ -412,7 +419,7 @@ namespace SmartAudioPlayerFx.Managers
 						});
 					}
 					sw.Stop();
-					Logger.AddDebugLog(" - CollectFiles phase1({0}items add, elapsed {1}ms)", add_count, sw.ElapsedMilliseconds);
+					AppService.Log.AddDebugLog(" - CollectFiles phase1({0}items add, elapsed {1}ms)", add_count, sw.ElapsedMilliseconds);
 					if (notify != null)
 						notify(string.Empty);
 
@@ -456,7 +463,7 @@ namespace SmartAudioPlayerFx.Managers
 						});
 					}
 					sw.Stop();
-					Logger.AddDebugLog(" - CollectFiles phase2({0}items update, elapsed {1}ms)", updateList.Count, sw.ElapsedMilliseconds);
+					AppService.Log.AddDebugLog(" - CollectFiles phase2({0}items update, elapsed {1}ms)", updateList.Count, sw.ElapsedMilliseconds);
 
 					// corescan finish
 					if (corescan_finished != null)
@@ -479,7 +486,7 @@ namespace SmartAudioPlayerFx.Managers
 							if ((x.LastWrite == DateTime.MinValue.Ticks) ||
 								(x.LastWrite < File.GetLastWriteTimeUtc(x.FilePath).Ticks))
 							{
-								var tag = MediaTagUtil.Get(x.FilePath);
+								var tag = MediaTagUtil.Get(new FileInfo(x.FilePath));
 								if (tag.IsTagLoaded)
 								{
 									x.FilePath = tag.FilePath;
@@ -511,7 +518,7 @@ namespace SmartAudioPlayerFx.Managers
 						});
 					}
 					sw.Stop();
-					Logger.AddDebugLog(" - CollectFiles phase3({0}items update, ellapsed {1}ms", updateList.Count, sw.ElapsedMilliseconds);
+					AppService.Log.AddDebugLog(" - CollectFiles phase3({0}items update, ellapsed {1}ms", updateList.Count, sw.ElapsedMilliseconds);
 
 					// scan finish
 					if (scan_finished != null)
@@ -527,12 +534,12 @@ namespace SmartAudioPlayerFx.Managers
 
 						// 最後の通知から2秒経過するまで待ってみる(2秒のタイムアウトが発生するまで待つ)
 						while (fsw.WaitForChanged(WatcherChangeTypes.All, 2000).TimedOut == false) ;
-						Logger.AddDebugLog("FSW-Notify, RaiseRescan.");
-						TaskEx.Run(() => CollectFiles(path));
+						AppService.Log.AddDebugLog("FSW-Notify, RaiseRescan.");
+						Task.Run(() => CollectFiles(path));
 						break;
 					}
 				}
-				Logger.AddDebugLog(" - CollectFiles finished.");
+				AppService.Log.AddDebugLog(" - CollectFiles finished.");
 			});
 
 			return _collectFiles_Task;

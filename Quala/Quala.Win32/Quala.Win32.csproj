@@ -1,0 +1,154 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{AC33CEA6-8564-4247-8841-02FEC18ABA1E}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Quala.Win32</RootNamespace>
+    <AssemblyName>Quala.Win32</AssemblyName>
+    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Components\KeyboardHook.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Dialog\FolderBrowseDialogEx.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Dialog\MessageDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Dialog\MessageDialog.Designer.cs">
+      <DependentUpon>MessageDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="[WinAPI]\API.cs" />
+    <Compile Include="[WinAPI]\API_adv.cs" />
+    <Compile Include="[WinAPI]\API_comctl.cs" />
+    <Compile Include="[WinAPI]\API_dwmapi.cs" />
+    <Compile Include="[WinAPI]\API_gdi.cs" />
+    <Compile Include="[WinAPI]\API_kernel.cs" />
+    <Compile Include="[WinAPI]\API_msacm.cs" />
+    <Compile Include="[WinAPI]\API_shell.cs" />
+    <Compile Include="[WinAPI]\API_shlwapi.cs" />
+    <Compile Include="[WinAPI]\API_user.cs" />
+    <Compile Include="[WinAPI]\API_windowsX.cs" />
+    <Compile Include="[WinAPI]\API_winmm.cs" />
+    <Compile Include="[WinAPI]\COM\COMDefinitions.cs" />
+    <Compile Include="[WinAPI]\COM\IAsyncReader.cs" />
+    <Compile Include="[WinAPI]\COM\IBaseFilter.cs" />
+    <Compile Include="[WinAPI]\COM\IBasicAudio.cs" />
+    <Compile Include="[WinAPI]\COM\IBasicVideo.cs" />
+    <Compile Include="[WinAPI]\COM\IBasicVideo2.cs" />
+    <Compile Include="[WinAPI]\COM\IBindCtx.cs" />
+    <Compile Include="[WinAPI]\COM\IContextMenu.cs" />
+    <Compile Include="[WinAPI]\COM\IDeskBand.cs" />
+    <Compile Include="[WinAPI]\COM\IDockingWindow.cs" />
+    <Compile Include="[WinAPI]\COM\IEnumFilters.cs" />
+    <Compile Include="[WinAPI]\COM\IEnumIDList.cs" />
+    <Compile Include="[WinAPI]\COM\IEnumMediaTypes.cs" />
+    <Compile Include="[WinAPI]\COM\IEnumMoniker.cs" />
+    <Compile Include="[WinAPI]\COM\IEnumPins.cs" />
+    <Compile Include="[WinAPI]\COM\IEnumShellItems.cs" />
+    <Compile Include="[WinAPI]\COM\IEnumString.cs" />
+    <Compile Include="[WinAPI]\COM\IFileDialog.cs" />
+    <Compile Include="[WinAPI]\COM\IFileDialogEvents.cs" />
+    <Compile Include="[WinAPI]\COM\IFileOpenDialog.cs" />
+    <Compile Include="[WinAPI]\COM\IFilterGraph.cs" />
+    <Compile Include="[WinAPI]\COM\IGraphBuilder.cs" />
+    <Compile Include="[WinAPI]\COM\IInputObject.cs" />
+    <Compile Include="[WinAPI]\COM\IInputObjectSite.cs" />
+    <Compile Include="[WinAPI]\COM\IMediaControl.cs" />
+    <Compile Include="[WinAPI]\COM\IMediaEvent.cs" />
+    <Compile Include="[WinAPI]\COM\IMediaEventEx.cs" />
+    <Compile Include="[WinAPI]\COM\IMediaEventSink.cs" />
+    <Compile Include="[WinAPI]\COM\IMediaFilter.cs" />
+    <Compile Include="[WinAPI]\COM\IMediaPosition.cs" />
+    <Compile Include="[WinAPI]\COM\IMediaSample.cs" />
+    <Compile Include="[WinAPI]\COM\IMediaSeeking.cs" />
+    <Compile Include="[WinAPI]\COM\IMemAllocator.cs" />
+    <Compile Include="[WinAPI]\COM\IModalWindow.cs" />
+    <Compile Include="[WinAPI]\COM\IMoniker.cs" />
+    <Compile Include="[WinAPI]\COM\INSSBuffer.cs" />
+    <Compile Include="[WinAPI]\COM\IObjectWithSite.cs" />
+    <Compile Include="[WinAPI]\COM\IOleWindow.cs" />
+    <Compile Include="[WinAPI]\COM\IPersist.cs" />
+    <Compile Include="[WinAPI]\COM\IPersistStream.cs" />
+    <Compile Include="[WinAPI]\COM\IPin.cs" />
+    <Compile Include="[WinAPI]\COM\IQualityControl.cs" />
+    <Compile Include="[WinAPI]\COM\IReferenceClock.cs" />
+    <Compile Include="[WinAPI]\COM\IRunningObjectTable.cs" />
+    <Compile Include="[WinAPI]\COM\ISequentialStream.cs" />
+    <Compile Include="[WinAPI]\COM\IShellFolder.cs" />
+    <Compile Include="[WinAPI]\COM\IShellItem.cs" />
+    <Compile Include="[WinAPI]\COM\IShellItemArray.cs" />
+    <Compile Include="[WinAPI]\COM\IShellItemFilter.cs" />
+    <Compile Include="[WinAPI]\COM\IStream.cs" />
+    <Compile Include="[WinAPI]\COM\IVideoWindow.cs" />
+    <Compile Include="[WinAPI]\COM\IWMMediaProps.cs" />
+    <Compile Include="[WinAPI]\COM\IWMOutputMediaProps.cs" />
+    <Compile Include="[WinAPI]\COM\IWMReader.cs" />
+    <Compile Include="[WinAPI]\COM\IWMReaderAdvanced.cs" />
+    <Compile Include="[WinAPI]\COM\IWMReaderAdvanced2.cs" />
+    <Compile Include="[WinAPI]\COM\IWMReaderAllocatorEx.cs" />
+    <Compile Include="[WinAPI]\COM\IWMReaderCallback.cs" />
+    <Compile Include="[WinAPI]\COM\IWMStatusCallback.cs" />
+    <Compile Include="[WinAPI]\COM\IWMSyncReader.cs" />
+    <Compile Include="[WinAPI]\COM\IWMSyncReader2.cs" />
+    <Compile Include="[WinAPI]\Win32Definitions.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Dialog\MessageDialog.resx">
+      <DependentUpon>MessageDialog.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.WindowsAPICodePack, Version=1.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>External\Microsoft.WindowsAPICodePack.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.WindowsAPICodePack.Shell, Version=1.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>External\Microsoft.WindowsAPICodePack.Shell.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="readme.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="External\Microsoft.WindowsAPICodePack.dll" />
+    <Content Include="External\Microsoft.WindowsAPICodePack.Shell.dll" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

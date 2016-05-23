@@ -1,6 +1,5 @@
 using System;
 using System.Windows.Forms;
-using Codeplex.Reactive.Extensions;
 using SmartAudioPlayerFx.Managers;
 
 namespace SmartAudioPlayerFx.Views.Options
@@ -31,7 +30,7 @@ namespace SmartAudioPlayerFx.Views.Options
 			{
 				MessageBox.Show("新しいアップデートはありませんでした", "SmartAudioPlayer Fx");
 			}
-			else if (ManagerServices.AppUpdateManager.ShowUpdateMessage(ParentDialog.Handle))
+			else if (await ManagerServices.AppUpdateManager.ShowUpdateMessageAsync(ParentDialog.Handle))
 			{
 				App.Current.Shutdown();
 			}

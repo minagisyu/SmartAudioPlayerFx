@@ -9,10 +9,10 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Interop;
 using System.Windows.Threading;
-using __Primitives__;
 using SmartAudioPlayerFx.Data;
 using SmartAudioPlayerFx.Views;
 using SmartAudioPlayerFx.Views.Options;
+using Quala.Win32.Dialog;
 
 namespace SmartAudioPlayerFx.Managers
 {
@@ -180,7 +180,7 @@ namespace SmartAudioPlayerFx.Managers
 					is_checked: f.Equals(current, StringComparison.CurrentCultureIgnoreCase),
 					clicked: delegate
 					{
-						TaskEx.Run(() =>
+						Task.Run(() =>
 						{
 							ManagerServices.MediaDBViewManager.FocusPath.Value = f;
 							ManagerServices.JukeboxManager.ViewFocus.Value.Dispose();
@@ -205,9 +205,9 @@ namespace SmartAudioPlayerFx.Managers
 				.ToArray();
 			return ret.Any() ? ret : new[] { new MenuItemDefinition("履歴はありません", enabled: false), };
 		}
-		static void OnUpdate()
+		static async void OnUpdate()
 		{
-			if (ManagerServices.AppUpdateManager.ShowUpdateMessage(new WindowInteropHelper(App.Current.MainWindow).EnsureHandle()))
+			if (await ManagerServices.AppUpdateManager.ShowUpdateMessageAsync(new WindowInteropHelper(App.Current.MainWindow).EnsureHandle()))
 				App.Current.Shutdown();
 		}
 		static void OpenFolderDialog()
@@ -226,7 +226,7 @@ namespace SmartAudioPlayerFx.Managers
 					{
 						if (dlg.ShowDialog(nativeWindow) == DialogResult.OK)
 						{
-							TaskEx.Run(() =>
+							Task.Run(() =>
 							{
 								ManagerServices.MediaDBViewManager.FocusPath.Value = dlg.SelectedPath;
 								ManagerServices.JukeboxManager.ViewFocus.Value.Dispose();
@@ -252,7 +252,7 @@ namespace SmartAudioPlayerFx.Managers
 				nativeWindow.AssignHandle(handle);
 				using (var dlg = new OptionDialog())
 				{
-					App.CenterWindow(dlg.Handle, handle);
+					App.Current.CenterWindow(dlg.Handle, handle);
 					var mw = (MainWindow)App.Current.MainWindow;
 					dlg.InactiveOpacity = (int)(mw.ViewModel.InactiveOpacity.Value * 100.0);
 					dlg.DeactiveOpacity = (int)(mw.ViewModel.DeactiveOpacity.Value * 100.0);

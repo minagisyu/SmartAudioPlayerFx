@@ -8,12 +8,13 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
-using __Primitives__;
-using Codeplex.Reactive.Extensions;
 using SmartAudioPlayerFx.Data;
 using SmartAudioPlayerFx.Managers;
 using Drawing = System.Drawing;
 using WinForms = System.Windows.Forms;
+using Reactive.Bindings.Extensions;
+using Quala.Extensions;
+using Quala.WPF.Extensions;
 
 namespace SmartAudioPlayerFx.Views
 {
@@ -127,7 +128,7 @@ namespace SmartAudioPlayerFx.Views
 				// 選択項目が変化したら専用のListFocusConditionを生成させて設定する (prevListFocusも上書き)
 				var selected_item = treeView.SelectedItem as MediaTreeItemViewModel;
 				if (selected_item == null) return;
-				TaskEx.Run(() =>
+				Task.Run(() =>
 				{
 					var old = ViewModel.ListFocus.Value;
 					if (old != null)

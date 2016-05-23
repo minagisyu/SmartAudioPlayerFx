@@ -7,10 +7,10 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Windows;
 using System.Windows.Media;
-using __Primitives__;
-using Codeplex.Reactive.Extensions;
 using SmartAudioPlayerFx.Data;
 using SmartAudioPlayerFx.Managers;
+using Reactive.Bindings.Extensions;
+using Quala.WPF;
 
 namespace SmartAudioPlayerFx.Views
 {
@@ -51,7 +51,7 @@ namespace SmartAudioPlayerFx.Views
 				{
 					_OpenExplorerCommand = new DelegateCommand<string>(x =>
 					{
-						App.OpenToExplorer(x);
+						App.Current.OpenToExplorer(x);
 					});
 				}
 				return _OpenExplorerCommand;
@@ -303,7 +303,7 @@ namespace SmartAudioPlayerFx.Views
 				{
 					_OpenExplorerCommand = new DelegateCommand<string>(x =>
 					{
-						App.OpenToExplorer(x);
+						App.Current.OpenToExplorer(x);
 					});
 				}
 				return _OpenExplorerCommand;
@@ -335,7 +335,7 @@ namespace SmartAudioPlayerFx.Views
 				{
 					_EditTagInfoCommand = new DelegateCommand<string>(x =>
 					{
-						MediaTagUtil.TagEditGUI(x);
+						MediaTagUtil.TagEditGUI(new FileInfo(x));
 					});
 				}
 				return _EditTagInfoCommand;

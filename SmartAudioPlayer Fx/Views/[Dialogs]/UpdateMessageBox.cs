@@ -9,7 +9,7 @@ namespace SmartAudioPlayerFx.Views
 	/// スキップ→ DialogResult.Ignore
 	/// キャンセル→ DialogResult.Cansel
 	/// </summary>
-	partial class UpdateMessageBox : Form
+	public partial class UpdateMessageBox : Form
 	{
 		public UpdateMessageBox()
 		{

@@ -7,11 +7,11 @@ using System.Reactive.Linq;
 using System.Windows;
 using System.Windows.Media;
 using System.Xml.Linq;
-using __Primitives__;
-using Codeplex.Reactive;
-using Codeplex.Reactive.Extensions;
 using SmartAudioPlayerFx.Data;
 using SmartAudioPlayerFx.Managers;
+using Reactive.Bindings;
+using Reactive.Bindings.Extensions;
+using Quala.Extensions;
 
 namespace SmartAudioPlayerFx.Views
 {

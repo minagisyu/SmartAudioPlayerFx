@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Windows.Forms;
 using System.Xml.Linq;
-using __Primitives__;
 using SmartAudioPlayerFx.Data;
 using SmartAudioPlayerFx.Managers;
+using Quala.Win32;
+using Quala.Extensions;
 
 namespace SmartAudioPlayerFx.Views.Options
 {

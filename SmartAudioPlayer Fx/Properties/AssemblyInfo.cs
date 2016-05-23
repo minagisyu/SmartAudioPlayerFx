@@ -9,14 +9,14 @@ using System.Windows;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("intre.")]
 [assembly: AssemblyProduct("SmartAudioPlayer")]
-[assembly: AssemblyCopyright("Copyright (C) 2012 MinagiSyu, intre.")]
+[assembly: AssemblyCopyright("Copyright (C) 2016 MinagiSyu, intre.")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
 [assembly: ComVisible(false)]
 [assembly: ThemeInfo(ResourceDictionaryLocation.None, ResourceDictionaryLocation.SourceAssembly)]
 
-[assembly: AssemblyVersion("3.3.0.2")]
+[assembly: AssemblyVersion("3.4.0.0")]
 
 
 #if DEBUG

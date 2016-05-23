@@ -1,0 +1,6 @@
+_ref
+.vs
+packages
+bin/
+obj/
+*.user

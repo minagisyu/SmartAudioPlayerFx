@@ -3,7 +3,8 @@
 	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
-	xmlns:pb="clr-namespace:__Primitives__"
+	xmlns:pb="clr-namespace:Quala.WPF.Behavior;assembly=Quala.WPF"
+    xmlns:pc="clr-namespace:Quala.WPF.Controls;assembly=Quala.WPF"
 	xmlns:v="clr-namespace:SmartAudioPlayerFx.Views"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -14,8 +15,8 @@
     <i:Interaction.Behaviors>
         <pb:UnvisibleResizeBorderBehavior Left="5" Right="5" />
         <pb:WindowDragMoveBehavior x:Name="wdmbehavior" IsSnapped="True" />
-        <v:NoActivateBehavior />
-        <v:ToolWindowBehavior />
+        <pb:NoActivateBehavior />
+        <pb:ToolWindowBehavior />
     </i:Interaction.Behaviors>
 
     <Grid x:Name="LayoutRoot" Height="24" VerticalAlignment="Top">
@@ -118,7 +119,7 @@
                     <Expander.Content>
                         <!-- [MEMO] Slider.IsMoveToPointEnabled=Trueにすると
 						Thumb意外の部分でマウスイベントを受信出来なくなる...-->
-                        <pb:SliderEx
+                        <pc:SliderEx
 							x:Name="seekSlider"
 							Focusable="False"
 							IsMoveToPointEnabled="True"
@@ -126,14 +127,14 @@
 							Style="{StaticResource MiniSlider}"
 							Value="{Binding PositionTicks.Value, Mode=OneWay}">
                             <i:Interaction.Behaviors>
-                                <v:SliderTooltipAutoAdjastBehavior />
+                                <pb:SliderTooltipAutoAdjastBehavior />
                             </i:Interaction.Behaviors>
-                        </pb:SliderEx>
+                        </pc:SliderEx>
                     </Expander.Content>
                 </Expander>
                 <Expander x:Name="volumeExpander" Grid.Column="6">
                     <Expander.Content>
-                        <pb:SliderEx
+                        <pc:SliderEx
 							x:Name="volumeSlider"
 							Focusable="False"
 							IsMoveToPointEnabled="True"
@@ -143,9 +144,9 @@
 							ToolTip="{Binding VolumeTooltip.Value}"
 							Value="{Binding Volume.Value}">
                             <i:Interaction.Behaviors>
-                                <v:SliderTooltipAutoAdjastBehavior />
+                                <pb:SliderTooltipAutoAdjastBehavior />
                             </i:Interaction.Behaviors>
-                        </pb:SliderEx>
+                        </pc:SliderEx>
                     </Expander.Content>
                     <Expander.Style>
                         <Style BasedOn="{StaticResource RightSlideExpander}" TargetType="Expander">

@@ -7,88 +7,82 @@ using Microsoft.VisualBasic;
 namespace SmartAudioPlayerFx.Data
 {
 	[DebuggerDisplay("{Title}")]
-	sealed class MediaItem
+	public sealed class MediaItem
 	{
 		// Memo: SAPFx 3.2.0.1以前のQuala.dllの実装ミスにより
 		//       DBカラムが追加されると例外落ちして読み込めなくなるのでカラムの追加は不可能
 		//       互換性を維持するためには、別のテーブルにデータを置く必要がある
-		public const char SearchHintSplitChar = '\b';
+		const char _SPLITCHAR_ = '\b';		// 検索ヒント用セパレート文字
 		public string _play_error_reason;
 
-		public long ID;				// ID(自動生成/Primary key)
-		public string FilePath;		// ファイルパス(indexed, unique, collate nocase)
-		public string Title;		// タイトル
-		public string Artist;		// アーティスト
-		public string Album;		// アルバム
-		public string Comment;		// コメント
-		public string SearchHint;	// 検索ヒント
-		public long CreatedDate;	// ファイル作成日(UTC ticks)
-		public long LastWrite;		// ファイル最終書き込み日(UTC ticks)
-		public long LastUpdate;		// DB最終更新日(UTC ticks)
-		public long LastPlay;		// 最終再生日(UTC ticks)
-		public long PlayCount;		// 再生数
-		public long SelectCount;	// 選択数
-		public long SkipCount;		// スキップ数
-		public bool IsFavorite;		// お気に入り？
-		public bool IsNotExist;		// ファイルが存在しない
+		public long ID { get; set; }			// ID(自動生成/Primary key)
+		public string FilePath { get; set; }	// ファイルパス(indexed, unique, collate nocase)
+		public string Title { get; set; }       // タイトル
+		public string Artist { get; set; }		// アーティスト
+		public string Album { get; set; }		// アルバム
+		public string Comment { get; set; }		// コメント
+		public string SearchHint { get; set; }	// 検索ヒント
+		public long CreatedDate { get; set; }	// ファイル作成日(UTC ticks)
+		public long LastWrite { get; set; }		// ファイル最終書き込み日(UTC ticks)
+		public long LastUpdate { get; set; }	// DB最終更新日(UTC ticks)
+		public long LastPlay { get; set; }		// 最終再生日(UTC ticks)
+		public long PlayCount { get; set; }		// 再生数
+		public long SelectCount { get; set; }	// 選択数
+		public long SkipCount { get; set; }		// スキップ数
+		public bool IsFavorite { get; set; }	// お気に入り？
+		public bool IsNotExist { get; set; }	// ファイルが存在しない
 
 		public MediaItem() { }
 		public MediaItem(string path)
 		{
 			var fi = new FileInfo(path);
-			this.ID = 0;
-			this.FilePath = fi.FullName;
-			this.Title = fi.Name;
-			this.Artist = string.Empty;
-			this.Album = string.Empty;
-			this.Comment = string.Empty;
-			this.UpdateSearchHint();
-			this.CreatedDate = ((fi.Exists) ? fi.CreationTimeUtc : DateTime.MinValue).Ticks;
-			this.LastWrite = ((fi.Exists) ? fi.LastWriteTimeUtc : DateTime.MinValue).Ticks;
-			this.LastUpdate = DateTime.UtcNow.Ticks;
-			this.LastPlay = DateTime.MinValue.Ticks;
-			this.PlayCount = 0;
-			this.SkipCount = 0;
-			this.IsFavorite = false;
-			this.IsNotExist = !fi.Exists;
+			ID = 0;
+			FilePath = fi.FullName;
+			Title = fi.Name;
+			Artist = string.Empty;
+			Album = string.Empty;
+			Comment = string.Empty;
+			UpdateSearchHint();
+			CreatedDate = ((fi.Exists) ? fi.CreationTimeUtc : DateTime.MinValue).Ticks;
+			LastWrite = ((fi.Exists) ? fi.LastWriteTimeUtc : DateTime.MinValue).Ticks;
+			LastUpdate = DateTime.UtcNow.Ticks;
+			LastPlay = DateTime.MinValue.Ticks;
+			PlayCount = 0;
+			SkipCount = 0;
+			IsFavorite = false;
+			IsNotExist = !fi.Exists;
 		}
 
 		public void UpdateSearchHint()
 		{
 			// filepath, title, artist, album, commentを半角小文字カナに変換して\bで連結
-			var filepath = StrConv_LowerHankakuKana(this.FilePath);
-			var title = StrConv_LowerHankakuKana(this.Title);
-			var artist = StrConv_LowerHankakuKana(this.Artist);
-			var album = StrConv_LowerHankakuKana(this.Album);
-			var comment = StrConv_LowerHankakuKana(this.Comment);
-			this.SearchHint = string.Format(
-				"{0}" + SearchHintSplitChar +
-				"{1}" + SearchHintSplitChar +
-				"{2}" + SearchHintSplitChar +
-				"{3}" + SearchHintSplitChar +
-				"{4}",
-				filepath, title, artist, album, comment);
+			var filepath = StrConv_LowerHankakuKana(FilePath);
+			var title = StrConv_LowerHankakuKana(Title);
+			var artist = StrConv_LowerHankakuKana(Artist);
+			var album = StrConv_LowerHankakuKana(Album);
+			var comment = StrConv_LowerHankakuKana(Comment);
+			SearchHint = $"{filepath}{_SPLITCHAR_}{title}{_SPLITCHAR_}{artist}{_SPLITCHAR_}{album}{_SPLITCHAR_}{comment}";
 		}
 
 		public void CopyTo(MediaItem item)
 		{
-			item.ID = this.ID;
-			item.FilePath = this.FilePath;
-			item.Title = this.Title;
-			item.Artist = this.Artist;
-			item.Album = this.Album;
-			item.Comment = this.Comment;
-			item.SearchHint = this.SearchHint;
-			item.CreatedDate = this.CreatedDate;
-			item.LastWrite = this.LastWrite;
-			item.LastUpdate = this.LastUpdate;
-			item.LastPlay = this.LastPlay;
-			item.PlayCount = this.PlayCount;
-			item.SelectCount = this.SelectCount;
-			item.SkipCount = this.SkipCount;
-			item.IsFavorite = this.IsFavorite;
-			item.IsNotExist = this.IsNotExist;
-			item._play_error_reason = this._play_error_reason;
+			item.ID = ID;
+			item.FilePath = FilePath;
+			item.Title = Title;
+			item.Artist = Artist;
+			item.Album = Album;
+			item.Comment = Comment;
+			item.SearchHint = SearchHint;
+			item.CreatedDate = CreatedDate;
+			item.LastWrite = LastWrite;
+			item.LastUpdate = LastUpdate;
+			item.LastPlay = LastPlay;
+			item.PlayCount = PlayCount;
+			item.SelectCount = SelectCount;
+			item.SkipCount = SkipCount;
+			item.IsFavorite = IsFavorite;
+			item.IsNotExist = IsNotExist;
+			item._play_error_reason = _play_error_reason;
 		}
 
 		#region 検索用文字変換(& cctor)
@@ -109,7 +103,7 @@ namespace SmartAudioPlayerFx.Data
 			catch (ArgumentException) { }
 			// アジアロケールもサポートなしっすか…。 >> Lowercase(All)
 			flag = VbStrConv.Lowercase;
-		Finish:
+			Finish:
 			StrConvFlag = flag;
 		}
 
@@ -129,7 +123,7 @@ namespace SmartAudioPlayerFx.Data
 	}
 
 	// MediaItemのファイルパス関連操作の高速化を目的としたキャッシュクラス
-	static class MediaItemExtension
+	public static class MediaItemExtension
 	{
 		public static void ClearAllCache()
 		{

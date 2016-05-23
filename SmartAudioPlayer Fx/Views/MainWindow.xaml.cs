@@ -10,11 +10,14 @@ using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
-using __Primitives__;
 using Microsoft.Win32;
 using SmartAudioPlayerFx.Managers;
 using WinForms = System.Windows.Forms;
-using Codeplex.Reactive.Extensions;
+using Reactive.Bindings.Extensions;
+using SmartAudioPlayerFx.Data;
+using Quala;
+using Quala.Win32;
+using Quala.WPF.Extensions;
 
 namespace SmartAudioPlayerFx.Views
 {
@@ -64,7 +67,7 @@ namespace SmartAudioPlayerFx.Views
 				ev.Cancel = ClosingAnimation();
 				if (ev.Cancel == false)
 				{
-					Logger.AddDebugLog("App MainWindow Closing, (save/hide)");
+					AppService.Log.AddDebugLog("App MainWindow Closing, (save/hide)");
 					ViewModel.SavePreferences();
 					ManagerServices.AudioPlayerManager.Close();
 				}
@@ -194,11 +197,11 @@ namespace SmartAudioPlayerFx.Views
 				0x142, (int)screenPos.X, (int)screenPos.Y,
 				new HandleRef(helper, helper.Handle),
 				IntPtr.Zero);
-			Logger.AddDebugLog("TrackPopupMenuEx() result: {0}", id);
+			AppService.Log.AddDebugLog("TrackPopupMenuEx() result: {0}", id);
 			if (id != 0)
 			{
 				var result = cmenu_executer.Invoke(null, new object[] { id });
-				Logger.AddDebugLog("System.Windows.Forms.Command.DispatchID() result: {0}", result);
+				AppService.Log.AddDebugLog("System.Windows.Forms.Command.DispatchID() result: {0}", result);
 			}
 		}
 
@@ -221,7 +224,7 @@ namespace SmartAudioPlayerFx.Views
 			// スムーズなアニメーションのために、ちょっと工夫
 			// メッセージ処理が全部終えてからアニメーションするために優先度をIdleまで下げる
 			LayoutRoot.Opacity = 0.0;
-			App.UIThreadBeginInvoke(() =>
+			App.Current.UIThreadBeginInvoke(() =>
 			{
 				// アクティブ時透明度→非アクティブ時透明度へアニメーション
 				OpacityAnimation(ViewModel.InactiveOpacity.Value, 200, () =>

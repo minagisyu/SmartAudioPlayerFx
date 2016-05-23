@@ -6,11 +6,12 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Xml.Linq;
-using __Primitives__;
-using Codeplex.Reactive;
-using Codeplex.Reactive.Extensions;
 using SmartAudioPlayerFx.Data;
 using SmartAudioPlayerFx.Managers;
+using System.Threading;
+using Reactive.Bindings;
+using Reactive.Bindings.Extensions;
+using Quala.Extensions;
 
 namespace SmartAudioPlayerFx.Views
 {
@@ -52,6 +53,11 @@ namespace SmartAudioPlayerFx.Views
 		//
 		public ReactiveProperty<string> PositionString { get; private set; }
 		public ReactiveProperty<string> SeekTooltip { get; private set; }
+		
+		// Rxのバージョンをあげたら非同期処理の実行順が崩れて問題が発生
+		// とりあえず、反復的に処理されないように暫定対応している
+		ManualResetEventSlim VolumeSuspressEv;
+		ManualResetEventSlim PositionSuspressEv;
 
 		#endregion
 
@@ -116,22 +122,45 @@ namespace SmartAudioPlayerFx.Views
 				.Subscribe(_ => IsPaused.Value = ManagerServices.AudioPlayerManager.IsPaused);
 			ManagerServices.JukeboxManager.CurrentMedia
 				.Subscribe(x => CurrentMedia.Value = x);
+
+			PositionSuspressEv = new ManualResetEventSlim(false);
 			Observable.Merge(
 				ManagerServices.AudioPlayerManager.OpenedAsObservable(),
 				ManagerServices.AudioPlayerManager.PositionSettedAsObservable(),
 				Observable.Timer(TimeSpan.Zero, TimeSpan.FromSeconds(1)).Select(_ => Unit.Default))
 				.ObserveOnUIDispatcher()
-				.Subscribe(_ => PositionTicks.Value = ManagerServices.AudioPlayerManager.Position.Ticks);
+				.Subscribe(_ =>
+				{
+					if (PositionSuspressEv.IsSet == false)
+					{
+						PositionTicks.Value = ManagerServices.AudioPlayerManager.Position.Ticks;
+					}
+					PositionSuspressEv.Reset();
+				});
+
 			ManagerServices.AudioPlayerManager.OpenedAsObservable()
 				.Subscribe(_ => DurationTicks.Value = ManagerServices.AudioPlayerManager.Duration.HasValue ? ManagerServices.AudioPlayerManager.Duration.Value.Ticks : 0);
-			Observable.Merge(
+
+            VolumeSuspressEv = new ManualResetEventSlim(false);
+            Observable.Merge(
 				ManagerServices.AudioPlayerManager.VolumeChangedAsObservable(),
 				Observable.Return(Unit.Default))
 				.ObserveOnUIDispatcher()
-				.Subscribe(_ => Volume.Value = ManagerServices.AudioPlayerManager.Volume);
+				.Subscribe(_ =>
+                {
+					if (VolumeSuspressEv.IsSet == false)
+					{
+						Volume.Value = ManagerServices.AudioPlayerManager.Volume;
+					}
+					VolumeSuspressEv.Reset();
+                });
 			Volume
 				.ObserveOnUIDispatcher()
-				.Subscribe(x => ManagerServices.AudioPlayerManager.Volume = x);
+				.Subscribe(x =>
+                {
+					VolumeSuspressEv.Set();
+                    ManagerServices.AudioPlayerManager.Volume = x;
+                });
 
 			// SubProperty
 			SelectMode
@@ -169,7 +198,7 @@ namespace SmartAudioPlayerFx.Views
 			TitleTooltip
 				.Subscribe(x => TitleTooltipEnable.Value = !string.IsNullOrWhiteSpace(x));
 			TitleSkipCommand
-				.Subscribe(_ => TaskEx.Run(() => ManagerServices.JukeboxManager.SelectNext(true)));
+				.Subscribe(_ => Task.Run(() => ManagerServices.JukeboxManager.SelectNext(true)));
 			Volume
 				.Subscribe(x =>
 				{
@@ -225,7 +254,7 @@ namespace SmartAudioPlayerFx.Views
 
 		public void JukeboxStart()
 		{
-			TaskEx.Run(() =>
+			Task.Run(() =>
 			{
 				ManagerServices.JukeboxManager.Start();
 			});
@@ -233,6 +262,7 @@ namespace SmartAudioPlayerFx.Views
 		public void SetPlayerPosition(TimeSpan value)
 		{
 			ManagerServices.AudioPlayerManager.Position = value;
+			PositionSuspressEv.Set();
 		}
 
 		#region Value to String Convertion
