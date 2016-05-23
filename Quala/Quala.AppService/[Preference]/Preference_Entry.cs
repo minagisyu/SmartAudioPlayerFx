@@ -27,12 +27,12 @@ namespace Quala
 				return this;
 			}
 
-			public Entry GetValue(string key, Action<object> valueAction)
+			public T GetValue<T>(string key, T defaultValue = default(T))
 			{
 				object value;
-				lock (_keyValue) { value = _keyValue[key]; }
-				valueAction?.Invoke(value);
-				return this;
+				bool result;
+				lock (_keyValue) { result = _keyValue.TryGetValue(key, out value); }
+				return (result && value is T) ? (T)value : defaultValue;
 			}
 
 			public Entry SetValue(string key, object value)
