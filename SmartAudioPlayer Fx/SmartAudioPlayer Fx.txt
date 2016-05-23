@@ -38,26 +38,29 @@ HKEY_CURRENT_USER\Software\Microsoft\MediaPlayer\Player\Extensions
 ・拡張子追加しても再生出来ない
   - 拡張子の追加はファイル検索の対象になるだけです。
   - WindowsMediaPlayerで再生出来るものは再生出来るはず。
-  - DirectShowのフィルタをインストールすると色々再生出来ます。↓オススメはこれ。
-  - CCCP: http://www.cccp-project.net/
+  - DirectShowのフィルタをインストールすると色々再生出来ます。↓一番のオススメはLAV Filters
+  - LAV Filters: http://forum.doom9.org/showthread.php?t=156191
   - ffdshow tryouts: http://ffdshow-tryout.sourceforge.net/
+  - CCCP: http://www.cccp-project.net/
 
  ・再生させた瞬間アプリケーションがクラッシュする
    - 何かのDirectShowフィルタが悪さをしている予感
    - フィルタのメリット値を変えたり無効にしたり登録解除して試してみてください
+    - 登録解除の例） regsvr32 /u フィルタファイル名
    - ライティングソフトやDVD/Blu-ray再生ソフトウェア、地デジチューナー等が怪しいかも？
    - FLVの再生時にクラッシュする問題は以下のフィルタが怪しい
     - PowerDVDのCyberLink FLV Splitter (CLFLVSplitter.ax)
- 	- B's Recorder GOLDのMainConcept MPEG Splitter (mcspmpeg.ax)
-
+    - B's Recorder GOLDのMainConcept MPEG Splitter (mcspmpeg.ax)
 
 ◆メディアライブラリ ウィンドウ
 ・検索の仕様について
   - ファイルパス、タイトル名、アーティスト名、アルバム名、コメントから単語検索しています
   - 検索ワードは大文字/小文字、全角/半角の区別なしです。(ただし漢字除く)
+  - AND検索しか出来ません
 
 ・「最近追加」リストって？
-  - 2週間前までに追加された項目が表示されるリストです。
+  - 現在からn日前までに追加された項目が表示されるリストです
+  - 日数はデフォルトで60日、オプションで変更可能です
 
 ・リストの背景色の意味は？
   - 黄: ファイル作成日が最近のもの。7日単位4段階で薄くなります。
@@ -80,7 +83,8 @@ HKEY_CURRENT_USER\Software\Microsoft\MediaPlayer\Player\Extensions
   - 原因調査中。
 
 ・曲が再生しているようだが、音が聞こえない
-  - 原因調査中。一時停止→再生したり、ボリュームを弄ると音が鳴る。
+  - 原因調査中。一時停止→再生したり、ボリュームを弄ると音が鳴る
+  - ゲームの改造対策ソフトが原因で音声出力に異常が発生する場合もあるようです
 
 ・MIDIファイルを途中から再生(再生中にアプリケーションを終了し、再度起動)した状態で曲をスキップすると落ちる
   - 原因調査中。環境依存っぽい？
@@ -100,38 +104,80 @@ HKEY_CURRENT_USER\Software\Microsoft\MediaPlayer\Player\Extensions
 
 □□ ライブラリについて □□□□□□□□□□□□□□□□□□□□□□□□□□
 
-mp3infp 2.54i/u6
+mp3infp
   ** http://win32lab.com/fsw/mp3infp/
   ** 掲示板で配布されている有志によるアップデート版を同梱しています
 
-DotNetZip Library 1.9
+Windows API Code Pack for Microsoft .NET Framework
+  ** http://archive.msdn.microsoft.com/WindowsAPICodePack
+
+Expression Blend SDK for .NET 4
+  ** http://www.microsoft.com/downloads/ja-jp/details.aspx?FamilyID=75e13d71-7c53-4382-9592-6c07c6a00207
+
+Async Targeting Pack for Visual Studio 2012
+  ** http://www.microsoft.com/en-us/download/details.aspx?id=29576
+
+DotNetZip Library
   ** http://dotnetzip.codeplex.com/
 
-System.Data.SQLite 1.0.66.0
+System.Data.SQLite
   ** http://sqlite.phxsoftware.com/
 
-Reactive Extensions for .NET 1.0.2787.104
-  ** http://msdn.microsoft.com/en-us/devlabs/ee794896.aspx
+Reactive Extensions
+  ** http://msdn.microsoft.com/en-us/data/gg577609
 
-Windows® API Code Pack for Microsoft® .NET Framework 1.1
-  ** http://code.msdn.microsoft.com/WindowsAPICodePack
+Interactive Extensions
+  ** http://www.microsoft.com/download/en/details.aspx?id=27203
+
+ReactiveProperty
+  ** http://reactiveproperty.codeplex.com/
+
+DbExecutor
+  ** http://dbexecutor.codeplex.com/
 
 Diagona Icons
   ** Copyright (C) 2007 Yusuke Kamiyamane. All rights reserved.
   ** The icons are licensed under a Creative Commons Attribution3.0 license.
   ** <http://creativecommons.org/licenses/by/3.0/>
+  ** http://p.yusukekamiyamane.com/
 
 
 □□ ライセンス＆再配布について □□□□□□□□□□□□□□□□□□□□□□
 
-SmartAudioPlayer FxとQuala.dllに関してはパブリックドメイン扱いとします。
-同梱されているライブラリやアイコンに関してはそのライセンスに従ってください。
+SmartAudioPlayer Fxはパブリックドメイン扱いとします。
+同梱されているライブラリやアイコンの扱いに関してはそのライセンスに従ってください。
 
 また、このプログラムは無保証であるがままに提供されています。
 プログラムによって生じたいかなる損害も補償する義務を負いません。
 
 
 □ バージョン履歴 □□□□□□□□□□□□□□□□□□□□□□□□□□□□□
+
+3.3.0.2 - 2012/06/16
+◆アプリケーション
+・多重起動を判定するタイミングの問題で自動アップデートに失敗する問題を修正
+  - チェックが甘くてすみません...
+
+3.3.0.1 - 2012/06/16
+◆アプリケーション
+・ライブラリを更新
+・アプリケーションの署名をやめた
+  - 一部ライブラリに署名が無く組み込めないためです
+・処理を全般的に書き直した
+  - 履歴に書ききれていない変更もあると思いますが思い出せません...
+◆プレーヤーウィンドウ
+・一部のキーショートカットが効かないバグを修正
+・ウィンドウの最小サイズに制限をつけた
+・ウィンドウの位置を保存・復元するのにWindowPlacement APIを使用するようにした
+◆メディアライブラリ ウィンドウ
+・「ファイルの保存場所を開く」が正常に動作しないバグを修正
+・ツリーが正確に生成されないバグを修正
+・フォルダ直下のファイルアイテムが表示されないバグを修正
+・特殊ツリー項目[すべて]を追加
+・特殊ツリー項目[最近追加]で表示される日数をオプションで変更できるようにした
+・特殊ツリー項目の表示条件でツリーを表示できるようにした
+　- ツリー項目右側のボタンで切り替えます
+　- ツリーに表示されている内容が再生時に選択されるファイルとなります
 
 3.2.0.3
 ◆アプリケーション
