@@ -6,6 +6,7 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Quala;
+using SmartAudioPlayerFx.UI;
 
 namespace SmartAudioPlayerFx.Player
 {
@@ -53,10 +54,6 @@ namespace SmartAudioPlayerFx.Player
 			JukeboxService.AllItems.ItemCollect_CoreScanFinished += OnCoreScanFinished;
 		}
 
-		public static void PrepareService()
-		{
-		}
-
 		static void OnPlayEnded(AudioPlayer.PlayEndedEventArgs e)
 		{
 			if (e.ErrorReason != null && CurrentMedia != null && PlayError != null)
@@ -84,7 +81,7 @@ namespace SmartAudioPlayerFx.Player
 		static void OnCoreScanFinished()
 		{
 			if (CurrentMedia == null)
-				SelectNext(true);
+				UIService.UIThreadInvoke(() => SelectNext(true));
 		}
 
 		#endregion

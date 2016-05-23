@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Concurrency;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -26,19 +26,6 @@ namespace SmartAudioPlayerFx.Update
 		public static Version LastCheckVersion { get; private set; }
 		public static int CheckIntervalDays { get; private set; }
 
-		// ShowUpdateMessageが表示中かどうか
-		public static bool IsShowingUpdateMessage { get; private set; }
-
-		/// <summary>
-		/// アップデートが使用できる場合はtrue
-		/// </summary>
-		public static bool IsUpdateReady
-		{
-			get { return (last_checked_update_info != null); }
-		}
-
-		static XElement last_checked_update_info = null;
-
 		static UpdateService()
 		{
 			UpdateInfo = new Uri("http://update.intre.net/sapfx/update.xml");
@@ -53,19 +40,22 @@ namespace SmartAudioPlayerFx.Update
 			};
 
 			Observable.Timer(TimeSpan.FromHours(24), TimeSpan.FromHours(24))
-				.ObserveOn(Scheduler.ThreadPool)
 				.Subscribe(_=> OnAutoUpdateCheck());
+		}
+
+		public static void Start()
+		{
+			LoadPreferences();
+			OnAutoUpdateCheck();
 		}
 
 		static void OnAutoUpdateCheck()
 		{
 			if (LastCheckDate.AddDays(CheckIntervalDays) < DateTime.UtcNow)
 			{
-				Task.Factory.StartNew(() =>
-				{
-					if (CheckUpdate() ?? false)
+				CheckUpdate()
+					.Subscribe(newVersion =>
 					{
-						var newVersion = Version.Parse(last_checked_update_info.GetOrDefaultValue("Version", "0.0.0.0"));
 						if (IsUpdateReady && LastCheckVersion < newVersion)
 						{
 							TasktrayService.ShowBaloonTip(
@@ -74,8 +64,8 @@ namespace SmartAudioPlayerFx.Update
 								"新しいバージョンが利用可能です！",
 								"アップデートするにはここをクリックするか、メニューから選択してください。");
 						}
-					}
-				});
+					},
+					ex => { });
 			}
 		}
 
@@ -104,55 +94,76 @@ namespace SmartAudioPlayerFx.Update
 			LastCheckVersion = elm.GetOrDefaultValue("LastCheckVersion", LastCheckVersion);
 			LastCheckDate = elm.GetOrDefaultValue("LastCheckDate", LastCheckDate);
 			CheckIntervalDays = elm.GetOrDefaultValue("CheckIntervalDays", CheckIntervalDays).LimitMin(1);
-			OnAutoUpdateCheck();
 		}
 
 		#endregion
 
+		static XElement last_checked_update_info = null;
 		static readonly object check_update_sync = new object();
 
 		/// <summary>
+		/// アップデートが使用できる場合はtrue
+		/// </summary>
+		public static bool IsUpdateReady
+		{
+			get { return (last_checked_update_info != null); }
+		}
+
+		/// <summary>
+		/// ShowUpdateMessageが表示中かどうか
+		/// </summary>
+		public static bool IsShowingUpdateMessage { get; private set; }
+
+		/// <summary>
 		/// 更新を確認する。
-		/// エラー: null
-		/// ない: false
-		/// あった: true
-		/// trueが返ったらShowUpdateMessage()を呼び出せます。
+		/// 現在より新しいバージョンがあればそのバージョン番号を返します。
+		/// 例外も出ます。何も返らない場合もあります。
 		/// </summary>
 		/// <returns></returns>
-		public static bool? CheckUpdate()
+		public static IObservable<Version> CheckUpdate()
 		{
 			LogService.AddDebugLog("UpdateService", "Call CheckUpdate");
-			if(NetworkInterface.GetIsNetworkAvailable() == false)
+
+			var subject = new Subject<Version>();
+			Task.Factory.StartNew(() =>
 			{
-				LogService.AddDebugLog("UpdateService", " - Network not available.");
-				return null;
-			}
-
-			lock (check_update_sync)
-			{
-				try { last_checked_update_info = XElement.Load(UpdateInfo.ToString()); }
-				catch (WebException e) { LogService.AddErrorLog("UpdateService", " - update.xml取得中にエラーが発生しました", e); }
-				catch (SecurityException e) { LogService.AddErrorLog("UpdateService", " - update.xml取得中にエラーが発生しました", e); }
-				catch (FileNotFoundException e) { LogService.AddErrorLog("UpdateService", " - update.xml取得中にエラーが発生しました", e); }
-				if (last_checked_update_info == null) return null;
-
-				// 最終チェック日更新
-				LastCheckDate = DateTime.UtcNow;
-
-				var currentVersion = Assembly.GetEntryAssembly().GetName().Version;
-				Version newVersion;
-				if (Version.TryParse(last_checked_update_info.GetOrDefaultValue("Version", "0.0.0.0"), out newVersion))
+				if (NetworkInterface.GetIsNetworkAvailable() == false)
 				{
-					if (currentVersion < newVersion)
-					{
-						LogService.AddInfoLog("UpdateService", " - 新しいバージョンを確認しました: {0}", newVersion);
-						return true;
-					}
+					LogService.AddDebugLog("UpdateService", " - Network not available.");
+					throw new WebException("Network not available.");
 				}
 
-				last_checked_update_info = null;
-				return false;
-			}
+				lock (check_update_sync)
+				{
+					try { last_checked_update_info = XElement.Load(UpdateInfo.ToString()); }
+					catch (WebException e) { LogService.AddErrorLog("UpdateService", " - update.xml取得中にエラーが発生しました", e); throw; }
+					catch (SecurityException e) { LogService.AddErrorLog("UpdateService", " - update.xml取得中にエラーが発生しました", e); throw; }
+					catch (FileNotFoundException e) { LogService.AddErrorLog("UpdateService", " - update.xml取得中にエラーが発生しました", e); throw; }
+					if (last_checked_update_info == null)
+						throw new WebException("update.xml download error.");
+
+					// 最終チェック日更新
+					LastCheckDate = DateTime.UtcNow;
+
+					var currentVersion = Assembly.GetEntryAssembly().GetName().Version;
+					Version newVersion;
+					if (Version.TryParse(last_checked_update_info.GetOrDefaultValue("Version", "0.0.0.0"), out newVersion))
+					{
+						if (currentVersion < newVersion)
+						{
+							LogService.AddInfoLog("UpdateService", " - 新しいバージョンを確認しました: {0}", newVersion);
+							subject.OnNext(newVersion);
+							subject.OnCompleted();
+							return;
+						}
+					}
+
+					last_checked_update_info = null;
+					subject.OnCompleted();
+					return;
+				}
+			});
+			return subject.AsObservable();
 		}
 
 		/// <summary>
@@ -171,7 +182,13 @@ namespace SmartAudioPlayerFx.Update
 
 			if (last_checked_update_info == null)
 			{
-				if ((CheckUpdate() ?? false) == false)
+				// 実行の完了を待つエレガントな方法はないものか・・・
+				var result = false;
+				CheckUpdate()
+					.Run(
+						_ => { result = true; },
+						ex => { });
+				if(result == false)
 					return false;
 			}
 
@@ -219,6 +236,72 @@ namespace SmartAudioPlayerFx.Update
 			return false;
 		}
 
+		// ダウンロードのみ
+		static void ToDownload(XElement xml, IWin32Window dialogOwner)
+		{
+			// ファイルの用意
+			using (var dlg = new System.Windows.Forms.SaveFileDialog())
+			{
+				// get saved filename
+				dlg.AddExtension = true;
+				dlg.CheckFileExists = false;
+				dlg.FileName = xml.GetOrDefaultValue("File", string.Empty);
+				dlg.Filter = "zipファイル|*.zip";
+				dlg.ValidateNames = true;
+				if (dlg.ShowDialog(dialogOwner) != DialogResult.OK)
+				{
+					return;
+				}
+				//
+				var version = xml.GetOrDefaultValue("Version", string.Empty);
+				var filename = xml.GetOrDefaultValue("File", string.Empty);
+				var zipFilePath = dlg.FileName;
+				var newFilesPath = Path.GetDirectoryName(zipFilePath);
+				Directory.CreateDirectory(newFilesPath);
+				//
+				Action downloadProcess = null;
+				downloadProcess = new Action(() =>
+				{
+					try
+					{
+						using (var client = new WebClient())
+						{
+							client.DownloadFile(new Uri(UpdateInfo, "./" + filename), zipFilePath);
+						}
+					}
+					catch (WebException e)
+					{
+						LogService.AddErrorLog("UpdateService", " - ダウンロード中にエラーが発生しました", e);
+						WinForms.MessageBox.Show("ダウンロード中にエラーが発生しました", "SmartAudioPlayer Fx", WinForms.MessageBoxButtons.OK, WinForms.MessageBoxIcon.Error);
+						try { if (File.Exists(zipFilePath)) File.Delete(zipFilePath); }
+						catch (IOException) { }
+						return;
+					}
+					if (ZipFile.CheckZip(zipFilePath))
+					{
+						LogService.AddInfoLog("UpdateService", " - ダウンロードが完了しました");
+						WinForms.MessageBox.Show("ダウンロードが完了しました", "SmartAudioPlayer Fx");
+					}
+					else
+					{
+						Directory.Delete(zipFilePath, true);
+						LogService.AddErrorLog("UpdateService", " - ダウンロードしたファイルが破損していました");
+						if (WinForms.MessageBox.Show(
+							"ダウンロードしたファイルが破損していました",
+							"SmartAudioPlayer Fx",
+							WinForms.MessageBoxButtons.RetryCancel,
+							WinForms.MessageBoxIcon.Error)
+							== DialogResult.Retry)
+						{
+							if (downloadProcess != null)
+								Task.Factory.StartNew(downloadProcess);
+						}
+					}
+				});
+				Task.Factory.StartNew(downloadProcess);
+			}
+		}
+
 		// アップデート準備
 		static bool ToUpdate(XElement xml)
 		{
@@ -255,14 +338,31 @@ namespace SmartAudioPlayerFx.Update
 				{
 					using (var zip = new ZipFile(zipFilePath))
 					{
-						zip.ExtractAll(Path.Combine(tempdir, version));
+						zip.ExtractAll(Path.Combine(tempdir, version), ExtractExistingFileAction.OverwriteSilently);
 					}
-					Process.Start(new ProcessStartInfo()
+					// newVersion.exe --update "oldVersion.exe" で呼び出す -> OnUpdate()へ
+					var psi = new ProcessStartInfo()
 					{
 						Arguments = "--update \"" + Assembly.GetEntryAssembly().Location + "\"",
 						FileName = Path.Combine(newFilesPath, "SmartAudioPlayer Fx.exe"),
 						Verb = "runas",	// 管理者権限で実行 (一応)
-					});
+					};
+					try { Process.Start(psi); }
+					catch (Exception e)
+					{
+						LogService.AddErrorLog("UpdateService", "--updateのプロセス起動に失敗", e);
+						if (WinForms.MessageBox.Show(
+							"アップデート用プロセスの起動に失敗しました",
+							"SmartAudioPlayer Fx",
+							WinForms.MessageBoxButtons.RetryCancel,
+							WinForms.MessageBoxIcon.Error)
+							== DialogResult.Retry)
+						{
+							goto ReTry;
+						}
+						Directory.Delete(tempdir, true);
+						return false;
+					}
 					return true;
 				}
 				else
@@ -280,57 +380,8 @@ namespace SmartAudioPlayerFx.Update
 					}
 				}
 			}
+			Directory.Delete(tempdir, true);
 			return false;
-		}
-
-		// ダウンロードのみ
-		static void ToDownload(XElement xml, IWin32Window dialogOwner)
-		{
-			// ファイルの用意
-			using (var client = new WebClient())
-			using(var dlg = new System.Windows.Forms.SaveFileDialog())
-			{
-				// get saved filename
-				dlg.AddExtension=true;
-				dlg.CheckFileExists=false;
-				dlg.FileName = xml.GetOrDefaultValue("File", string.Empty);
-				dlg.Filter = "zipファイル|*.zip";
-				dlg.ValidateNames = true;
-				if (dlg.ShowDialog(dialogOwner) != DialogResult.OK)
-				{
-					return;
-				}
-				//
-				var version = xml.GetOrDefaultValue("Version", string.Empty);
-				var filename = xml.GetOrDefaultValue("File", string.Empty);
-				var zipFilePath = dlg.FileName;
-				var newFilesPath = Path.GetDirectoryName(zipFilePath);
-				Directory.CreateDirectory(newFilesPath);
-			ReTry:
-				try { client.DownloadFile(new Uri(UpdateInfo, "./" + filename), zipFilePath); }
-				catch (WebException e)
-				{
-					LogService.AddErrorLog("UpdateService", " - ダウンロード中にエラーが発生しました", e);
-					WinForms.MessageBox.Show("ダウンロード中にエラーが発生しました", "SmartAudioPlayer Fx", WinForms.MessageBoxButtons.OK, WinForms.MessageBoxIcon.Error);
-					try { if(File.Exists(zipFilePath)) File.Delete(zipFilePath); }
-					catch (IOException) { }
-					return;
-				}
-				if (ZipFile.CheckZip(zipFilePath) == false)
-				{
-					Directory.Delete(zipFilePath, true);
-					LogService.AddErrorLog("UpdateService", " - ダウンロードしたファイルが破損していました");
-					if (WinForms.MessageBox.Show(
-						"ダウンロードしたファイルが破損していました",
-						"SmartAudioPlayer Fx",
-						WinForms.MessageBoxButtons.RetryCancel,
-						WinForms.MessageBoxIcon.Error)
-						== DialogResult.Retry)
-					{
-						goto ReTry;
-					}
-				}
-			}
 		}
 
 		/// <summary>
@@ -378,7 +429,7 @@ namespace SmartAudioPlayerFx.Update
 				{
 					LogService.AddErrorLog("UpdateService", "OnUpdate", e);
 					Thread.Sleep(300);
-					// 10かいやってダメなら諦める
+					// 10回やってダメなら諦める
 					if (retrycount < 10)
 						goto retry;
 					else
@@ -387,6 +438,8 @@ namespace SmartAudioPlayerFx.Update
 			});
 
 			// 新しいバージョンを起動＆後処理
+			// currentAppExeは新しいバージョンに置き換えられている
+			// newVersionCopied.exe --post-update "newVersionTemp.exe" で呼び出す -> OnPostUpdate()へ
 			Process.Start(new ProcessStartInfo()
 			{
 				Arguments = "--post-update \"" + Assembly.GetEntryAssembly().Location + "\"",
@@ -430,7 +483,7 @@ namespace SmartAudioPlayerFx.Update
 			}
 
 			LogService.AddInfoLog("UpdateService", " - 更新完了");
-			WinForms.MessageBox.Show("アップデートが正常に完了しました", "SmartAudioPlayer Fx", WinForms.MessageBoxButtons.OK, WinForms.MessageBoxIcon.Information);
+			WinForms.MessageBox.Show("アップデートが完了しました", "SmartAudioPlayer Fx", WinForms.MessageBoxButtons.OK, WinForms.MessageBoxIcon.Information);
 		}
 
 	}

@@ -1,16 +1,11 @@
 ﻿using System;
-using System.Reflection;
 using System.Threading;
 using System.Windows;
 using Quala;
 using SmartAudioPlayerFx.Player;
 using SmartAudioPlayerFx.UI;
-using SmartAudioPlayerFx.UI.Views;
-using WinForms = System.Windows.Forms;
 using SmartAudioPlayerFx.Update;
-using System.IO;
-using System.Linq;
-using System.Diagnostics;
+using WinForms = System.Windows.Forms;
 
 namespace SmartAudioPlayerFx
 {
@@ -20,58 +15,54 @@ namespace SmartAudioPlayerFx
 
 		static App()
 		{
+			// WinForms Initialize
+			WinForms.Application.EnableVisualStyles();
+			WinForms.Application.SetCompatibleTextRenderingDefault(false);
+
+			// Logging
 			AppDomain.CurrentDomain.ProcessExit += delegate
 			{
-				var name = PreferenceService.CreateFullPath("SmartAudioPlayer Fx.log");
-				LogService.Save(name);
+				var path = PreferenceService.CreateFullPath("SmartAudioPlayer Fx.log");
+				LogService.Save(path);
 			};
-			AppDomain.CurrentDomain.UnhandledException += (_, e)=>
+			AppDomain.CurrentDomain.UnhandledException += (_, e) =>
 			{
-				LogService.AddErrorLog("AppDomain", "UnhandledException", e.ExceptionObject as Exception);
-				WinForms.MessageBox.Show(string.Format(
-					"未処理の例外エラーが発生しました (AppDomain){0}"+
-					"----------------------------------------{0}"+
-					"{1}",
-					Environment.NewLine,
-					e.ExceptionObject),
-					"SmartAudioPlayer Fx");
+				var ex = e.ExceptionObject as Exception;
+				if (ex != null)
+					ShowExceptionMessage("AppDomain", ex);
 			};
 		}
 
 		public App()
 		{
-			this.DispatcherUnhandledException += (_, e)=>
+			// Logging
+			this.DispatcherUnhandledException += (_, e) =>
 			{
-				LogService.AddErrorLog("Dispatcher", "UnhandledException", e.Exception);
-				WinForms.MessageBox.Show(string.Format(
-					"未処理の例外エラーが発生しました (Dispatcher){0}"+
-					"----------------------------------------{0}"+
-					"{1}",
-					Environment.NewLine,
-					e.Exception),
-					"SmartAudioPlayer Fx");
+				var ex = e.Exception as Exception;
+				if (ex != null)
+					ShowExceptionMessage("Dispatcher", ex);
 			};
+		}
+
+		static void ShowExceptionMessage(string source, Exception ex)
+		{
+			LogService.AddCriticalErrorLog(source, "UnhandledException", ex);
+			var message = string.Format(
+				"未処理の例外エラーが発生しました ({1}){0}"+
+				"----------------------------------------{0}"+
+				"{2}",
+				Environment.NewLine,
+				source,
+				ex);
+			WinForms.MessageBox.Show(message, "SmartAudioPlayer Fx");
 		}
 
 		#endregion
 
-		bool IsExistsApplicationInstance()
-		{
-			// 多重起動の抑制
-			bool created;
-			var assembly = Assembly.GetExecutingAssembly();
-			var mutex = new Mutex(true, "Global\\" + assembly.Location.Replace('\\', '_').Replace('/', '_'), out created);
-			if (created)
-				Exit += delegate { mutex.Close(); };
-			return !created;
-		}
-
 		protected override void OnStartup(StartupEventArgs e)
 		{
-			WinForms.Application.EnableVisualStyles();
-			WinForms.Application.SetCompatibleTextRenderingDefault(false);
-
 			// アップデートチェック＆関連処理
+			// ** TODO: あとで動作チェックする **
 			UpdateService.OnPostUpdate(e.Args);
 			if (UpdateService.OnUpdate(e.Args))
 			{
@@ -80,9 +71,8 @@ namespace SmartAudioPlayerFx
 			}
 
 			// 多重起動の抑制
-			if (Debugger.IsAttached == false && IsExistsApplicationInstance())
+			if (IsExistsApplicationInstance())
 			{
-				LogService.AddInfoLog("Application", "多重起動を確認しました。現在のプロセスを終了します。");
 				WinForms.MessageBox.Show("多重起動は出来ません。アプリケーションを終了します。", "SmartAudioPlayer Fx");
 				Shutdown(-1);
 				return;
@@ -90,13 +80,26 @@ namespace SmartAudioPlayerFx
 
 			// 初期化
 			base.OnStartup(e);
-			MediaDBService.PrepareService();
-			ShortcutKeyService.PrepareService();
 			TasktrayService.IsVisible = true;
-			UpdateService.LoadPreferences();
-			JukeboxService.PrepareService();
-			UIService.PrepareService();
+			UpdateService.Start();
+			UIService.Start();
+		}
 
+		bool IsExistsApplicationInstance()
+		{
+			// 多重起動の抑制
+			var mutex = new Mutex(false, "SmartAudioPlayer Fx");
+			if (mutex.WaitOne(0, false) == false)
+			{
+				// すでに起動しているインスタンスがある
+				LogService.AddInfoLog("Application", "多重起動を確認しました。");
+				mutex.Close();
+				return true;
+			}
+
+			// 新規起動だった
+			Exit += delegate { mutex.ReleaseMutex(); };
+			return false;
 		}
 	}
 }

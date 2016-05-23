@@ -30,7 +30,7 @@ namespace SmartAudioPlayerFx.UI
 			MediaListWindow__ctor();
 		}
 
-		public static void PrepareService()
+		public static void Start()
 		{
 			LoadPreferences();
 			// 定期的にデータを保存する
@@ -38,26 +38,32 @@ namespace SmartAudioPlayerFx.UI
 				.Timer(TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(5))
 				.ObserveOnDispatcher()
 				.Subscribe(_ => SaveAllPreferences());
+
 			// ログオフ -> Close
-			Observable.FromEvent<SessionEndingCancelEventArgs>(Application.Current, "SessionEnding")
-				.Where(e => e.EventArgs.Cancel == false)
-				.Take(1)
-				.ObserveOnDispatcher()
-				.Subscribe(_ => PlayerWindow.Close());
+			Application.Current.SessionEnding += (_, e) =>
+			{
+				if (e.Cancel == false)
+					PlayerWindow.Close();
+			};
+
 			// Closeイベント
-			Observable.FromEvent<CancelEventArgs>(PlayerWindow, "Closing")
-				.Where(e => e.EventArgs.Cancel == false)
-				.Take(1)
-				.ObserveOnDispatcher()
-				.Subscribe(_ =>
+			bool disposed = false;
+			PlayerWindow.Closing += (_, e) =>
+			{
+				if (e.Cancel == false && disposed==false)
 				{
 					savingTimer.Dispose();
 					SaveAllPreferences();
 					MediaListWindow.Hide();
 					if (!JukeboxService.AudioPlayer.IsPaused)
 						JukeboxService.AudioPlayer.Close();
-				});
+					disposed = true;
+				}
+			};
 		}
+
+		#region preferences
+
 		static void SaveAllPreferences()
 		{
 			PlayerWindow.ViewModel.SavePreferences();
@@ -65,8 +71,6 @@ namespace SmartAudioPlayerFx.UI
 			MediaDBService.SaveChanges();
 			UpdateService.SavePreferences();
 		}
-
-		#region preferences
 
 		static double? _DefaultDesignedHeight;
 		public static int option_page = 0;
@@ -384,7 +388,6 @@ namespace SmartAudioPlayerFx.UI
 					new DoubleAnimation(deactive_opacity / 100.0, new Duration(TimeSpan.FromMilliseconds(200))));
 			}
 		}
-
 
 		#endregion
 

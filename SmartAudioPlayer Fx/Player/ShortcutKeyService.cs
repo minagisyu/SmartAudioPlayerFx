@@ -23,10 +23,6 @@ namespace SmartAudioPlayerFx.Player
 			HotKeyManager = new HotKeyManager();
 		}
 
-		public static void PrepareService()
-		{
-		}
-
 		#region Preferences
 
 		public static void SavePreferencesAdd(XElement element)
@@ -94,7 +90,7 @@ namespace SmartAudioPlayerFx.Player
 		/// </summary>
 		/// <param name="feature"></param>
 		/// <returns></returns>
- 		public static Keys GetShortcutKey(Features feature)
+		public static Keys GetShortcutKey(Features feature)
 		{
 			LogService.AddDebugLog("ShortcutKeyService", "Call GetShortcutKey: feature={0}", feature);
 			if (feature == Features.None) return Keys.None;
@@ -106,7 +102,7 @@ namespace SmartAudioPlayerFx.Player
 		/// </summary>
 		/// <param name="feature"></param>
 		/// <param name="key"></param>
- 		public static void SetShortcutKey(Features feature, Keys key)
+		public static void SetShortcutKey(Features feature, Keys key)
 		{
 			LogService.AddDebugLog("ShortcutKeyService", "Call SetShortcutKey: feature={0}, key={1}", feature, key);
 			if (feature == Features.None && ((key & Keys.KeyCode) == Keys.None)) return;
