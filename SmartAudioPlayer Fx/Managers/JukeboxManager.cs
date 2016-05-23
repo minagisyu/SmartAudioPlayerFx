@@ -101,29 +101,6 @@ namespace SmartAudioPlayerFx.Managers
 
 		void LoadPreferences(XElement element)
 		{
-			var ps = ManagerServices.PreferencesManagerJson.PlayerSettings;
-			ViewFocus.Value = ViewFocusFromString(
-				ps.GetValue("ViewMode", "Default"),
-				ps.GetValue("ViewFocusPath", (string)null));
-
-			SelectMode.Value = ps.GetValue("SelectMode", SelectionMode.Random);
-			IsRepeat.Value = ps.GetValue("IsRepeat", false);
-			ManagerServices.AudioPlayerManager.Volume = ps.GetValue("Volume", 0.5);
-			NextPlaingAttribute = new PlaingAttributeInfo(
-				false,
-				false,
-				ps.GetValue("IsPaused", false),
-				ps.GetValue("Position", (TimeSpan?)null));
-			// memo: 実行タイミングのずれで再生/一時停止を繰り返してしまうので、
-			//       暫定処理
-			System.Windows.Forms.Application.DoEvents();
-			CurrentMedia.Value = /*ManagerServices.MediaDBViewManager.GetOrCreate(
-				element.GetAttributeValueEx("CurrentMedia", (string)null))*/null;
-
-			MediaDBViewFocus_LatestAddOnly.RecentIntervalDays =
-				Math.Max(1, ps.GetValue("RecentIntervalDays", 60));
-			//
-			//
 			ViewFocus.Value = ViewFocusFromString(
 				element.GetAttributeValueEx("ViewMode", "Default"),
 				element.GetAttributeValueEx("ViewFocusPath", (string)null));
@@ -148,19 +125,6 @@ namespace SmartAudioPlayerFx.Managers
 		}
 		void SavePreferences(XElement element)
 		{
-			ManagerServices.PreferencesManagerJson.PlayerSettings
-				.SetValue("SelectMode", SelectMode.Value)
-				.SetValue("IsRepeat", IsRepeat.Value)
-				.SetValue("IsPaused", ManagerServices.AudioPlayerManager.IsPaused)
-				.SetValue("Volume", ManagerServices.AudioPlayerManager.Volume.ToString("F3"))
-				.SetValue("Position", ManagerServices.AudioPlayerManager.Position.ToString()) // ToString()しないと戻せない
-				.SetValue("CurrentMedia", (CurrentMedia.Value != null) ? CurrentMedia.Value.FilePath : null)
-				.SetValue("ViewMode", ViewFocusToString(ViewFocus.Value))
-				.SetValue("ViewFocusPath", ViewFocus.Value.FocusPath)
-				.SetValue("RecentIntervalDays", MediaDBViewFocus_LatestAddOnly.RecentIntervalDays)
-				;
-			//
-			//
 			element
 				// this
 				.SetAttributeValueEx("SelectMode", SelectMode.Value)

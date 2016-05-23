@@ -77,16 +77,10 @@ namespace SmartAudioPlayerFx.Managers
 
 		void LoadPreferences(XElement element)
 		{
-			ManagerServices.PreferencesManagerJson.PlayerSettings
-				.GetValue("FocusPath", o => FocusPath.Value = o, default(string));
-			//
 			FocusPath.Value = element.GetAttributeValueEx("FocusPath", default(string));
 		}
 		void SavePreferences(XElement element)
 		{
-			ManagerServices.PreferencesManagerJson.PlayerSettings
-				.SetValue("FocusPath", FocusPath.Value);
-			//
 			element
 				.SetAttributeValueEx("FocusPath", FocusPath.Value);
 		}

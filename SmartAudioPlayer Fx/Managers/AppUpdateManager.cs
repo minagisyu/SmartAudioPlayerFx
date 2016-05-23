@@ -75,36 +75,28 @@ namespace SmartAudioPlayerFx.Managers
 
 		void LoadUpdatePreferences(XElement element)
 		{
-			ManagerServices.PreferencesManagerJson.UpdateSettings
-				.GetValue("UpdateInfoUri", o => UpdateInfo = o, new Uri("http://update.intre.net/sapfx/update.xml"))
-				.GetValue("LastCheckDate", o => LastCheckDate = o, DateTime.MinValue)
-				.GetValue("CheckIntervalDays", o => CheckIntervalDays = Math.Max(1, o), 7)
-				.GetValue("IsAutoUpdateCheckEnabled", o => IsAutoUpdateCheckEnabled = o, true)
-				.GetConvertedValue("LastCheckVersion", o => LastCheckVersion = o, Assembly.GetExecutingAssembly().GetName().Version)
-				;
-			//
 			UpdateInfo = element.GetAttributeValueEx("UpdateInfoUri", new Uri("http://update.intre.net/sapfx/update.xml"));
 			LastCheckVersion = element.GetAttributeValueEx("LastCheckVersion", Assembly.GetExecutingAssembly().GetName().Version);
 			LastCheckDate = element.GetAttributeValueEx("LastCheckDate", DateTime.MinValue);
 			CheckIntervalDays = Math.Min(1, element.GetAttributeValueEx("CheckIntervalDays", 7));
 			IsAutoUpdateCheckEnabled = element.GetAttributeValueEx("IsAutoUpdateCheckEnabled", true);
+		//	ManagerServices.PreferencesManagerJson.UpdateSettings.Value
 		}
 		void SavePreferences(XElement element)
 		{
-			ManagerServices.PreferencesManagerJson.UpdateSettings
-				.SetValue("UpdateInfoUri", UpdateInfo)
-				.SetValue("LastCheckDate", LastCheckDate)
-				.SetValue("CheckIntervalDays", CheckIntervalDays)
-				.SetValue("IsAutoUpdateCheckEnabled", IsAutoUpdateCheckEnabled)
-				.SetConvertedValue("LastCheckVersion", LastCheckVersion)
-				;
-			//
 			element
 				.SetAttributeValueEx("UpdateInfoUri", UpdateInfo)
-				.SetAttributeValueEx("LastCheckVersion", LastCheckVersion.ToString())
+				.SetAttributeValueEx("LastCheckVersion", LastCheckVersion)
 				.SetAttributeValueEx("LastCheckDate", LastCheckDate)
 				.SetAttributeValueEx("CheckIntervalDays", CheckIntervalDays)
 				.SetAttributeValueEx("IsAutoUpdateCheckEnabled", IsAutoUpdateCheckEnabled);
+			//
+			ManagerServices.PreferencesManagerJson.UpdateSettings
+				.SetValueToJson("UpdateInfoUri", UpdateInfo)
+				.SetValueToJson("LastCheckVersion", LastCheckVersion)
+				.SetValueToJson("LastCheckDate", LastCheckDate)
+				.SetValueToJson("CheckIntervalDays", CheckIntervalDays)
+				.SetValueToJson("IsAutoUpdateCheckEnabled", IsAutoUpdateCheckEnabled);
 		}
 		void OnAutoUpdateCheck()
 		{

@@ -27,22 +27,16 @@ namespace Quala
 				return this;
 			}
 
-			public T GetValue<T>(string key, T defaultValue = default(T))
+			public Entry GetValue(string key, Action<object> valueAction)
 			{
 				object value;
-				bool result;
-				lock (_keyValue) { result = _keyValue.TryGetValue(key, out value); }
-				return (result && value is T) ? (T)value : defaultValue;
+				lock (_keyValue) { value = _keyValue[key]; }
+				valueAction?.Invoke(value);
+				return this;
 			}
 
 			public Entry SetValue(string key, object value)
 			{
-
-				// memo:
-				// clr typeはそのまま、それ以外はtype converter
-				// IEnumerable系(Array/IList/IList<>),(IDictionary/IDictionary<>)は細工してやる必要がある？
-				// 要検討。。。
-
 				lock (_keyValue) { _keyValue[key] = value; }
 				return this;
 			}
