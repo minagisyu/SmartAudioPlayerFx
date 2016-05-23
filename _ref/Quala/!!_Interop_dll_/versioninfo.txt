@@ -8,7 +8,7 @@
  - System.CoreEx.dll
  - System.Interractive.dll
  - System.Reactive.dll
- - 1.0.2698.0
+ - 1.0.2787.0
  - .NET 4.0
  - Ms-PL?
 

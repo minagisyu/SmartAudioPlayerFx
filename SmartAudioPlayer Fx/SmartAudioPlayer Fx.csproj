@@ -92,7 +92,8 @@
     </Reference>
     <Reference Include="Microsoft.VisualBasic" />
     <Reference Include="System" />
-    <Reference Include="System.CoreEx, Version=1.0.2698.104, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+    <Reference Include="System.CoreEx, Version=1.0.2787.104, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\_ref\Quala\!!_Interop_dll_\System.CoreEx.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Data" />
@@ -102,13 +103,18 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Drawing" />
-    <Reference Include="System.Interactive, Version=1.0.2698.104, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+    <Reference Include="System.Interactive, Version=1.0.2787.104, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\_ref\Quala\!!_Interop_dll_\System.Interactive.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="System.Reactive, Version=1.0.2698.104, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+    <Reference Include="System.Reactive, Version=1.0.2787.104, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\_ref\Quala\!!_Interop_dll_\System.Reactive.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Windows.Interactivity, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\_ref\System.Windows.Interactivity.dll</HintPath>
+    </Reference>
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -129,90 +135,93 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Player\[Primitive]\AudioPlayer.cs" />
-    <Compile Include="Player\[Primitive]\MediaItemExtension.cs" />
-    <Compile Include="Player\[Primitive]\HotKeyManager.cs" />
-    <Compile Include="Player\[Primitive]\MediaItem.cs" />
-    <Compile Include="Player\[Primitive]\MediaItemFilteringManager.cs" />
-    <Compile Include="Player\MediaTagService.cs" />
-    <Compile Include="UI\Options\OptionDialog_Update.cs">
+    <Compile Include="Behavior\WindowDragMoveBehavior.cs" />
+    <Compile Include="Data\MediaDB.cs" />
+    <Compile Include="Data\MediaDBView.cs" />
+    <Compile Include="Data\MediaItem.cs" />
+    <Compile Include="Data\MediaItemExtension.cs" />
+    <Compile Include="Data\MediaItemFilter.cs" />
+    <Compile Include="Data\MediaItemsViewFocus.cs" />
+    <Compile Include="Data\SimpleDB.cs" />
+    <Compile Include="Player\JukeboxService.cs" />
+    <Compile Include="Player\ShortcutKeyService.cs" />
+    <Compile Include="Properties\Preferences.cs" />
+    <Compile Include="Options\OptionDialog_Update.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="UI\Options\OptionDialog_Update.Designer.cs">
+    <Compile Include="Options\OptionDialog_Update.Designer.cs">
       <DependentUpon>OptionDialog_Update.cs</DependentUpon>
     </Compile>
-    <Compile Include="UI\Options\OptionDialog_DB.cs">
+    <Compile Include="Options\OptionDialog_DB.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="UI\Options\OptionDialog_DB.Designer.cs">
+    <Compile Include="Options\OptionDialog_DB.Designer.cs">
       <DependentUpon>OptionDialog_DB.cs</DependentUpon>
     </Compile>
-    <Compile Include="UI\UIService.cs" />
-    <Compile Include="UI\Views\HoverFocus.xaml.cs">
+    <Compile Include="TasktrayService.cs" />
+    <Compile Include="UIService.cs" />
+    <Compile Include="ViewModels\ItemsTreeViewModel.cs" />
+    <Compile Include="ViewModels\MediaItemViewModel.cs" />
+    <Compile Include="ViewModels\MediaListViewModel.cs" />
+    <Compile Include="ViewModels\MediaListViewSource.cs" />
+    <Compile Include="ViewModels\MediaTreeViewSource.cs" />
+    <Compile Include="ViewModels\PlayerServiceViewModel.cs" />
+    <Compile Include="Views\HoverFocus.xaml.cs">
       <DependentUpon>HoverFocus.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="UI\Views\PlaceHolderBehavior.cs" />
-    <Compile Include="UI\Views\SearchTextBox.xaml.cs">
+    <Compile Include="Behavior\PlaceHolderBehavior.cs" />
+    <Compile Include="Views\SearchTextBox.xaml.cs">
       <DependentUpon>SearchTextBox.xaml</DependentUpon>
     </Compile>
-    <Compile Include="UI\Options\DoubleBufferedControl.cs">
+    <Compile Include="Options\DoubleBufferedControl.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="UI\Options\DoubleBufferedControl.Designer.cs">
+    <Compile Include="Options\DoubleBufferedControl.Designer.cs">
       <DependentUpon>DoubleBufferedControl.cs</DependentUpon>
     </Compile>
-    <Compile Include="UI\Options\OptionDialog.cs">
+    <Compile Include="Options\OptionDialog.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="UI\Options\OptionDialog.Designer.cs">
+    <Compile Include="Options\OptionDialog.Designer.cs">
       <DependentUpon>OptionDialog.cs</DependentUpon>
     </Compile>
-    <Compile Include="UI\Options\OptionDialog_MediaList.cs">
+    <Compile Include="Options\OptionDialog_MediaList.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="UI\Options\OptionDialog_MediaList.Designer.cs">
+    <Compile Include="Options\OptionDialog_MediaList.Designer.cs">
       <DependentUpon>OptionDialog_MediaList.cs</DependentUpon>
     </Compile>
-    <Compile Include="UI\Options\OptionDialog_ShortcutKey.cs">
+    <Compile Include="Options\OptionDialog_ShortcutKey.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="UI\Options\OptionDialog_ShortcutKey.Designer.cs">
+    <Compile Include="Options\OptionDialog_ShortcutKey.Designer.cs">
       <DependentUpon>OptionDialog_ShortcutKey.cs</DependentUpon>
     </Compile>
-    <Compile Include="UI\Options\OptionDialog_Window.cs">
+    <Compile Include="Options\OptionDialog_Window.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="UI\Options\OptionDialog_Window.Designer.cs">
+    <Compile Include="Options\OptionDialog_Window.Designer.cs">
       <DependentUpon>OptionDialog_Window.cs</DependentUpon>
     </Compile>
-    <Compile Include="UI\Options\KeySettingListView.cs">
+    <Compile Include="Options\KeySettingListView.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="UI\Views\MediaListWindow.xaml.cs">
+    <Compile Include="Views\MediaListWindow.xaml.cs">
       <DependentUpon>MediaListWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="UI\Views\MediaListWindow_Resources.xaml.cs">
+    <Compile Include="Views\MediaListWindow_Resources.xaml.cs">
       <SubType>Code</SubType>
       <DependentUpon>MediaListWindow_Resources.xaml</DependentUpon>
     </Compile>
-    <Compile Include="UI\Views\PlayerWindow.xaml.cs">
+    <Compile Include="Views\PlayerWindow.xaml.cs">
       <DependentUpon>PlayerWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="UI\[Primitive]\ItemsTreeViewModel.cs" />
-    <Compile Include="UI\[Primitive]\MediaItemViewModel.cs" />
-    <Compile Include="UI\[Primitive]\MediaListViewModel.cs" />
-    <Compile Include="UI\[Primitive]\PlayerServiceViewModel.cs" />
-    <Compile Include="UI\[Primitive]\MediaListViewSource.cs" />
-    <Compile Include="UI\[Primitive]\MediaTreeViewSource.cs" />
-    <Compile Include="Player\[Primitive]\MediaItemsCollection.cs" />
-    <Compile Include="Player\[Primitive]\MediaItemsCollectionViewFocus.cs" />
-    <Compile Include="Player\JukeboxService.cs" />
-    <Compile Include="Player\MediaDBService.cs" />
-    <Compile Include="Player\ShortcutKeyService.cs" />
-    <Compile Include="Player\TasktrayService.cs" />
+    <Compile Include="Behavior\UnvisibleResizeBorderBehavior.cs" />
+    <Compile Include="Behavior\NoActivateResizingBugPatchBehavior.cs" />
+    <Compile Include="Behavior\WindowExStyleBehavior.cs" />
     <Compile Include="Update\UpdateService.cs" />
     <Compile Include="Update\UpdateMessageBox.cs">
       <SubType>Form</SubType>
@@ -220,6 +229,9 @@
     <Compile Include="Update\UpdateMessageBox.Designer.cs">
       <DependentUpon>UpdateMessageBox.cs</DependentUpon>
     </Compile>
+    <Compile Include="Windows\AudioPlayer.cs" />
+    <Compile Include="Windows\HotKeyManager.cs" />
+    <Compile Include="Windows\MediaTagService.cs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">
@@ -228,27 +240,27 @@
     <AppDesigner Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <Page Include="UI\Views\HoverFocus.xaml">
+    <Page Include="Views\HoverFocus.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="UI\Views\MediaListWindow.xaml">
+    <Page Include="Views\MediaListWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="UI\Views\MediaListWindow_Resources.xaml">
+    <Page Include="Views\MediaListWindow_Resources.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="UI\Views\PlayerWindow.xaml">
+    <Page Include="Views\PlayerWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="UI\Views\PlayerWindowResources.xaml">
+    <Page Include="Views\PlayerWindowResources.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="UI\Views\SearchTextBox.xaml">
+    <Page Include="Views\SearchTextBox.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -257,6 +269,7 @@
     <Resource Include="Resources\検索：メニュー.png" />
     <Resource Include="Resources\検索：削除-デフォルト.png" />
     <Resource Include="Resources\検索：削除-フォーカス.png" />
+    <Resource Include="Resources\カスタマイズ.png" />
     <Content Include="SmartAudioPlayer Fx.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -270,22 +283,22 @@
     <None Include="メモ.txt" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="UI\Options\OptionDialog.resx">
+    <EmbeddedResource Include="Options\OptionDialog.resx">
       <DependentUpon>OptionDialog.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="UI\Options\OptionDialog_MediaList.resx">
+    <EmbeddedResource Include="Options\OptionDialog_MediaList.resx">
       <DependentUpon>OptionDialog_MediaList.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="UI\Options\OptionDialog_ShortcutKey.resx">
+    <EmbeddedResource Include="Options\OptionDialog_ShortcutKey.resx">
       <DependentUpon>OptionDialog_ShortcutKey.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="UI\Options\OptionDialog_Window.resx">
+    <EmbeddedResource Include="Options\OptionDialog_Window.resx">
       <DependentUpon>OptionDialog_Window.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="UI\Options\OptionDialog_Update.resx">
+    <EmbeddedResource Include="Options\OptionDialog_Update.resx">
       <DependentUpon>OptionDialog_Update.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="UI\Options\OptionDialog_DB.resx">
+    <EmbeddedResource Include="Options\OptionDialog_DB.resx">
       <DependentUpon>OptionDialog_DB.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Update\UpdateMessageBox.resx">
@@ -340,7 +353,9 @@
     <Resource Include="Resources\モード：ランダム.png" />
     <Resource Include="Resources\モード：リピート.png" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Windows.Forms;
 using System.Xml.Linq;
 using Quala;
-using SmartAudioPlayerFx.UI;
+using SmartAudioPlayerFx.Windows;
 
 namespace SmartAudioPlayerFx.Player
 {
@@ -18,7 +18,7 @@ namespace SmartAudioPlayerFx.Player
 
 		static ShortcutKeyService()
 		{
-			LogService.AddDebugLog("ShortcutKeyService", "Call ctor.");
+			LogService.AddDebugLog("Call ctor.");
 			shortcuts = new Dictionary<Features, Keys>();
 			HotKeyManager = new HotKeyManager();
 		}
@@ -27,38 +27,34 @@ namespace SmartAudioPlayerFx.Player
 
 		public static void SavePreferencesAdd(XElement element)
 		{
-			LogService.AddDebugLog("ShortcutKeyService", "Call SavePreferencesAdd");
-			var elm1 = element.Element("ShortcutKeys");
-			if (elm1 == null) { elm1 = new XElement("ShortcutKeys"); element.Add(elm1); }
-			var elm2 = elm1.Elements("Item").ToArray();
-			shortcuts.Run(i =>
+			LogService.AddDebugLog("Call SavePreferencesAdd");
+			element.SubElement("ShortcutKeys", true, elm =>
 			{
-				// 同じFeature属性の値を持つ最後のElementを選択、なければ作る
-				var target = elm2.Where(m =>
+				elm.RemoveAll();
+				shortcuts.Run(i =>
 				{
-					return m.Attributes("Feature")
-						.Any(n => n.Value.Equals(i.Key.ToString(), StringComparison.CurrentCultureIgnoreCase));
-				}).LastOrDefault();
-				if (target == null) { target = new XElement("Item"); elm1.Add(target); }
-				// 設定
-				target.SetAttributeValue("Feature", i.Key);
-				target.SetAttributeValue("Modifier", i.Value & Keys.Modifiers);
-				target.SetAttributeValue("Key", i.Value & Keys.KeyCode);
+					elm
+						// 同じFeature属性の値を持つ最後のElementを選択、なければ作る
+						.GetOrCreateElement("Item",
+							m => m.Attributes("Feature")
+								.Any(n => string.Equals(n.Value, i.Key.ToString(), StringComparison.CurrentCultureIgnoreCase)))
+						.SetAttributeValueEx("Feature", i.Key)
+						.SetAttributeValueEx("Modifier", i.Value & Keys.Modifiers)
+						.SetAttributeValueEx("Key", i.Value & Keys.KeyCode);
+				});
 			});
-
 		}
-
 		public static void LoadPreferencesApply(XElement element)
 		{
-			LogService.AddDebugLog("ShortcutKeyService", "Call LoadPreferencesApply");
+			LogService.AddDebugLog("Call LoadPreferencesApply");
 			HotKeyManager.RemoveAll();
 			ResetShortcuts();
 			element.GetArrayValues("ShortcutKeys",
 				el => new
 				{
-					Feature = el.GetOrDefaultValue("Feature", Features.None),
-					Modifier = el.GetOrDefaultValue("Modifier", Keys.None),
-					Key = el.GetOrDefaultValue("Key", Keys.None),
+					Feature = el.GetAttributeValueEx("Feature", Features.None),
+					Modifier = el.GetAttributeValueEx("Modifier", Keys.None),
+					Key = el.GetAttributeValueEx("Key", Keys.None),
 				})
 				.Where(i => i.Feature != Features.None && i.Key != Keys.None)
 				.Run(i => shortcuts[i.Feature] = (i.Key | i.Modifier));
@@ -71,7 +67,7 @@ namespace SmartAudioPlayerFx.Player
 
 		static void ResetShortcuts()
 		{
-			LogService.AddDebugLog("ShortcutKeyService", "Call resetShortcuts");
+			LogService.AddDebugLog("Call resetShortcuts");
 			shortcuts.Clear();
 			shortcuts = Enum.GetValues(typeof(Features))
 				.OfType<Features>()
@@ -92,7 +88,7 @@ namespace SmartAudioPlayerFx.Player
 		/// <returns></returns>
 		public static Keys GetShortcutKey(Features feature)
 		{
-			LogService.AddDebugLog("ShortcutKeyService", "Call GetShortcutKey: feature={0}", feature);
+			LogService.AddDebugLog("Call GetShortcutKey: feature={0}", feature);
 			if (feature == Features.None) return Keys.None;
 			return shortcuts[feature];
 		}
@@ -104,7 +100,7 @@ namespace SmartAudioPlayerFx.Player
 		/// <param name="key"></param>
 		public static void SetShortcutKey(Features feature, Keys key)
 		{
-			LogService.AddDebugLog("ShortcutKeyService", "Call SetShortcutKey: feature={0}, key={1}", feature, key);
+			LogService.AddDebugLog("Call SetShortcutKey: feature={0}, key={1}", feature, key);
 			if (feature == Features.None && ((key & Keys.KeyCode) == Keys.None)) return;
 			HotKeyManager.RemoveHotKey(shortcuts[feature]);
 			shortcuts[feature] = key;
@@ -124,7 +120,7 @@ namespace SmartAudioPlayerFx.Player
 		// 指定機能のアクション用デリゲートを作成
 		static Action CreateFeatureAction(Features feature)
 		{
-			LogService.AddDebugLog("ShortcutKeyService", "Call CreateFeatureAction: feature={0}", feature);
+			LogService.AddDebugLog("Call CreateFeatureAction: feature={0}", feature);
 			switch (feature)
 			{
 				case Features.PlayMode_Random:
@@ -176,5 +172,4 @@ namespace SmartAudioPlayerFx.Player
 
 		#endregion
 	}
-
 }

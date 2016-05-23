@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Collections.Concurrent;
 
 namespace Quala
 {
@@ -12,22 +13,25 @@ namespace Quala
 	public static class LogService
 	{
 		public static int MaxLogs { get; set; }
-		static readonly LinkedList<Item> logs;
+		static readonly ConcurrentQueue<Item> logs;
 		static readonly Subject<Item> newlog_added;
 		public static event Action<Item> LogAdded;
 
 		static LogService()
 		{
 			MaxLogs = 1000;
-			logs = new LinkedList<Item>();
-			newlog_added = new Subject<Item>(Scheduler.ThreadPool);
+			logs = new ConcurrentQueue<Item>();
+			newlog_added = new Subject<Item>(Scheduler.TaskPool);
 			newlog_added.Subscribe(item =>
 			{
 				Debugger.Log(0, item.Source, item + Environment.NewLine);
 				//
-				logs.AddLast(item);
-				if (logs.Count > MaxLogs)
-					logs.RemoveFirst();
+				logs.Enqueue(item);
+				while (logs.Count > MaxLogs)
+				{
+					Item tmp;
+					logs.TryDequeue(out tmp);
+				}
 				//
 				if (LogAdded != null)
 					LogAdded(item);
@@ -36,51 +40,62 @@ namespace Quala
 
 		#region AddLog
 
-		// ログ
-		static void AddLog(LogType logType, string source, string message)
+		/// <summary>
+		/// ログ追加
+		/// StackTraceの処理都合上、AddXXXLog()メソッド以外から呼び出さないでください
+		/// </summary>
+		/// <param name="logType"></param>
+		/// <param name="message"></param>
+		static void AddLog(LogType logType, string message)
 		{
-			var log = new Item() { Time = DateTime.Now, Type = logType, Source = source, Message = message, };
+			var log = new Item()
+			{
+				Time = DateTime.Now,
+				Type = logType,
+				Source = new StackTrace().GetFrame(2).GetMethod().DeclaringType.Name,
+				Message = message,
+			};
 			newlog_added.OnNext(log);
 		}
 		// 情報ログ
-		public static void AddInfoLog(string source, string format, params object[] args)
+		public static void AddInfoLog(string format, params object[] args)
 		{
-			AddLog(LogType.INFO, source, string.Format(format, args));
+			AddLog(LogType.INFO, string.Format(format, args));
 		}
 		// 警告ログ
-		public static void AddWarningLog(string source, string format, params object[] args)
+		public static void AddWarningLog(string format, params object[] args)
 		{
-			AddLog(LogType.WARNING, source, string.Format(format, args));
+			AddLog(LogType.WARNING, string.Format(format, args));
 		}
 		// エラーログ
-		public static void AddErrorLog(string source, string format, params object[] args)
+		public static void AddErrorLog(string format, params object[] args)
 		{
-			AddLog(LogType.ERROR, source, string.Format(format, args));
+			AddLog(LogType.ERROR, string.Format(format, args));
 		}
 		// エラーログ(例外)
-		public static void AddErrorLog(string source, string text, Exception ex)
+		public static void AddErrorLog(string text, Exception ex)
 		{
-			AddLog(LogType.ERROR, source, text + Environment.NewLine + ex);
+			AddLog(LogType.ERROR, text + Environment.NewLine + ex);
 		}
 		// クリティカルエラーログ
-		public static void AddCriticalErrorLog(string source, string format, params object[] args)
+		public static void AddCriticalErrorLog(string format, params object[] args)
 		{
-			AddLog(LogType.CRITICAL_ERROR, source, string.Format(format, args));
+			AddLog(LogType.CRITICAL_ERROR, string.Format(format, args));
 		}
 		// クリティカルエラーログ(例外)
-		public static void AddCriticalErrorLog(string source, string text, Exception ex)
+		public static void AddCriticalErrorLog(string text, Exception ex)
 		{
-			AddLog(LogType.CRITICAL_ERROR, source, text + Environment.NewLine + ex);
+			AddLog(LogType.CRITICAL_ERROR, text + Environment.NewLine + ex);
 		}
 		// テストログ
-		public static void AddTestLog(string source, string format, params object[] args)
+		public static void AddTestLog(string format, params object[] args)
 		{
-			AddLog(LogType.TEST, source, string.Format(format, args));
+			AddLog(LogType.TEST, string.Format(format, args));
 		}
 		// デバッグログ
-		public static void AddDebugLog(string source, string format, params object[] args)
+		public static void AddDebugLog(string format, params object[] args)
 		{
-			AddLog(LogType.DEBUG, source, string.Format(format, args));
+			AddLog(LogType.DEBUG, string.Format(format, args));
 		}
 
 		#endregion
