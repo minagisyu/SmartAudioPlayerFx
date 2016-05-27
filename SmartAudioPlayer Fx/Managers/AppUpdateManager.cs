@@ -90,13 +90,6 @@ namespace SmartAudioPlayerFx.Managers
 				.SetAttributeValueEx("LastCheckDate", LastCheckDate)
 				.SetAttributeValueEx("CheckIntervalDays", CheckIntervalDays)
 				.SetAttributeValueEx("IsAutoUpdateCheckEnabled", IsAutoUpdateCheckEnabled);
-			//
-			ManagerServices.PreferencesManagerJson.UpdateSettings
-				.SetValueToJson("UpdateInfoUri", UpdateInfo)
-				.SetValueToJson("LastCheckVersion", LastCheckVersion)
-				.SetValueToJson("LastCheckDate", LastCheckDate)
-				.SetValueToJson("CheckIntervalDays", CheckIntervalDays)
-				.SetValueToJson("IsAutoUpdateCheckEnabled", IsAutoUpdateCheckEnabled);
 		}
 		void OnAutoUpdateCheck()
 		{

@@ -50,7 +50,6 @@ namespace SmartAudioPlayerFx.Managers
 			PlayerSettings.Value = serializer.Load(PLAYER_ELEMENTNAME, DATADIRNAME, PLAYER_FILENAME);
 			WindowSettings.Value = serializer.Load(WINDOW_ELEMENTNAME, DATADIRNAME, WINDOW_FILENAME);
 			UpdateSettings.Value = serializer.Load(UPDATE_ELEMENTNAME, DATADIRNAME, UPDATE_FILENAME);
-			ManagerServices.PreferencesManagerJson?.Load();
 		}
 
 		public void Save()
@@ -61,7 +60,6 @@ namespace SmartAudioPlayerFx.Managers
 			serializer.Save(PlayerSettings.Value, DATADIRNAME, PLAYER_FILENAME);
 			serializer.Save(WindowSettings.Value, DATADIRNAME, WINDOW_FILENAME);
 			serializer.Save(UpdateSettings.Value, DATADIRNAME, UPDATE_FILENAME);
-			ManagerServices.PreferencesManagerJson?.Save();
 		}
 
 	}

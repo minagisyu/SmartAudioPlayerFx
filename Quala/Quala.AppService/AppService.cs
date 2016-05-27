@@ -42,7 +42,6 @@ namespace Quala
 		public static Logging Log { get { return GetContext<Logging>(); } }
 		public static AppMutex AppMutex { get { return GetContext<AppMutex>(); } }
 		public static Storage Storage { get { return GetContext<Storage>(); } }
-		public static Preference Preference { get { return GetContext<Preference>(); } }
 
 	}
 }

@@ -129,7 +129,6 @@
     <Compile Include="Data\MediaTagUtil.cs" />
     <Compile Include="ApplicationExtension.cs" />
     <Compile Include="Managers\AudioPlayerManager.cs" />
-    <Compile Include="Managers\JsonPreferencesManager.cs" />
     <Compile Include="Managers\MediaDBManager.cs" />
     <Compile Include="Managers\MediaDBViewFocus.cs" />
     <Compile Include="Managers\MediaDBViewManager.cs" />

@@ -11,7 +11,6 @@ namespace SmartAudioPlayerFx.Managers
 		public static AudioPlayerManager AudioPlayerManager { get; private set; }
 		public static TaskIconManager TaskIconManager { get; private set; }
 		public static XmlPreferencesManager PreferencesManager { get; private set; }
-		public static JsonPreferencesManager PreferencesManagerJson { get; private set; }
 		public static MediaDBManager MediaDBManager { get; private set; }
 
 		// require Preferences+TaskIcon
@@ -33,7 +32,6 @@ namespace SmartAudioPlayerFx.Managers
 		{
 			// Standalone
 			PreferencesManager = new XmlPreferencesManager(isLoad: true);
-			PreferencesManagerJson = new JsonPreferencesManager(isLoad: true);
 			MediaDBManager = new MediaDBManager(dbFilename);
 
 			// Standalone with UIThread
@@ -112,11 +110,6 @@ namespace SmartAudioPlayerFx.Managers
 			{
 				PreferencesManager.Dispose();
 				PreferencesManager = null;
-			}
-			if (PreferencesManagerJson != null)
-			{
-				PreferencesManagerJson.Dispose();
-				PreferencesManagerJson = null;
 			}
 			if (MediaDBManager != null)
 			{
