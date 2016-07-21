@@ -1,31 +1,33 @@
-﻿using System;
+﻿using Quala;
+using Quala.Extensions;
+using Reactive.Bindings;
+using SmartAudioPlayerFx.Managers;
+using System;
 using System.Diagnostics;
-using System.IO;
-using System.Reactive.Linq;
-using System.Runtime.InteropServices;
-using System.Threading;
+using System.Reactive.Disposables;
 using System.Windows;
 using System.Windows.Threading;
-using SmartAudioPlayerFx.Managers;
-using SmartAudioPlayerFx.Views;
 using WinForms = System.Windows.Forms;
-using Reactive.Bindings;
-using SmartAudioPlayerFx.Data;
-using Quala;
 
 namespace SmartAudioPlayerFx
 {
 	partial class App : Application
 	{
+		readonly CompositeDisposable _disposables = new CompositeDisposable();
+		//	get { return _objects.GetOrCreate<XmlPreferencesManager>(nameof(PreferencesManager)); }
+
+		static App()
+		{
+			// WinForms Initialize
+			WinForms.Application.EnableVisualStyles();
+			WinForms.Application.SetCompatibleTextRenderingDefault(false);
+		}
+
 		protected override void OnStartup(StartupEventArgs e)
 		{
 			base.OnStartup(e);
 			var sw = Stopwatch.StartNew();
 
-			// WinForms Initialize
-			WinForms.Application.EnableVisualStyles();
-			WinForms.Application.SetCompatibleTextRenderingDefault(false);
-			WinForms.Application.DoEvents();
 #if DEBUG
 #else
 			// Exception Handling
@@ -35,14 +37,11 @@ namespace SmartAudioPlayerFx
 				App.Current?.ShowExceptionMessage(x.Exception);
 #endif
 			// Logger Setting
-			AppService.Log.LogFilename = AppService.Storage.AppDataRoaming
-					.CreateFilePath("SmartAudioPlayer Fx.log");
+			AppService.Log.LogFilename = AppService.Storage.AppDataRoaming.CreateFilePath("SmartAudioPlayer Fx.log");
 
 			// minimum Initialize
 			UIDispatcherScheduler.Initialize();
-			var dbFilename = AppService.Storage.AppDataRoaming
-				.CreateFilePath("data", "media.db");
-			ManagerServices.Initialize(dbFilename);
+			ManagerServices.Initialize();
 			Exit += delegate
 			{
 				ManagerServices.Dispose();
@@ -64,8 +63,7 @@ namespace SmartAudioPlayerFx
 			// LogOff -> Close
 			App.Current.SessionEnding += delegate
 			{
-				if (MainWindow == null) return;
-				MainWindow.Close();
+				MainWindow?.Close();
 			};
 
 			// Set TrayIcon Menus

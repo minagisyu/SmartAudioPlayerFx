@@ -9,43 +9,52 @@ using System.Windows.Threading;
 using Microsoft.Win32;
 using SmartAudioPlayerFx.Data;
 using Quala;
+using Vlc.DotNet.Core;
+using System.Reflection;
 
 namespace SmartAudioPlayerFx.Managers
 {
+	public class PlayEndedEventArgs : EventArgs
+	{
+		// エラーの原因 (nullならエラーなし)
+		public string ErrorReason;
+	}
+
 	/// <summary>
 	/// 音楽を再生するためのプレーヤー
 	/// 内部でWPFのMediaPlayerクラスを利用するが、再生エラー時にレジストリ追加してリトライするなどの機能を実装。
 	/// </summary>
-//	[Standalone]
-	public sealed class AudioPlayerManager : IDisposable
+	//	[Standalone]
+	public sealed class VlcAudioPlayerManager : IDisposable
 	{
 		public static bool IsEnableSoundFadeEffect { get; set; } = true;
 
 		#region ctor
 
-		MediaPlayer player;
-		Action<Exception> on_failed = null;	// player.Open()後のplayer.MediaFailed
-		Action on_opened = null;			// player.Open()後のplayer.MediaOpened
+		VlcMediaPlayer player;
+		Action on_failed = null;	// player.Open()後のplayer.MediaFailed
 
-		public AudioPlayerManager()
+		public VlcAudioPlayerManager()
 		{
-			if (Application.Current != null && Application.Current.Dispatcher != Dispatcher.CurrentDispatcher)
-				throw new InvalidOperationException("call on UIThread!!");
-
-			player = new MediaPlayer();
-			player.MediaEnded += delegate { OnPlayEnded(null); };
-			player.MediaFailed += (_, x) => { on_failed?.Invoke(x.ErrorException); };
-			player.MediaOpened += delegate { on_opened(); };
+			DirectoryInfo vlcLibDirectory = null;
+			var currentAssembly = Assembly.GetExecutingAssembly();
+			var currentDirectory = new FileInfo(currentAssembly.Location).DirectoryName;
+			if (currentDirectory != null)
+			{
+				vlcLibDirectory =
+					(AssemblyName.GetAssemblyName(currentAssembly.Location).ProcessorArchitecture == ProcessorArchitecture.X86) ?
+					new DirectoryInfo(Path.Combine(currentDirectory, @"x86\")) :
+					new DirectoryInfo(Path.Combine(currentDirectory, @"x64\"));
+			}
+			player = new VlcMediaPlayer(vlcLibDirectory);
+			player.EndReached += delegate { OnPlayEnded(null); };
+            player.EncounteredError += delegate { on_failed?.Invoke(); };
 		}
 		public void Dispose()
 		{
-			if (player != null)
-			{
-				Close();
-				player = null;
-			}
+			Close();
+
 			on_failed = null;
-			on_opened = null;
 			IsPausedChanged = null;
 			Opened = null;
 			PlayEnded = null;
@@ -77,13 +86,11 @@ namespace SmartAudioPlayerFx.Managers
 			{
 				VolumeFadeoutWithPause();
 				// closeでVolumeが元に戻っちゃうので閉じてから再設定
-				var vol = player.Volume;
-				player.Close();
-//				DoDispatcherEvents();
-				player.Volume = vol;
+				var vol = player.Audio.Volume;
+                player.Stop();
+				player.Audio.Volume = vol;
 			}
 			on_failed = null;
-			on_opened = null;
 			Duration = null;
 			IsPaused = false;
 			CurrentOpenedPath = null;
@@ -112,39 +119,29 @@ namespace SmartAudioPlayerFx.Managers
 			CurrentOpenedPath = path;
 
 			// error/event handling
-			on_failed = (ex) => OnFailed_Handling(path, isPause, startPosition, play_started, ex);
-			on_opened = () => OnOpened_Handling(isPause, startPosition, play_started);
+			on_failed = () => OnFailed_Handling(path, isPause, startPosition, play_started);
 
 			AppService.Log.AddDebugLog(" - opening file...");
-			player.Open(new Uri(path));
+			var media = player.SetMedia(new FileInfo(path));
+			media.ParsedChanged += delegate
+			{
+				OnOpened_Handling(isPause, startPosition, play_started);
+			};
+			media.ParseAsync();
 		}
-		void OnFailed_Handling(string path, bool isPause, TimeSpan? startPosition, Action play_started, Exception ex)
+		void OnFailed_Handling(string path, bool isPause, TimeSpan? startPosition, Action play_started)
 		{
 			var ext = Path.GetExtension(path);
 			if (string.IsNullOrEmpty(ext)) { ext = "."; }   // 拡張子無しはピリオドのみ
 			AppService.Log.AddDebugLog(" **open failed: extension[{0}]", ext);
-			if (ex != null)
-				AppService.Log.AddErrorLog(" **open failed exception: ", ex);
 			//
-			if (IsExistsWmpRegistryEntry(ext))
-			{
-				AppService.Log.AddDebugLog(" **WMP extension registry exists.");
-				// レジストリ設定済みで再生失敗
-				OnPlayEnded("再生に失敗しました");
-			}
-			else
-			{
-				// レジストリ設定をして再オープン
-				SetWmpRegistryEntry(ext);
-				AppService.Log.AddDebugLog(" **WMP extension registry added, retry.");
-				PlayFrom(path, isPause, startPosition, play_started);
-			}
+			OnPlayEnded("再生に失敗しました");
 		}
 		void OnOpened_Handling(bool isPause, TimeSpan? startPosition, Action play_started)
 		{
 			on_failed = null; // 開けた合図
 			AppService.Log.AddDebugLog(" **open success!");
-			if (player.HasAudio == false)
+			if (player.Audio.Tracks.Count > 0)
 			{
 				AppService.Log.AddDebugLog(" -- no have audio... skip.");
 				// 音声がないならスキップ
@@ -152,18 +149,14 @@ namespace SmartAudioPlayerFx.Managers
 				return;
 			}
 
-			player.Position = startPosition ?? TimeSpan.Zero;
-			Duration = (player.NaturalDuration.HasTimeSpan) ? player.NaturalDuration.TimeSpan : (TimeSpan?)null;
+		//	player.Position = startPosition ?? TimeSpan.Zero;
+		//	Duration = (player.NaturalDuration.HasTimeSpan) ? player.NaturalDuration.TimeSpan : (TimeSpan?)null;
 			IsPaused = isPause;
 			AppService.Log.AddDebugLog(" **media duration: {0}", Duration.HasValue ? Duration.Value.ToString() : "(null)");
-//			DoDispatcherEvents();
-//			Thread.Sleep(1);
 
 			if (isPause) { player.Pause(); }
 			else if (startPosition.HasValue) { VolumeFadeinWithPlay(); }
 			else { player.Play(); }
-//			DoDispatcherEvents();
-//			Thread.Sleep(1);
 
 			play_started?.Invoke();
 			Opened?.Invoke();
@@ -191,12 +184,12 @@ namespace SmartAudioPlayerFx.Managers
 		{
 			get
 			{
-				return player.Position;
+				return TimeSpan.Zero;// player.Position;
 			}
 			set
 			{
 				AppService.Log.AddDebugLog("Set Position: {0}", value);
-				player.Position = value;
+			//	player.Position = value;
 				PositionSetted?.Invoke();
 			}
 		}
@@ -213,13 +206,13 @@ namespace SmartAudioPlayerFx.Managers
 		{
 			get
 			{
-				return player.Volume;
+				return 0;// player.Volume;
 			}
 			set
 			{
 				AppService.Log.AddDebugLog("Set Volume: {0}", value);
-				if (player.Volume == value) return;
-				player.Volume = value;
+			//	if (player.Volume == value) return;
+			//	player.Volume = value;
 				VolumeChanged?.Invoke();
 			}
 		}
@@ -248,7 +241,7 @@ namespace SmartAudioPlayerFx.Managers
 		{
 			get
 			{
-				return player.HasVideo;
+				return false;// player.HasVideo;
 			}
 		}
 
@@ -259,13 +252,13 @@ namespace SmartAudioPlayerFx.Managers
 		/// <returns></returns>
 		public DrawingBrush GetVideoBrush()
 		{
-			return player.HasVideo ?
+			return /*player.HasVideo ?
 				new DrawingBrush(new VideoDrawing()
 				{
 					Player = player,
 					Rect = new Rect(0, 0, player.NaturalVideoWidth, player.NaturalVideoHeight),
 				}) :
-				null;
+				*/null;
 		}
 
 		#endregion
@@ -317,49 +310,44 @@ namespace SmartAudioPlayerFx.Managers
 			if (!paused)
 				VolumeFadeoutWithPause();
 			Position = TimeSpan.Zero;
-			player.Play();
+		//	player.Play();
 			IsPaused = false;
 		}
 
 		#endregion
 		#region Helper
 
-		// WinFormsのDoEventsライクな...
-		[Obsolete]
-		static void DoDispatcherEvents()
-		{
-		//	Application.Current.UIThreadInvoke(() => System.Windows.Forms.Application.DoEvents());
-		}
 
 		// 停止状態からフェードイン再生
 		// UIThreadから呼ぶこと
 		void VolumeFadeinWithPlay()
 		{
 			AppService.Log.AddDebugLog("Call VolumeFadeinWithPlay");
-			var vol = player.Volume;
-			AppService.Log.AddDebugLog(" - current Volume(1): {0}", vol);
-			player.Volume = 0;
+		//	var vol = player.Volume;
+		//	AppService.Log.AddDebugLog(" - current Volume(1): {0}", vol);
+		//	player.Volume = 0;
 //			DoDispatcherEvents();
-			AppService.Log.AddDebugLog(" - current Volume(2): {0}", player.Volume);
-			player.Play();
+		//	AppService.Log.AddDebugLog(" - current Volume(2): {0}", player.Volume);
+		//	player.Play();
 			IsPaused = false;
 //			DoDispatcherEvents();
 			Thread.Sleep(10);
-			ValueAnimation_Wait(
-				0, vol, TimeSpan.FromMilliseconds(300),
-				v =>
-				{
-					player.Volume = v;
-//					DoDispatcherEvents();
-				},
-				() =>
-				{
-//					DoDispatcherEvents();
-					player.Volume = vol;
-//					DoDispatcherEvents();
-//					Thread.Sleep(1);
-					AppService.Log.AddDebugLog("VolumeFadeinWithPlay complate: vol({0})==player.Volume({1})", vol, player.Volume);
-				});
+			/*	ValueAnimation_Wait(
+					0, vol, TimeSpan.FromMilliseconds(300),
+					v =>
+					{
+						player.Volume = v;
+	//					DoDispatcherEvents();
+					},
+					() =>
+					{
+	//					DoDispatcherEvents();
+						player.Volume = vol;
+	//					DoDispatcherEvents();
+	//					Thread.Sleep(1);
+						AppService.Log.AddDebugLog("VolumeFadeinWithPlay complate: vol({0})==player.Volume({1})", vol, player.Volume);
+					});
+			*/
 		}
 
 		// フェードアウト一時停止
@@ -367,26 +355,27 @@ namespace SmartAudioPlayerFx.Managers
 		void VolumeFadeoutWithPause()
 		{
 			AppService.Log.AddDebugLog("Call VolumeFadeoutWithPause");
-			var vol = player.Volume;
-			AppService.Log.AddDebugLog(" - current Volume: {0}", vol);
-			ValueAnimation_Wait(
-				vol, 0, TimeSpan.FromMilliseconds(300),
-				v =>
-				{
-					player.Volume = v;
-//					DoDispatcherEvents();
-				},
-				() =>
-				{
-//					DoDispatcherEvents();
-					player.Pause();
-					IsPaused = true;
-//					DoDispatcherEvents();
-//					Thread.Sleep(10);
-					player.Volume = vol;
-//					DoDispatcherEvents();
-					AppService.Log.AddDebugLog("VolumeFadeoutWithPause complate: vol({0})==player.Volume({1})", vol, player.Volume);
-				});
+		//	var vol = player.Volume;
+		//	AppService.Log.AddDebugLog(" - current Volume: {0}", vol);
+			/*	ValueAnimation_Wait(
+					vol, 0, TimeSpan.FromMilliseconds(300),
+					v =>
+					{
+						player.Volume = v;
+	//					DoDispatcherEvents();
+					},
+					() =>
+					{
+	//					DoDispatcherEvents();
+						player.Pause();
+						IsPaused = true;
+	//					DoDispatcherEvents();
+	//					Thread.Sleep(10);
+						player.Volume = vol;
+	//					DoDispatcherEvents();
+						AppService.Log.AddDebugLog("VolumeFadeoutWithPause complate: vol({0})==player.Volume({1})", vol, player.Volume);
+					});
+			*/
 		}
 
 		// アニメーション用ヘルパ
@@ -420,66 +409,31 @@ namespace SmartAudioPlayerFx.Managers
 			}
 		}
 
-		// WMPのレジストリエントリがあるか確認する
-		// 拡張子はピリオドつきで、拡張子がないものはピリオドのみで
-		bool IsExistsWmpRegistryEntry(string ext)
-		{
-			using (var regKey = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\MediaPlayer\Player\Extensions\" + ext))
-			{
-				return (regKey != null);
-			}
-		}
-
-		// WMPのレジストリエントリを追加する
-		void SetWmpRegistryEntry(string ext)
-		{
-			using (var regKey = Registry.CurrentUser.CreateSubKey(@"Software\Microsoft\MediaPlayer\Player\Extensions\" + ext))
-			{
-				// 既存の設定を上書きしないように、存在しない場合のみ追加する
-				if (regKey.GetValue("Permissions") == null)
-				{
-					regKey.SetValue("Permissions", 1, RegistryValueKind.DWord);
-					AppService.Log.AddInfoLog(@"レジストリキーを設定しました: {0}\Permissions = 1", regKey.Name);
-				}
-				if (regKey.GetValue("Runtime") == null)
-				{
-					regKey.SetValue("Runtime", 7, RegistryValueKind.DWord);
-					AppService.Log.AddInfoLog(@"レジストリキーを設定しました: {0}\Runtime = 7", regKey.Name);
-				}
-			}
-		}
-
-		public class PlayEndedEventArgs : EventArgs
-		{
-			// エラーの原因 (nullならエラーなし)
-			public string ErrorReason;
-		}
-
 		#endregion
 
 	}
 
-	public static class AudioPlayerManagerExtensions
+	public static class VlcAudioPlayerManagerExtensions
 	{
-		public static IObservable<Unit> OpenedAsObservable(this AudioPlayerManager manager)
+		public static IObservable<Unit> OpenedAsObservable(this VlcAudioPlayerManager manager)
 		{
 			return Observable.FromEvent(v => manager.Opened += v, v => manager.Opened -= v);
 		}
-		public static IObservable<Unit> PositionSettedAsObservable(this AudioPlayerManager manager)
+		public static IObservable<Unit> PositionSettedAsObservable(this VlcAudioPlayerManager manager)
 		{
 			return Observable.FromEvent(v => manager.PositionSetted += v, v => manager.PositionSetted -= v);
 		}
-		public static IObservable<Unit> VolumeChangedAsObservable(this AudioPlayerManager manager)
+		public static IObservable<Unit> VolumeChangedAsObservable(this VlcAudioPlayerManager manager)
 		{
 			return Observable.FromEvent(v => manager.VolumeChanged += v, v => manager.VolumeChanged -= v);
 		}
-		public static IObservable<Unit> IsPausedChangedAsObservable(this AudioPlayerManager manager)
+		public static IObservable<Unit> IsPausedChangedAsObservable(this VlcAudioPlayerManager manager)
 		{
 			return Observable.FromEvent(v => manager.IsPausedChanged += v, v => manager.IsPausedChanged -= v);
 		}
-		public static IObservable<AudioPlayerManager.PlayEndedEventArgs> PlayEndedAsObservable(this AudioPlayerManager manager)
+		public static IObservable<PlayEndedEventArgs> PlayEndedAsObservable(this VlcAudioPlayerManager manager)
 		{
-			return Observable.FromEvent<AudioPlayerManager.PlayEndedEventArgs>(v => manager.PlayEnded += v, v => manager.PlayEnded -= v);
+			return Observable.FromEvent<PlayEndedEventArgs>(v => manager.PlayEnded += v, v => manager.PlayEnded -= v);
 		}
 	}
 

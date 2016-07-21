@@ -1,13 +1,17 @@
 ﻿using Quala.Extensions;
 using Reactive.Bindings;
 using System;
+using System.IO;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Xml.Linq;
 
-namespace SmartAudioPlayerFx.Managers
+namespace SmartAudioPlayerFx
 {
-	public sealed class XmlPreferencesManager
+	/// <summary>
+	/// SmartAudioPlayer Fx 3.3以前の設定ファイル(XMLタイプ)を扱う
+	/// </summary>
+	public sealed class XmlPreferencesService : IDisposable
 	{
 		const string DATADIRNAME = "data";
 		const string PLAYER_ELEMENTNAME = "Player";
@@ -23,16 +27,21 @@ namespace SmartAudioPlayerFx.Managers
 		/// </summary>
 		public event Action SerializeRequest;
 
-		public ReactiveProperty<XElement> PlayerSettings { get; private set; }
-		public ReactiveProperty<XElement> WindowSettings { get; private set; }
-		public ReactiveProperty<XElement> UpdateSettings { get; private set; }
+		public ReactiveProperty<XElement> PlayerSettings { get; } = new ReactiveProperty<XElement>(new XElement(PLAYER_ELEMENTNAME));
+		public ReactiveProperty<XElement> WindowSettings { get; } = new ReactiveProperty<XElement>(new XElement(WINDOW_ELEMENTNAME));
+		public ReactiveProperty<XElement> UpdateSettings { get; } = new ReactiveProperty<XElement>(new XElement(UPDATE_ELEMENTNAME));
 
-		public XmlPreferencesManager()
+		public XmlPreferencesService()
 		{
-			PlayerSettings = new ReactiveProperty<XElement>(new XElement(PLAYER_ELEMENTNAME));
-			WindowSettings = new ReactiveProperty<XElement>(new XElement(WINDOW_ELEMENTNAME));
-			UpdateSettings = new ReactiveProperty<XElement>(new XElement(UPDATE_ELEMENTNAME));
+			// シリアライザの保存パスを手動設定
+			var appdata = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+			var appname = "SmartAudioPlayer Fx";
+			serializer.BaseDir = Path.Combine(appdata, appname);
+
 			Load();
+		}
+		void IDisposable.Dispose()
+		{
 		}
 
 		public void Load()
@@ -51,16 +60,15 @@ namespace SmartAudioPlayerFx.Managers
 			serializer.Save(WindowSettings.Value, DATADIRNAME, WINDOW_FILENAME);
 			serializer.Save(UpdateSettings.Value, DATADIRNAME, UPDATE_FILENAME);
 		}
-
 	}
 
-	public static class PreferencesManagerExtensions
+	public static class XmlPreferencesServiceExtensions
 	{
-		public static IObservable<Unit> SerializeRequestAsObservable(this XmlPreferencesManager manager)
+		public static IObservable<Unit> SerializeRequestAsObservable(this XmlPreferencesService service)
 		{
 			return Observable.FromEvent(
-				v => manager.SerializeRequest += v,
-				v => manager.SerializeRequest -= v);
+				v => service.SerializeRequest += v,
+				v => service.SerializeRequest -= v);
 		}
 	}
 

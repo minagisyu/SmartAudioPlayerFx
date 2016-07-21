@@ -21,11 +21,11 @@ using System.IO.Compression;
 using Quala;
 using Quala.Extensions;
 
-namespace SmartAudioPlayerFx.Managers
+namespace SmartAudioPlayerFx
 {
 //	[Require(typeof(XmlPreferencesManager))]
 //	[Require(typeof(TaskIconManager))]
-	sealed class AppUpdateManager : IDisposable
+	sealed class AppUpdateService : IDisposable
 	{
 		#region ctor
 
@@ -39,7 +39,7 @@ namespace SmartAudioPlayerFx.Managers
 		readonly object TasktrayTag = new object(); // BaloonTip用タグ
 		readonly CompositeDisposable _disposables = new CompositeDisposable();
 
-		public AppUpdateManager()
+		public AppUpdateService()
 		{
 			// Preferences
 			ManagerServices.PreferencesManager.UpdateSettings

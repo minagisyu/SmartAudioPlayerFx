@@ -8,6 +8,7 @@ Application Services class
 
 ### Nuget
 - Newtonsoft.Json
+- Reactive Property
 
 #### Framework
 - System

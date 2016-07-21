@@ -15,6 +15,7 @@ audio player application.
 - Rx-Main
 - ReactiveProperty
 - Expression.Blend.Sdk
+- Vlc.DotNet.Core
 
 #### Framework
 - WindowsBase

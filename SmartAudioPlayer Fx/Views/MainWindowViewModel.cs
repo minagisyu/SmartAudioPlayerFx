@@ -19,41 +19,41 @@ namespace SmartAudioPlayerFx.Views
 	{
 		#region Properties
 
-		public ReactiveProperty<Int32Rect> WindowPlacement { get; private set; }
-		public ReactiveProperty<double> InactiveOpacity { get; private set; }
-		public ReactiveProperty<double> DeactiveOpacity { get; private set; }
-		public ReactiveProperty<bool> IsVisible { get; private set; }	// 機能未実装...
-		public ReactiveCommand PlayPauseCommand { get; private set; }
+		public ReactiveProperty<Int32Rect> WindowPlacement { get; } = new ReactiveProperty<Int32Rect>(new Int32Rect(0, 0, 0, 0));
+		public ReactiveProperty<double> InactiveOpacity { get; } = new ReactiveProperty<double>(0.8);
+		public ReactiveProperty<double> DeactiveOpacity { get; } = new ReactiveProperty<double>(0.65);
+		public ReactiveProperty<bool> IsVisible { get; } = new ReactiveProperty<bool>(true);
+		public ReactiveCommand PlayPauseCommand { get; } = new ReactiveCommand();
 		//
-		public ReactiveProperty<bool> IsLoading { get; private set; }
-		public ReactiveProperty<JukeboxManager.SelectionMode> SelectMode { get; private set; }
-		public ReactiveProperty<bool> IsRepeat { get; private set; }
-		public ReactiveProperty<bool> IsPaused { get; private set; }
-		public ReactiveProperty<MediaItem> CurrentMedia { get; private set; }
-		public ReactiveProperty<long> PositionTicks { get; private set; }
-		public ReactiveProperty<long> DurationTicks { get; private set; }
-		public ReactiveProperty<double> Volume { get; private set; }
+		public ReactiveProperty<bool> IsLoading { get; } = new ReactiveProperty<bool>(false);
+		public ReactiveProperty<JukeboxManager.SelectionMode> SelectMode { get; } = new ReactiveProperty<JukeboxManager.SelectionMode>(JukeboxManager.SelectionMode.Random);
+		public ReactiveProperty<bool> IsRepeat { get; } = new ReactiveProperty<bool>(false);
+		public ReactiveProperty<bool> IsPaused { get; } = new ReactiveProperty<bool>();
+		public ReactiveProperty<MediaItem> CurrentMedia { get; } = new ReactiveProperty<MediaItem>();
+		public ReactiveProperty<long> PositionTicks { get; } = new ReactiveProperty<long>();
+		public ReactiveProperty<long> DurationTicks { get; } = new ReactiveProperty<long>();
+		public ReactiveProperty<double> Volume { get; } = new ReactiveProperty<double>();
 		//
-		public ReactiveProperty<string> SelectModeTooltip { get; private set; }
-		public ReactiveCommand SelectModeToggleCommand { get; private set; }
+		public ReactiveProperty<string> SelectModeTooltip { get; } = new ReactiveProperty<string>();
+		public ReactiveCommand SelectModeToggleCommand { get; } = new ReactiveCommand();
 		//
-		public ReactiveProperty<string> RepeatTooltip { get; private set; }
-		public ReactiveCommand RepeatToggleCommand { get; private set; }
+		public ReactiveProperty<string> RepeatTooltip { get; } = new ReactiveProperty<string>();
+		public ReactiveCommand RepeatToggleCommand { get; } = new ReactiveCommand();
 		//
-		public ReactiveProperty<string> StateTooltip { get; private set; }
-		public ReactiveCommand StateToggleCommand { get; private set; }
+		public ReactiveProperty<string> StateTooltip { get; } = new ReactiveProperty<string>();
+		public ReactiveCommand StateToggleCommand { get; } = new ReactiveCommand();
 		//
-		public ReactiveProperty<string> Title { get; private set; }
-		public ReactiveProperty<string> TitleTooltip { get; private set; }
-		public ReactiveProperty<bool> TitleTooltipEnable { get; private set; }
-		public ReactiveCommand TitleSkipCommand { get; private set; }
+		public ReactiveProperty<string> Title { get; } = new ReactiveProperty<string>();
+		public ReactiveProperty<string> TitleTooltip { get; } = new ReactiveProperty<string>();
+		public ReactiveProperty<bool> TitleTooltipEnable { get; } = new ReactiveProperty<bool>();
+		public ReactiveCommand TitleSkipCommand { get; } = new ReactiveCommand();
 		//
-		public ReactiveProperty<string> VolumeLevel { get; private set; }
-		public ReactiveProperty<string> VolumeTooltip { get; private set; }
+		public ReactiveProperty<string> VolumeLevel { get; } = new ReactiveProperty<string>();
+		public ReactiveProperty<string> VolumeTooltip { get; } = new ReactiveProperty<string>();
 		//
-		public ReactiveProperty<string> PositionString { get; private set; }
-		public ReactiveProperty<string> SeekTooltip { get; private set; }
-		
+		public ReactiveProperty<string> PositionString { get; } = new ReactiveProperty<string>();
+		public ReactiveProperty<string> SeekTooltip { get; } = new ReactiveProperty<string>();
+
 		// Rxのバージョンをあげたら非同期処理の実行順が崩れて問題が発生
 		// とりあえず、反復的に処理されないように暫定対応している
 		ManualResetEventSlim VolumeSuspressEv;
@@ -63,48 +63,13 @@ namespace SmartAudioPlayerFx.Views
 
 		public MainWindowViewModel()
 		{
-			WindowPlacement = new ReactiveProperty<Int32Rect>(new Int32Rect(0, 0, 0, 0));
-			InactiveOpacity = new ReactiveProperty<double>(0.8);
-			DeactiveOpacity = new ReactiveProperty<double>(0.65);
-			IsVisible = new ReactiveProperty<bool>(true);
-			PlayPauseCommand = new ReactiveCommand();
-
-			// Common Property
-			IsLoading = new ReactiveProperty<bool>(false);
-			SelectMode = new ReactiveProperty<JukeboxManager.SelectionMode>(JukeboxManager.SelectionMode.Random);
-			IsRepeat = new ReactiveProperty<bool>(false);
-			IsPaused = new ReactiveProperty<bool>();
-			CurrentMedia = new ReactiveProperty<MediaItem>();
-			PositionTicks = new ReactiveProperty<long>();
-			DurationTicks = new ReactiveProperty<long>();
-			Volume = new ReactiveProperty<double>();
-
-			// Sub Property
-			SelectModeTooltip = new ReactiveProperty<string>();
-			SelectModeToggleCommand = new ReactiveCommand();
-			RepeatTooltip = new ReactiveProperty<string>();
-			RepeatToggleCommand = new ReactiveCommand();
-			StateTooltip = new ReactiveProperty<string>();
-			StateToggleCommand = new ReactiveCommand();
-			Title = new ReactiveProperty<string>();
-			TitleTooltip = new ReactiveProperty<string>();
-			TitleTooltipEnable = new ReactiveProperty<bool>();
-			TitleSkipCommand = new ReactiveCommand();
-			VolumeLevel = new ReactiveProperty<string>();
-			VolumeTooltip = new ReactiveProperty<string>();
-			PositionString = new ReactiveProperty<string>();
-			SeekTooltip = new ReactiveProperty<string>();
-
 			// Preferences
 			ManagerServices.PreferencesManager.WindowSettings
 				.Subscribe(x => OnLoadWindowPrefernces(x));
 			ManagerServices.PreferencesManager.SerializeRequestAsObservable()
 				.Subscribe(_ => OnSavePreferences());
 
-			SetupEvents();
-		}
-		void SetupEvents()
-		{
+			// Setup Events
 			PlayPauseCommand
 				.Subscribe(_ => ManagerServices.AudioPlayerManager.PlayPause());
 
@@ -118,7 +83,7 @@ namespace SmartAudioPlayerFx.Views
 			Observable.Merge(
 				ManagerServices.AudioPlayerManager.OpenedAsObservable(),
 				ManagerServices.AudioPlayerManager.IsPausedChangedAsObservable(),
-				Observable.Return(Unit.Default))	// イベント来るまで動かないので初期設定用にReturnを返してやる
+				Observable.Return(Unit.Default))    // イベント来るまで動かないので初期設定用にReturnを返してやる
 				.Subscribe(_ => IsPaused.Value = ManagerServices.AudioPlayerManager.IsPaused);
 			ManagerServices.JukeboxManager.CurrentMedia
 				.Subscribe(x => CurrentMedia.Value = x);
@@ -141,26 +106,26 @@ namespace SmartAudioPlayerFx.Views
 			ManagerServices.AudioPlayerManager.OpenedAsObservable()
 				.Subscribe(_ => DurationTicks.Value = ManagerServices.AudioPlayerManager.Duration.HasValue ? ManagerServices.AudioPlayerManager.Duration.Value.Ticks : 0);
 
-            VolumeSuspressEv = new ManualResetEventSlim(false);
-            Observable.Merge(
+			VolumeSuspressEv = new ManualResetEventSlim(false);
+			Observable.Merge(
 				ManagerServices.AudioPlayerManager.VolumeChangedAsObservable(),
 				Observable.Return(Unit.Default))
 				.ObserveOnUIDispatcher()
 				.Subscribe(_ =>
-                {
+				{
 					if (VolumeSuspressEv.IsSet == false)
 					{
 						Volume.Value = ManagerServices.AudioPlayerManager.Volume;
 					}
 					VolumeSuspressEv.Reset();
-                });
+				});
 			Volume
 				.ObserveOnUIDispatcher()
 				.Subscribe(x =>
-                {
+				{
 					VolumeSuspressEv.Set();
-                    ManagerServices.AudioPlayerManager.Volume = x;
-                });
+					ManagerServices.AudioPlayerManager.Volume = x;
+				});
 
 			// SubProperty
 			SelectMode
@@ -268,29 +233,24 @@ namespace SmartAudioPlayerFx.Views
 		#region Value to String Convertion
 
 		string SelectModeToTooltipString(JukeboxManager.SelectionMode mode)
-		{
-			return
-				mode == JukeboxManager.SelectionMode.Filename ? "モード：ファイル名順" :
-				mode == JukeboxManager.SelectionMode.Random ? "モード：ランダム" :
-				string.Empty;
-		}
+			=>
+			mode == JukeboxManager.SelectionMode.Filename ? "モード：ファイル名順" :
+			mode == JukeboxManager.SelectionMode.Random ? "モード：ランダム" :
+			string.Empty;
+
 		string RepeatModeToTooltipString(bool isRepeat)
-		{
-			return isRepeat ? "リピート：有効" : "リピート：無効";
-		}
+			=> isRepeat ? "リピート：有効" : "リピート：無効";
+
 		string PlayStateToTooltipString(bool isPaused)
-		{
-			return isPaused ? "状態：一時停止中" : "状態：再生中";
-		}
+			=> isPaused ? "状態：一時停止中" : "状態：再生中";
 
 		string CurrentMediaToTitleString(MediaItem currentMedia, bool isLoading, bool isTitleFromFilePath)
-		{
-			return
-				isLoading ? "[読み込み中です...]" :
-				currentMedia == null ? "[再生可能なメディアがありません]" :
-				isTitleFromFilePath ? Path.GetFileName(currentMedia.FilePath) :
-				currentMedia.Title;
-		}
+			=>
+			isLoading ? "[読み込み中です...]" :
+			currentMedia == null ? "[再生可能なメディアがありません]" :
+			isTitleFromFilePath ? Path.GetFileName(currentMedia.FilePath) :
+			currentMedia.Title;
+
 		string CurrentMediaToTitleTooltipString(MediaItem currentMedia, bool isLoading)
 		{
 			if (isLoading || currentMedia == null) return null;
@@ -303,17 +263,14 @@ namespace SmartAudioPlayerFx.Views
 		}
 
 		string VolumeToVolumeLevelString(double volume)
-		{
-			return
-				(volume == 0.0) ? "Mute" :
-				(volume > 0.7) ? "Hi" :
-				(volume > 0.3) ? "Mid" :
-				"Low";
-		}
+			=>
+			(volume == 0.0) ? "Mute" :
+			(volume > 0.7) ? "Hi" :
+			(volume > 0.3) ? "Mid" :
+			"Low";
+
 		string VolumeToTooltipString(double volume)
-		{
-			return string.Format("ボリューム：{0:F0}%", volume * 100.0);
-		}
+			=> $"ボリューム：{(volume * 100.0):F0}%";
 
 		string PositionToString(long positionTicks, long durationTicks)
 		{

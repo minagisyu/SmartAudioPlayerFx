@@ -9,8 +9,8 @@ using Quala.Extensions;
 
 namespace SmartAudioPlayerFx.Managers
 {
-	[Require(typeof(XmlPreferencesManager))]
-	[Require(typeof(MediaDBViewManager))]
+//	[Require(typeof(XmlPreferencesManager))]
+//	[Require(typeof(MediaDBViewManager))]
 	sealed class RecentsManager : IDisposable
 	{
 		#region ctor

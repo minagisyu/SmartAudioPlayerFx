@@ -16,7 +16,7 @@ using Quala.Win32.Dialog;
 
 namespace SmartAudioPlayerFx.Managers
 {
-	[Standalone]
+//	[Standalone]
 	sealed class TaskIconManager : IDisposable
 	{
 		#region ctor

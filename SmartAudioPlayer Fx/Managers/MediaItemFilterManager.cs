@@ -14,7 +14,7 @@ namespace SmartAudioPlayerFx.Managers
 	/// <summary>
 	/// 拡張子と単語によるファイルフィルタリング
 	/// </summary>
-	[Require(typeof(XmlPreferencesManager))]
+//	[Require(typeof(XmlPreferencesManager))]
 	sealed class MediaItemFilterManager : IDisposable
 	{
 		readonly object lockObj = new object();

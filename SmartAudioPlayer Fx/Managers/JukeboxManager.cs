@@ -15,9 +15,9 @@ using Quala.Extensions;
 
 namespace SmartAudioPlayerFx.Managers
 {
-	[Require(typeof(XmlPreferencesManager))]
-	[Require(typeof(AudioPlayerManager))]
-	[Require(typeof(MediaDBViewManager))]
+//	[Require(typeof(XmlPreferencesManager))]
+//	[Require(typeof(AudioPlayerManager))]
+//	[Require(typeof(MediaDBViewManager))]
 	sealed class JukeboxManager : IDisposable
 	{
 		#region ctor

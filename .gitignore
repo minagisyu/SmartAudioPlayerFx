@@ -7,3 +7,5 @@ obj/
 *.url
 /SmartAudioPlayerFx.Test/_testdata
 /SmartAudioPlayer Fx/sample.md
+/SmartAudioPlayer Fx/x64
+/SmartAudioPlayer Fx/x86
