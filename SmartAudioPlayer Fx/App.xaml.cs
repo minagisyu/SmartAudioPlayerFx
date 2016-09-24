@@ -16,6 +16,10 @@ namespace SmartAudioPlayerFx
 		readonly CompositeDisposable _disposables = new CompositeDisposable();
 		//	get { return _objects.GetOrCreate<XmlPreferencesManager>(nameof(PreferencesManager)); }
 
+		// MODEL is AppService.
+		// AppService is RefCount-ed Get/Dispose.
+		// VM is AppServices for UI(View)
+
 		static App()
 		{
 			// WinForms Initialize

@@ -1,16 +1,15 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reactive.Disposables;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Quala
 {
 	// インスタンス管理
-	public class AppServiceManager : IDisposable
+	// AppServiceの作成, 参照カウント管理、インスタンス破棄
+	public sealed class AppServiceManager : IDisposable
 	{
+		// Type別、Key別、AppServiceインスタンス
 		ConcurrentDictionary<Type, ConcurrentDictionary<string, object>> instance;
 		CompositeDisposable disposables;
 
@@ -20,7 +19,7 @@ namespace Quala
 			disposables = new CompositeDisposable();
 		}
 
-		public T Get<T>(string key = "")
+		public async Task<T> GetAsync<T>(string key = "")
 			where T : class, IDisposable, new()
 		{
 			var type = typeof(T);
@@ -30,16 +29,17 @@ namespace Quala
 			{
 				typeDic = new ConcurrentDictionary<string, object>();
 				instance.TryAdd(type, typeDic);
-				
+
 			}
 
 			object obj;
-			if(typeDic.TryGetValue(key, out obj) == false)
+			if (typeDic.TryGetValue(key, out obj) == false)
 			{
-				obj = new T();
+				obj = await Task.Run(() => new T());
 				typeDic.TryAdd(key, obj);
-				if(obj is IDisposable)
+				if (obj is IDisposable)
 				{
+					// RefCountDisposable
 					disposables.Add(obj as IDisposable);
 				}
 			}

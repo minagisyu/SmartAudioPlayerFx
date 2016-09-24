@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace SmartAudioPlayerFx.Services
 {
-	class NotifyIconService
+	public sealed class NotifyIconService
 	{
 		// message prop
 		// clicked command

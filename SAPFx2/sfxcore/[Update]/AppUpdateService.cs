@@ -23,9 +23,7 @@ using Quala.Extensions;
 
 namespace SmartAudioPlayerFx
 {
-//	[Require(typeof(XmlPreferencesManager))]
-//	[Require(typeof(TaskIconManager))]
-	sealed class AppUpdateService : IDisposable
+	public sealed class AppUpdateService : IDisposable
 	{
 		#region ctor
 

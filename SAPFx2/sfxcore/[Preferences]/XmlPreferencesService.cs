@@ -11,7 +11,7 @@ namespace SmartAudioPlayerFx
 	/// <summary>
 	/// SmartAudioPlayer Fx 3.3以前の設定ファイル(XMLタイプ)を扱う
 	/// </summary>
-	public sealed class XmlPreferencesService : IDisposable
+	public sealed class XmlPreferencesService
 	{
 		const string DATADIRNAME = "data";
 		const string PLAYER_ELEMENTNAME = "Player";
@@ -39,9 +39,6 @@ namespace SmartAudioPlayerFx
 			serializer.BaseDir = Path.Combine(appdata, appname);
 
 			Load();
-		}
-		void IDisposable.Dispose()
-		{
 		}
 
 		public void Load()
