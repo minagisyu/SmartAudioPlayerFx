@@ -32,13 +32,12 @@
   <ItemGroup>
     <Compile Include="AppService.cs" />
     <Compile Include="AppServiceManager.cs" />
-    <Compile Include="[ReferenceObject]\ReferenceObject.Manager.cs" />
+    <Compile Include="ReferenceManager.cs" />
     <Compile Include="[Logging]\Logging.cs" />
     <Compile Include="[Logging]\Logging_Item.cs" />
     <Compile Include="[Logging]\LogType.cs" />
     <Compile Include="[AppMutex]\AppMutex.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="[ReferenceObject]\ReferenceObject.cs" />
     <Compile Include="[Storage]\Storage_AppDataPath.cs" />
     <Compile Include="[Storage]\Storage.cs" />
   </ItemGroup>

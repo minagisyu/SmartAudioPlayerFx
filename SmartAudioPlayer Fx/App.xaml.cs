@@ -13,12 +13,7 @@ namespace SmartAudioPlayerFx
 {
 	partial class App : Application
 	{
-		readonly CompositeDisposable _disposables = new CompositeDisposable();
-		//	get { return _objects.GetOrCreate<XmlPreferencesManager>(nameof(PreferencesManager)); }
-
-		// MODEL is AppService.
-		// AppService is RefCount-ed Get/Dispose.
-		// VM is AppServices for UI(View)
+		public ReferenceManager Models { get; } = new ReferenceManager();
 
 		static App()
 		{
