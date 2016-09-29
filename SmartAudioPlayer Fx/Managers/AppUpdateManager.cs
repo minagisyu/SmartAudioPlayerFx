@@ -130,11 +130,11 @@ namespace SmartAudioPlayerFx.Managers
 
 		public async Task<Version> CheckUpdate()
 		{
-			AppService.Log.AddDebugLog("Call CheckUpdate");
+			App.Models.Get<Logging>().AddDebugLog("Call CheckUpdate");
 
 			if (!NetworkInterface.GetIsNetworkAvailable())
 			{
-				AppService.Log.AddDebugLog(" - Network not available.");
+				App.Models.Get<Logging>().AddDebugLog(" - Network not available.");
 				return null;
 			}
 
@@ -149,7 +149,7 @@ namespace SmartAudioPlayerFx.Managers
 #endif
 					catch (Exception e)
 					{
-						AppService.Log.AddErrorLog(" - update.xml取得中にエラーが発生しました", e);
+						App.Models.Get<Logging>().AddErrorLog(" - update.xml取得中にエラーが発生しました", e);
 						return null;
 					}
 
@@ -162,7 +162,7 @@ namespace SmartAudioPlayerFx.Managers
 					{
 						if (currentVersion < newVersion)
 						{
-							AppService.Log.AddInfoLog(" - 新しいバージョンを確認しました: {0}", newVersion);
+							App.Models.Get<Logging>().AddInfoLog(" - 新しいバージョンを確認しました: {0}", newVersion);
 							return newVersion;
 						}
 					}

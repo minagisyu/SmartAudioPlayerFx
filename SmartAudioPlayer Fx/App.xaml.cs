@@ -13,7 +13,7 @@ namespace SmartAudioPlayerFx
 {
 	partial class App : Application
 	{
-		public ReferenceManager Models { get; } = new ReferenceManager();
+		public static ReferenceManager Models { get; } = new ReferenceManager();
 
 		static App()
 		{
@@ -36,14 +36,16 @@ namespace SmartAudioPlayerFx
 				App.Current?.ShowExceptionMessage(x.Exception);
 #endif
 			// Logger Setting
-			AppService.Log.LogFilename = AppService.Storage.AppDataRoaming.CreateFilePath("SmartAudioPlayer Fx.log");
+			Models.Get<Logging>().LogFilename =
+				Models.Get<Storage>().AppDataRoaming.CreateFilePath("SmartAudioPlayer Fx.log");
 
 			// minimum Initialize
 			UIDispatcherScheduler.Initialize();
-			ManagerServices.Initialize();
+		ManagerServices.Initialize();
 			Exit += delegate
 			{
 				ManagerServices.Dispose();
+				Models.Dispose();
 			};
 
 			// アップデートチェック
@@ -76,7 +78,7 @@ namespace SmartAudioPlayerFx
 				Dispatcher);
 
 			sw.Stop();
-			AppService.Log.AddDebugLog("App.OnStartrup: {0}ms", sw.ElapsedMilliseconds);
+			Models.Get<Logging>().AddDebugLog("App.OnStartrup: {0}ms", sw.ElapsedMilliseconds);
 		}
 
 		bool HandleUpdateProcess(string[] args)

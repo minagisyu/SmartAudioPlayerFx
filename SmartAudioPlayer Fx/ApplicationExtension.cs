@@ -68,7 +68,7 @@ namespace SmartAudioPlayerFx
 		public static void ShowExceptionMessage(this Application app, Exception ex)
 		{
 			// todo: 専用のダイアログ使う？
-			AppService.Log.AddCriticalErrorLog("UnhandledException", ex);
+			App.Models.Get<Logging>().AddCriticalErrorLog("UnhandledException", ex);
 			var message = string.Format(
 				"未処理の例外エラーが発生しました{0}" +
 				"----------------------------------------{0}" +

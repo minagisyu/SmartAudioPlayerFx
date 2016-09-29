@@ -4,7 +4,7 @@ using System.Reflection;
 
 namespace Quala
 {
-	public sealed partial class Storage : IDisposable
+	public sealed partial class Storage
 	{
 		public AppDataPath AppDataRoaming { get; private set; }
 		public AppDataPath AppDataLocal { get; private set; }
@@ -22,7 +22,5 @@ namespace Quala
 			AppCurrent = new AppDataPath(new DirectoryInfo(
 				Path.Combine(Path.GetDirectoryName(asm.Location), asmName)));
 		}
-
-		void IDisposable.Dispose() { }
 	}
 }

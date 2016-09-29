@@ -8,30 +8,30 @@ namespace SmartAudioPlayerFx.Managers
 	static class ManagerServices
 	{
 		// Standalone
-		public static XmlPreferencesManager PreferencesManager { get; } = new XmlPreferencesManager();
-	//	public static AudioPlayerManager AudioPlayerManager { get; } = new AudioPlayerManager();
-		public static VlcAudioPlayerManager AudioPlayerManager { get; } = new VlcAudioPlayerManager();
-		public static TaskIconManager TaskIconManager { get; } = new TaskIconManager();
-		public static MediaDBManager MediaDBManager { get; } = new MediaDBManager();
+		public static XmlPreferencesManager PreferencesManager { get; } = App.Models.Get<XmlPreferencesManager>();
+		//	public static AudioPlayerManager AudioPlayerManager { get; } = new AudioPlayerManager();
+		public static VlcAudioPlayerManager AudioPlayerManager { get; } = App.Models.Get<VlcAudioPlayerManager>();
+		public static TaskIconManager TaskIconManager { get; } = App.Models.Get<TaskIconManager>();
+		public static MediaDBManager MediaDBManager { get; } = App.Models.Get<MediaDBManager>();
 
 		// require Preferences+TaskIcon
-		public static AppUpdateManager AppUpdateManager { get; } = new AppUpdateManager();
+		public static AppUpdateManager AppUpdateManager { get; } = App.Models.Get<AppUpdateManager>();
 
 		// require Preferences
-		public static MediaItemFilterManager MediaItemFilterManager { get; } = new MediaItemFilterManager();
+		public static MediaItemFilterManager MediaItemFilterManager { get; } = App.Models.Get<MediaItemFilterManager>();
 		// require Preferences+MediaDB+MediaItemFilter
-		public static MediaDBViewManager MediaDBViewManager { get; } = new MediaDBViewManager();
+		public static MediaDBViewManager MediaDBViewManager { get; } = App.Models.Get<MediaDBViewManager>();
 		// require Preferences+MediaDBView
-		public static RecentsManager RecentsManager { get; } = new RecentsManager();
+		public static RecentsManager RecentsManager { get; } = App.Models.Get<RecentsManager>();
 
 		// require Preferences+AudioPlayer+MediaDBView
-		public static JukeboxManager JukeboxManager { get; } = new JukeboxManager();
+		public static JukeboxManager JukeboxManager { get; } = App.Models.Get<JukeboxManager>();
 		// require Preferences+AudioPlayer+Jukebox
-		public static ShortcutKeyManager ShortcutKeyManager { get; } = new ShortcutKeyManager();
+		public static ShortcutKeyManager ShortcutKeyManager { get; } = App.Models.Get<ShortcutKeyManager>();
 
 		public static void Initialize()
 		{
-			new VlcAudioPlayerManager();
+			//	new VlcAudioPlayerManager();
 		}
 
 		public static void Dispose()

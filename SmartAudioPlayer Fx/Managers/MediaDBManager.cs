@@ -24,7 +24,7 @@ namespace SmartAudioPlayerFx.Managers
 
 		public MediaDBManager()
 		{
-			var db_filename = AppService.Storage.AppDataRoaming.CreateFilePath("data", "media.db");
+			var db_filename = App.Models.Get<Storage>().AppDataRoaming.CreateFilePath("data", "media.db");
 
 			// ファイルが削除出来ないように開きっぱなしにする
 			Directory.CreateDirectory(Path.GetDirectoryName(db_filename));

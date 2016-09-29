@@ -72,7 +72,7 @@ namespace SmartAudioPlayerFx.Managers
 		/// </summary>
 		public void Close()
 		{
-			AppService.Log.AddDebugLog("Call Close");
+			App.Models.Get<Logging>().AddDebugLog("Call Close");
 			if (string.IsNullOrWhiteSpace(CurrentOpenedPath) == false)
 			{
 				VolumeFadeoutWithPause();
@@ -101,7 +101,7 @@ namespace SmartAudioPlayerFx.Managers
 		/// <param name="play_started">Openedイベントの前に呼ばれます</param>
 		public void PlayFrom(string path, bool isPause, TimeSpan? startPosition, Action play_started)
 		{
-			AppService.Log.AddDebugLog("Call Open: path={0}, isPause={1}, startPosition={2}", path ?? "(null)", isPause, startPosition.HasValue ? startPosition.Value.ToString() : "(null)");
+			App.Models.Get<Logging>().AddDebugLog("Call Open: path={0}, isPause={1}, startPosition={2}", path ?? "(null)", isPause, startPosition.HasValue ? startPosition.Value.ToString() : "(null)");
 			Close();
 
 			if (path == null) return;	// 停止状態へ
@@ -115,20 +115,20 @@ namespace SmartAudioPlayerFx.Managers
 			on_failed = (ex) => OnFailed_Handling(path, isPause, startPosition, play_started, ex);
 			on_opened = () => OnOpened_Handling(isPause, startPosition, play_started);
 
-			AppService.Log.AddDebugLog(" - opening file...");
+			App.Models.Get<Logging>().AddDebugLog(" - opening file...");
 			player.Open(new Uri(path));
 		}
 		void OnFailed_Handling(string path, bool isPause, TimeSpan? startPosition, Action play_started, Exception ex)
 		{
 			var ext = Path.GetExtension(path);
 			if (string.IsNullOrEmpty(ext)) { ext = "."; }   // 拡張子無しはピリオドのみ
-			AppService.Log.AddDebugLog(" **open failed: extension[{0}]", ext);
+			App.Models.Get<Logging>().AddDebugLog(" **open failed: extension[{0}]", ext);
 			if (ex != null)
-				AppService.Log.AddErrorLog(" **open failed exception: ", ex);
+				App.Models.Get<Logging>().AddErrorLog(" **open failed exception: ", ex);
 			//
 			if (IsExistsWmpRegistryEntry(ext))
 			{
-				AppService.Log.AddDebugLog(" **WMP extension registry exists.");
+				App.Models.Get<Logging>().AddDebugLog(" **WMP extension registry exists.");
 				// レジストリ設定済みで再生失敗
 				OnPlayEnded("再生に失敗しました");
 			}
@@ -136,17 +136,17 @@ namespace SmartAudioPlayerFx.Managers
 			{
 				// レジストリ設定をして再オープン
 				SetWmpRegistryEntry(ext);
-				AppService.Log.AddDebugLog(" **WMP extension registry added, retry.");
+				App.Models.Get<Logging>().AddDebugLog(" **WMP extension registry added, retry.");
 				PlayFrom(path, isPause, startPosition, play_started);
 			}
 		}
 		void OnOpened_Handling(bool isPause, TimeSpan? startPosition, Action play_started)
 		{
 			on_failed = null; // 開けた合図
-			AppService.Log.AddDebugLog(" **open success!");
+			App.Models.Get<Logging>().AddDebugLog(" **open success!");
 			if (player.HasAudio == false)
 			{
-				AppService.Log.AddDebugLog(" -- no have audio... skip.");
+				App.Models.Get<Logging>().AddDebugLog(" -- no have audio... skip.");
 				// 音声がないならスキップ
 				OnPlayEnded("音声がないため再生がスキップされました");
 				return;
@@ -155,7 +155,7 @@ namespace SmartAudioPlayerFx.Managers
 			player.Position = startPosition ?? TimeSpan.Zero;
 			Duration = (player.NaturalDuration.HasTimeSpan) ? player.NaturalDuration.TimeSpan : (TimeSpan?)null;
 			IsPaused = isPause;
-			AppService.Log.AddDebugLog(" **media duration: {0}", Duration.HasValue ? Duration.Value.ToString() : "(null)");
+			App.Models.Get<Logging>().AddDebugLog(" **media duration: {0}", Duration.HasValue ? Duration.Value.ToString() : "(null)");
 //			DoDispatcherEvents();
 //			Thread.Sleep(1);
 

@@ -302,12 +302,12 @@ namespace SmartAudioPlayerFx.Managers
 				if (by_error)
 				{
 					// 再生＆選択不可能なのでnull
-					AppService.Log.AddDebugLog("SelectNext: no items. (by error)");
+					App.Models.Get<Logging>().AddDebugLog("SelectNext: no items. (by error)");
 					CurrentMedia.Value = null;
 				}
 				else
 				{
-					AppService.Log.AddDebugLog("SelectNext: no items.");
+					App.Models.Get<Logging>().AddDebugLog("SelectNext: no items.");
 					CurrentMedia.Value = CurrentMedia.Value;
 				}
 				return;
@@ -319,12 +319,12 @@ namespace SmartAudioPlayerFx.Managers
 				// nullにして終わる
 				if (by_error)
 				{
-					AppService.Log.AddDebugLog("SelectNext: one items, by_error==true, set CurrenyMedia = null.");
+					App.Models.Get<Logging>().AddDebugLog("SelectNext: one items, by_error==true, set CurrenyMedia = null.");
 					CurrentMedia.Value = null;
 					return;
 				}
 
-				AppService.Log.AddDebugLog("SelectNext: one items.");
+				App.Models.Get<Logging>().AddDebugLog("SelectNext: one items.");
 				CurrentMedia.Value = items[0];
 				return;
 			}

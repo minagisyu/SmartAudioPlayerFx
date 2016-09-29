@@ -1,14 +1,12 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 
 namespace Quala
 {
-	public sealed partial class Logging : IDisposable
+	public sealed partial class Logging
 	{
 		readonly object lockObj = new object();
 		FileInfo logfile = null;
@@ -38,8 +36,6 @@ namespace Quala
 				}
 			}
 		}
-
-		void IDisposable.Dispose() { }
 
 		void Append(Item log)
 		{

@@ -5,41 +5,75 @@ using System.Reactive.Disposables;
 namespace Quala
 {
 	/// <summary>
-	/// 複数参照されるオブジェクトを参照カウント式で管理
+	/// 複数参照されるオブジェクトを管理
 	/// </summary>
 	/// <remarks>
 	/// アプリケーション全体で利用されるモデルクラス等を一挙に管理
 	/// クラス名とキー名でいつでも作成・取得できる
+	/// キー名はStringComparer.InvariantCultureIgnoreCaseで比較される
 	/// </remarks>
 	public sealed class ReferenceManager : IDisposable
 	{
-		// Type別、Key別、RefCountDisposable>>DisposableWrapper>>T
+		// Type別、Key別、IDisposable
 		ConcurrentDictionary<Type, ConcurrentDictionary<string, RefCountDisposable>> instance =
 			new ConcurrentDictionary<Type, ConcurrentDictionary<string, RefCountDisposable>>();
 		CompositeDisposable disposables = new CompositeDisposable();
 
-		/// <summary>
-		/// objを取得、不要になったらIDisposable.Disposeで破棄(参照カウントが減る)
-		/// </summary>
-		/// <typeparam name="T"></typeparam>
-		/// <param name="obj"></param>
-		/// <param name="key"></param>
-		/// <returns></returns>
-		public IDisposable GetOrCreate<T>(out T obj, string key = "")
-			where T : class, new()
+		// Type別のコレクションを取得
+		ConcurrentDictionary<string, RefCountDisposable> GetTypeDictionary<T>()
 		{
-			// Type別のコレクションを取得
 			var type = typeof(T);
-			var typeDic = instance.GetOrAdd(type, (t) => new ConcurrentDictionary<string, RefCountDisposable>());
-
-			// Key名でオブジェクトを取得
-			var disposable = typeDic.GetOrAdd(key, (k) => new RefCountDisposable(new DisposableWrapper(new T())));
-			obj = (T)((DisposableWrapper)disposable.GetDisposable()).Object;
-
-			// 破棄用のIDisposableを用意
-			return Disposable.Create(() => disposable.Dispose());
+			var typeDic = instance.GetOrAdd(type, (t) => new ConcurrentDictionary<string, RefCountDisposable>(StringComparer.InvariantCultureIgnoreCase));
+			return typeDic;
 		}
 
+		/// <summary>
+		/// objを取得、存在しない場合は作成
+		/// 不要になったらIDisposable.Disposeで破棄(参照カウントが減る)
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <param name="disposable"></param>
+		/// <param name="key"></param>
+		/// <returns></returns>
+		T Get<T>(out IDisposable disposable, string key = "")
+			where T : class, new()
+		{
+			// Key名でオブジェクトを取得
+			var d = GetTypeDictionary<T>().GetOrAdd(key, (k) =>
+			{
+				var rd = new RefCountDisposable(new DisposableWrapper(new T()));
+				disposables.Add(rd);
+				return rd;
+			});
+
+			// 返却用オブジェクト
+			var t = (T)((RefCountDisposable)d).GetDisposable();
+
+			// 破棄用のIDisposableを用意
+			disposable = Disposable.Create(() => d.Dispose());
+
+			return t;
+		}
+
+		/// <summary>
+		/// objを取得、存在しない場合は作成
+		/// 内部参照カウントは変化させない
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <param name="key"></param>
+		/// <returns></returns>
+		public T Get<T>(string key = "")
+			where T : class, new()
+		{
+			// ref countから切り離す
+			// とりあえずはdispose無視
+			IDisposable d;
+			return Get<T>(out d, key);
+		}
+
+		/// <summary>
+		/// 参照を破棄
+		/// </summary>
 		public void Dispose()
 		{
 			disposables.Dispose();
@@ -51,24 +85,6 @@ namespace Quala
 			public object Object { get; set; }
 			public DisposableWrapper(object obj) { Object = obj; }
 			public void Dispose() { (Object as IDisposable)?.Dispose(); }
-		}
-
-	}
-
-	static class ReferenceManagerExtension
-	{
-		/// <summary>
-		/// 一時利用
-		/// </summary>
-		/// <typeparam name="T"></typeparam>
-		public static void Using<T>(this ReferenceManager mgr, Action<T> act, string key = "")
-			where T : class, new()
-		{
-			T obj;
-			using (mgr.GetOrCreate<T>(out obj, key))
-			{
-				act?.Invoke(obj);
-			}
 		}
 
 	}

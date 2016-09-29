@@ -8,7 +8,7 @@ namespace Quala
 		string name = null;
 		Mutex _mutex = null;
 
-		void IDisposable.Dispose()
+		public void Dispose()
 		{
 			if (_mutex != null)
 			{
@@ -46,7 +46,6 @@ namespace Quala
 				else
 				{
 					// すでに起動しているインスタンスがある
-					AppService.Log.AddLibraryDebugLog("多重起動を確認しました");
 					return true;
 				}
 			}
