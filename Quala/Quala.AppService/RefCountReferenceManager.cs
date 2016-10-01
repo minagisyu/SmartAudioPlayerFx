@@ -12,54 +12,65 @@ namespace Quala
 	/// クラス名とキー名でいつでも作成・取得できる
 	/// キー名はStringComparer.InvariantCultureIgnoreCaseで比較される
 	/// </remarks>
-	public sealed class ReferenceManager : IDisposable
+	public sealed class RefCountReferenceManager : IDisposable
 	{
 		// Type別、Key別、IDisposable
-		ConcurrentDictionary<Type, ConcurrentDictionary<string, DisposableWrapper>> instance =
-			new ConcurrentDictionary<Type, ConcurrentDictionary<string, DisposableWrapper>>();
+		ConcurrentDictionary<Type, ConcurrentDictionary<string, RefCountDisposable>> instance =
+			new ConcurrentDictionary<Type, ConcurrentDictionary<string, RefCountDisposable>>();
 		CompositeDisposable disposables = new CompositeDisposable();
 
 		// Type別のコレクションを取得
-		ConcurrentDictionary<string, DisposableWrapper> GetTypeDictionary<T>()
+		ConcurrentDictionary<string, RefCountDisposable> GetTypeDictionary<T>()
 		{
 			var type = typeof(T);
-			var typeDic = instance.GetOrAdd(type, (t) => new ConcurrentDictionary<string, DisposableWrapper>(StringComparer.InvariantCultureIgnoreCase));
+			var typeDic = instance.GetOrAdd(type, (t) => new ConcurrentDictionary<string, RefCountDisposable>(StringComparer.InvariantCultureIgnoreCase));
 			return typeDic;
 		}
 
 		/// <summary>
 		/// objを取得、存在しない場合は作成
-		/// 不要になったらDisposeObjectで破棄処理を呼び出せます
+		/// 不要になったらIDisposable.Disposeで破棄(参照カウントが減る)
 		/// </summary>
 		/// <typeparam name="T"></typeparam>
+		/// <param name="disposable"></param>
 		/// <param name="key"></param>
 		/// <returns></returns>
-		T Get<T>(string key = "")
+		T Get<T>(out IDisposable disposable, string key = "")
 			where T : class, new()
 		{
 			// Key名でオブジェクトを取得
 			var d = GetTypeDictionary<T>().GetOrAdd(key, (k) =>
 			{
-				var rd = new DisposableWrapper(new T());
+				var rd = new RefCountDisposable(new DisposableWrapper(new T()));
 				disposables.Add(rd);
 				return rd;
 			});
 
 			// 返却用オブジェクト
-			return (T)d.Object;
+			var t = (T)d.GetDisposable();
+
+			// 破棄用のIDisposableを用意
+			disposable = Disposable.Create(() => d.Dispose());
+
+			return t;
 		}
 
-		public bool DisposeObject<T>(string key = "")
+		IDisposable Get<T>(out T value, string key = "")
 			where T : class, new()
 		{
 			// Key名でオブジェクトを取得
-			DisposableWrapper d;
-			if(GetTypeDictionary<T>().TryRemove(key, out d))
+			var d = GetTypeDictionary<T>().GetOrAdd(key, (k) =>
 			{
-				d.Dispose();
-				return true;
-			}
-			return false;
+				var rd = new RefCountDisposable(new DisposableWrapper(new T()));
+				disposables.Add(rd);
+				return rd;
+			});
+
+			// 返却用オブジェクト
+			value = (T)d.GetDisposable();
+
+			// 破棄用のIDisposableを用意
+			return Disposable.Create(() => d.Dispose());
 		}
 
 		/// <summary>
