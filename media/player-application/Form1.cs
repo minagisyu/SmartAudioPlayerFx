@@ -18,6 +18,7 @@ using System.Runtime.InteropServices;
 
 namespace player_application
 {
+
 	public partial class Form1 : Form
 	{
 		public Form1()
@@ -120,6 +121,7 @@ namespace player_application
 				int i = 0;
 				int frameFinished = 0;
 				AVPacket packet;
+				double pts;
 				while (av_read_frame(pFormatCtx, &packet) >= 0)
 				{
 					// Is this a packet from the video stream?
@@ -131,6 +133,8 @@ namespace player_application
 						// Did we get a video frame?
 						if (frameFinished != 0)
 						{
+							pts = packet.pts / 1000.0 / 60.0;
+							this.Invoke(new Action(() => { this.Text = pts.ToString(); }));
 							// Convert the image from its native format to RGB
 							sws_scale(sws_ctx, &pFrame->data0,
 			  pFrame->linesize, 0, pCodecCtx->height,
@@ -163,7 +167,6 @@ namespace player_application
 		unsafe void SaveFrame(AVFrame* pFrame, int width, int height, int iFrame)
 		{
 			if (this.IsDisposed) return;
-
 			using (var g = this.CreateGraphics())
 			using (var im = new Bitmap(width, height, pFrame->linesize[0],
 				System.Drawing.Imaging.PixelFormat.Format24bppRgb, (IntPtr)pFrame->data0))

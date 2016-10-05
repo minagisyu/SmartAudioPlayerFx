@@ -125,7 +125,7 @@ namespace openal_ffmpeg
 		static unsafe void Main(string[] args)
 		{
 			// FFmpegのログレベルをQUIETに設定する。（何も出力しない）
-			ffmpeg.av_log_set_level(0);// AV_LOG_QUIET);
+			ffmpeg.av_log_set_level(ffmpeg.AV_LOG_QUIET);
 
 			// FFmpegを初期化
 			ffmpeg.av_register_all();
@@ -148,12 +148,14 @@ namespace openal_ffmpeg
 				return;
 			}
 
+			ffmpeg.av_dump_format(formatContext, 0, file, 0);
+
 			//
 			AVCodec* cdc = null;
 			int streamIndex = ffmpeg.av_find_best_stream(
 				formatContext,
-			//	AVMediaType.AVMEDIA_TYPE_AUDIO,
-				AVMediaType.AVMEDIA_TYPE_VIDEO,
+				AVMediaType.AVMEDIA_TYPE_AUDIO,
+			//	AVMediaType.AVMEDIA_TYPE_VIDEO,
 				-1, -1, &cdc, 0);
 			if (streamIndex < 0)
 			{
