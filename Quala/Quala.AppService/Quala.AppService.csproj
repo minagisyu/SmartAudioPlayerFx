@@ -30,6 +30,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="RefCountReferenceManager.cs" />
     <Compile Include="ReferenceManager.cs" />
     <Compile Include="[Logging]\Logging.cs" />
     <Compile Include="[Logging]\Logging_Item.cs" />
