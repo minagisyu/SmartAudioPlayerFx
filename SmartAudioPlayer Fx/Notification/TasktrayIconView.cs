@@ -1,30 +1,25 @@
-﻿using System;
+﻿using Quala.Win32.Dialog;
+using SmartAudioPlayerFx.MediaDB;
+using SmartAudioPlayerFx.MediaPlayer;
+using SmartAudioPlayerFx.Views;
+using SmartAudioPlayerFx.Views.Options;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Reactive;
-using System.Reactive.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Interop;
 using System.Windows.Threading;
-using SmartAudioPlayerFx.Data;
-using SmartAudioPlayerFx.Views;
-using SmartAudioPlayerFx.Views.Options;
-using Quala.Win32.Dialog;
 
-namespace SmartAudioPlayerFx.Managers
+namespace SmartAudioPlayerFx.Notification
 {
-//	[Standalone]
-	sealed class TaskIconManager : IDisposable
+	sealed class TasktrayIconView
 	{
-		#region ctor
-
 		NotifyIcon tray;
-		object latestClickedTag = null;
 
-		public TaskIconManager()
+		public TasktrayIconView()
 		{
 			if (App.Current != null && App.Current.Dispatcher != Dispatcher.CurrentDispatcher)
 				throw new InvalidOperationException("call on UIThread!!");
@@ -33,51 +28,16 @@ namespace SmartAudioPlayerFx.Managers
 			tray = new NotifyIcon();
 			tray.Text = "SmartAudioPlayer Fx";
 			tray.Icon = new Icon(App.GetResourceStream(new Uri("/Resources/SAPFx.ico", UriKind.Relative)).Stream);
-			tray.BalloonTipClicked += delegate
-			{
-				if (BaloonTipClicked != null)
-					BaloonTipClicked(latestClickedTag);
-			};
+			tray.BalloonTipClicked += (_, __) => BaloonTipClicked?.Invoke();
 			tray.Visible = true;
+
+			// NotificationService購読
+			var sv = App.Models.Get<NotificationService>();
+			BaloonTipClicked += () => sv.RaiseNotifyClicked();
+			sv.NotifyMessage.Subscribe(o => tray.ShowBalloonTip((int)TimeSpan.FromSeconds(10).TotalMilliseconds, "SmartAudioPlayer Fx", o, ToolTipIcon.Info));
 		}
 
-		public void Dispose()
-		{
-			if (tray != null)
-			{
-				tray.Visible = false;
-				if (tray.ContextMenu != null)
-				{
-					tray.ContextMenu.Dispose();
-				}
-				tray.Dispose();
-				tray = null;
-			}
-
-			BaloonTipClicked = null;
-		}
-
-		#endregion
-
-		/// <summary>
-		/// バルーンチップがクリックされたときに発生。
-		/// ShowBaloonTip()のclickedTagが引数として渡されます。
-		/// </summary>
-		public event Action<object> BaloonTipClicked;
-
-		/// <summary>
-		/// バルーンチップを表示します
-		/// </summary>
-		/// <param name="timeout"></param>
-		/// <param name="icon"></param>
-		/// <param name="title"></param>
-		/// <param name="message"></param>
-		/// <param name="clickedTag">BaloonTipClickedイベントに渡されるオブジェクト。識別にどうぞ。</param>
-		public void ShowBaloonTip(TimeSpan timeout, ToolTipIcon icon, string title, string message, object clickedTag)
-		{
-			latestClickedTag = clickedTag;
-			tray.ShowBalloonTip((int)timeout.TotalMilliseconds, title, message, icon);
-		}
+		public event Action BaloonTipClicked;
 
 		public void SetMenuItems()
 		{
@@ -90,7 +50,7 @@ namespace SmartAudioPlayerFx.Managers
 				var menu = s as ContextMenu;
 				if (menu == null) return;
 				menu.MenuItems.Clear();
-				menu.MenuItems.AddRange(TaskIconManager.CreateWinFormsMenuItems());
+				menu.MenuItems.AddRange(CreateWinFormsMenuItems());
 			};
 		}
 
@@ -137,20 +97,20 @@ namespace SmartAudioPlayerFx.Managers
 				new MenuItemDefinition("ランダム", is_random, ()=> ManagerServices.JukeboxManager.SelectMode.Value = JukeboxManager.SelectionMode.Random),
 				new MenuItemDefinition("ファイル名順", is_sequential, ()=> ManagerServices.JukeboxManager.SelectMode.Value=JukeboxManager.SelectionMode.Filename)
 			});
-			var vol = ManagerServices.AudioPlayerManager.Volume;
+			var vol = App.Models.Get<AudioPlayerManager>().Volume;
 			var vol_is_max = vol >= 1.0;
 			var vol_is_min = vol <= 0.0;
 			var vol_text = "ボリューム (" + (vol * 100.0).ToString("F0") + "%)";
 			yield return new MenuItemDefinition(vol_text, subitems: new[]
 			{
-				new MenuItemDefinition("上げる", enabled: !vol_is_max, clicked: ()=>ManagerServices.AudioPlayerManager.Volume = ManagerServices.AudioPlayerManager.Volume+0.1),
-				new MenuItemDefinition("下げる", enabled: !vol_is_min, clicked: ()=>ManagerServices.AudioPlayerManager.Volume = ManagerServices.AudioPlayerManager.Volume-0.1),
+				new MenuItemDefinition("上げる", enabled: !vol_is_max, clicked: ()=>App.Models.Get<AudioPlayerManager>().Volume = App.Models.Get<AudioPlayerManager>().Volume+0.1),
+				new MenuItemDefinition("下げる", enabled: !vol_is_min, clicked: ()=>App.Models.Get<AudioPlayerManager>().Volume = App.Models.Get<AudioPlayerManager>().Volume-0.1),
 			});
 			yield return new MenuItemDefinition("-");
-			var play_pause_text = (ManagerServices.AudioPlayerManager.IsPaused) ? "再生" : "一時停止";
-			yield return new MenuItemDefinition(play_pause_text, clicked: () => ManagerServices.AudioPlayerManager.PlayPause());
+			var play_pause_text = (App.Models.Get<AudioPlayerManager>().IsPaused) ? "再生" : "一時停止";
+			yield return new MenuItemDefinition(play_pause_text, clicked: () => App.Models.Get<AudioPlayerManager>().PlayPause());
 			yield return new MenuItemDefinition("スキップ", clicked: () => ManagerServices.JukeboxManager.SelectNext(true));
-			yield return new MenuItemDefinition("始めから再生", clicked: () => ManagerServices.AudioPlayerManager.Replay());
+			yield return new MenuItemDefinition("始めから再生", clicked: () => App.Models.Get<AudioPlayerManager>().Replay());
 			yield return new MenuItemDefinition("再生履歴", subitems: CreateRecentPlayMenuItems());
 			yield return new MenuItemDefinition("-");
 			yield return new MenuItemDefinition("開く", subitems: CreateRecentFolderMenuItems());
@@ -299,15 +259,5 @@ namespace SmartAudioPlayerFx.Managers
 		}
 
 		#endregion
-	}
-
-	static class TaskIconManagerExtensions
-	{
-		public static IObservable<object> BaloonTipClickedAsObservable(this TaskIconManager manager)
-		{
-			return Observable.FromEvent<object>(
-				v => manager.BaloonTipClicked += v,
-				v => manager.BaloonTipClicked -= v);
-		}
 	}
 }

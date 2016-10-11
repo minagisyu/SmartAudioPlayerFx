@@ -3,10 +3,9 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Windows.Forms;
 using System.Xml.Linq;
-using SmartAudioPlayerFx.Data;
-using SmartAudioPlayerFx.Managers;
 using Quala.Win32;
 using Quala.Extensions;
+using SmartAudioPlayerFx.Preferences;
 
 namespace SmartAudioPlayerFx.Views.Options
 {
@@ -31,12 +30,12 @@ namespace SmartAudioPlayerFx.Views.Options
 			optionPages.Add(new OptionDialog_DB() { ParentDialog = this, });
 
 			// Preferences
-			ManagerServices.PreferencesManager.WindowSettings.Subscribe(x => LoadWindowPreferences(x));
+			App.Models.Get<XmlPreferencesManager>().WindowSettings.Subscribe(x => LoadWindowPreferences(x));
 		}
 
 		void SavePreferences()
 		{
-			ManagerServices.PreferencesManager.WindowSettings.Value
+			App.Models.Get<XmlPreferencesManager>().WindowSettings.Value
 				.SetAttributeValueEx("OptionPage", PageIndex);
 		}
 		void LoadWindowPreferences(XElement windowSettings)

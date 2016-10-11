@@ -125,14 +125,16 @@ namespace openal_ffmpeg
 		static unsafe void Main(string[] args)
 		{
 			// FFmpegのログレベルをQUIETに設定する。（何も出力しない）
-			ffmpeg.av_log_set_level(0);// AV_LOG_QUIET);
+			ffmpeg.av_log_set_level(ffmpeg.AV_LOG_QUIET);
 
 			// FFmpegを初期化
 			ffmpeg.av_register_all();
 
 			AVFormatContext* formatContext = null;
 		//	string file = @"E:\Music\[USB]\bms\2MB medley(plus original).mp3"; // args[1]
-			string file = @"E:\Music\[_old_]\[お気に入り]\アルトネリコOVAのアレ.ac3"; // args[1]
+		//	string file = @"E:\Music\[_old_]\[お気に入り]\アルトネリコOVAのアレ.ac3"; // args[1]
+			string file = @"V:\__Video(old)\1995-2010\_etc\AT-X ロゴ (AT-X 640x480_x264 [2009Q3]).mp4";
+		//	string file = @"V:\bb-test\ブラック・ブレット ED (BS11 1280x720p Hi10P).mp4";
 			if (ffmpeg.avformat_open_input(&formatContext, file, null, null) != 0)
 			{
 				Console.WriteLine("Error opening the file");
@@ -146,9 +148,15 @@ namespace openal_ffmpeg
 				return;
 			}
 
+			ffmpeg.av_dump_format(formatContext, 0, file, 0);
+
 			//
 			AVCodec* cdc = null;
-			int streamIndex = ffmpeg.av_find_best_stream(formatContext, AVMediaType.AVMEDIA_TYPE_AUDIO, -1, -1, &cdc, 0);
+			int streamIndex = ffmpeg.av_find_best_stream(
+				formatContext,
+				AVMediaType.AVMEDIA_TYPE_AUDIO,
+			//	AVMediaType.AVMEDIA_TYPE_VIDEO,
+				-1, -1, &cdc, 0);
 			if (streamIndex < 0)
 			{
 				ffmpeg.avformat_close_input(&formatContext);

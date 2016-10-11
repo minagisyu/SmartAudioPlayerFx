@@ -7,13 +7,14 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-using SmartAudioPlayerFx.Data;
 using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
 using Quala;
 using Quala.Extensions;
+using SmartAudioPlayerFx.MediaDB;
+using SmartAudioPlayerFx.Preferences;
 
-namespace SmartAudioPlayerFx.Managers
+namespace SmartAudioPlayerFx.MediaPlayer
 {
 //	[Require(typeof(XmlPreferencesManager))]
 //	[Require(typeof(AudioPlayerManager))]
@@ -42,15 +43,15 @@ namespace SmartAudioPlayerFx.Managers
 			_disposables = new CompositeDisposable(ViewFocus, IsServiceStarted, CurrentMedia, IsRepeat, SelectMode);
 
 			// Preferences
-			ManagerServices.PreferencesManager.PlayerSettings
+			App.Models.Get<XmlPreferencesManager>().PlayerSettings
 				.Subscribe(x => LoadPreferences(x))
 				.AddTo(_disposables);
-			ManagerServices.PreferencesManager.SerializeRequestAsObservable()
-				.Subscribe(_ => SavePreferences(ManagerServices.PreferencesManager.PlayerSettings.Value))
+			App.Models.Get<XmlPreferencesManager>().SerializeRequestAsObservable()
+				.Subscribe(_ => SavePreferences(App.Models.Get<XmlPreferencesManager>().PlayerSettings.Value))
 				.AddTo(_disposables);
 
 			// 再生が完了したら次の曲を再生
-			ManagerServices.AudioPlayerManager.PlayEndedAsObservable()
+			App.Models.Get<AudioPlayerManager>().PlayEndedAsObservable()
 				.Subscribe(x =>
 				{
 					var by_error = x.ErrorReason != null;	// エラーが発生した？
@@ -107,7 +108,7 @@ namespace SmartAudioPlayerFx.Managers
 
 			SelectMode.Value = element.GetAttributeValueEx("SelectMode", SelectionMode.Random);
 			IsRepeat.Value = element.GetAttributeValueEx("IsRepeat", false);
-			ManagerServices.AudioPlayerManager.Volume = element.GetAttributeValueEx("Volume", 0.5);
+			App.Models.Get<AudioPlayerManager>().Volume = element.GetAttributeValueEx("Volume", 0.5);
 			NextPlaingAttribute = new PlaingAttributeInfo(
 				false,
 				false,
@@ -129,9 +130,9 @@ namespace SmartAudioPlayerFx.Managers
 				// this
 				.SetAttributeValueEx("SelectMode", SelectMode.Value)
 				.SetAttributeValueEx("IsRepeat", IsRepeat.Value)
-				.SetAttributeValueEx("IsPaused", ManagerServices.AudioPlayerManager.IsPaused)
-				.SetAttributeValueEx("Volume", ManagerServices.AudioPlayerManager.Volume.ToString("F3"))
-				.SetAttributeValueEx("Position", ManagerServices.AudioPlayerManager.Position.ToString()) // ToString()しないと戻せない
+				.SetAttributeValueEx("IsPaused", App.Models.Get<AudioPlayerManager>().IsPaused)
+				.SetAttributeValueEx("Volume", App.Models.Get<AudioPlayerManager>().Volume.ToString("F3"))
+				.SetAttributeValueEx("Position", App.Models.Get<AudioPlayerManager>().Position.ToString()) // ToString()しないと戻せない
 				.SetAttributeValueEx("CurrentMedia", (CurrentMedia.Value != null) ? CurrentMedia.Value.FilePath : null)
 				.SetAttributeValueEx("ViewMode", ViewFocusToString(ViewFocus.Value))
 				.SetAttributeValueEx("ViewFocusPath", ViewFocus.Value.FocusPath)
@@ -188,12 +189,12 @@ namespace SmartAudioPlayerFx.Managers
 			// MEMO: 再生エラー項目の除外はしない
 			if (item == null)
 			{
-				ManagerServices.AudioPlayerManager.Close();
+				App.Models.Get<AudioPlayerManager>().Close();
 			}
 			else
 			{
 				// 再生を試みる
-				ManagerServices.AudioPlayerManager.PlayFrom(item.FilePath, attr.PlayOnPaused, attr.PlayOnPosition, () =>
+				App.Models.Get<AudioPlayerManager>().PlayFrom(item.FilePath, attr.PlayOnPaused, attr.PlayOnPosition, () =>
 				{
 					// 再生カウント更新
 					Task.Run(() =>
@@ -275,7 +276,7 @@ namespace SmartAudioPlayerFx.Managers
 			// リピート
 			if (skipMode == false && IsRepeat.Value && CurrentMedia.Value != null && by_error == false)
 			{
-				ManagerServices.AudioPlayerManager.Replay();
+				App.Models.Get<AudioPlayerManager>().Replay();
 				// 再生カウント更新
 				var item = CurrentMedia.Value;
 				Task.Factory.StartNew(() =>

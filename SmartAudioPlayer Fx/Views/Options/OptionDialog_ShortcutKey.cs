@@ -1,6 +1,6 @@
+using SmartAudioPlayerFx.Shortcut;
 using System;
 using System.Windows.Forms;
-using SmartAudioPlayerFx.Managers;
 
 namespace SmartAudioPlayerFx.Views.Options
 {

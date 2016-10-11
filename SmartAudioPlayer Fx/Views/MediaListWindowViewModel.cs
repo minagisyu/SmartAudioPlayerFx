@@ -7,11 +7,12 @@ using System.Reactive.Linq;
 using System.Windows;
 using System.Windows.Media;
 using System.Xml.Linq;
-using SmartAudioPlayerFx.Data;
-using SmartAudioPlayerFx.Managers;
 using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
 using Quala.Extensions;
+using SmartAudioPlayerFx.MediaDB;
+using SmartAudioPlayerFx.MediaPlayer;
+using SmartAudioPlayerFx.Preferences;
 
 namespace SmartAudioPlayerFx.Views
 {
@@ -94,7 +95,7 @@ namespace SmartAudioPlayerFx.Views
 			ManagerServices.JukeboxManager.CurrentMedia
 				.Subscribe(x => CurrentMedia.Value = x);
 			// 新しく再生 or 設定されたらビデオ描画用ブラシをリセット
-			ManagerServices.AudioPlayerManager.OpenedAsObservable()
+			App.Models.Get<AudioPlayerManager>().OpenedAsObservable()
 				.Select(_ => IsVideoDrawing.Value)
 				.Merge(IsVideoDrawing)
 				.ObserveOnUIDispatcher()
@@ -169,11 +170,11 @@ namespace SmartAudioPlayerFx.Views
 				});
 
 			// Preferences
-			ManagerServices.PreferencesManager.PlayerSettings
+			App.Models.Get<XmlPreferencesManager>().PlayerSettings
 				.Subscribe(x => LoadPlayerPreferences(x));
-			ManagerServices.PreferencesManager.WindowSettings
+			App.Models.Get<XmlPreferencesManager>().WindowSettings
 				.Subscribe(x => LoadWindowPrefrences(x));
-			ManagerServices.PreferencesManager.SerializeRequestAsObservable()
+			App.Models.Get<XmlPreferencesManager>().SerializeRequestAsObservable()
 				.Subscribe(_ => SavePreferences());
 		}
 
@@ -199,10 +200,10 @@ namespace SmartAudioPlayerFx.Views
 		}
 		void SavePreferences()
 		{
-			ManagerServices.PreferencesManager.PlayerSettings.Value
+			App.Models.Get<XmlPreferencesManager>().PlayerSettings.Value
 				.SetAttributeValueEx("IsVideoDrawing", IsVideoDrawing.Value)
 				.SetAttributeValueEx("IsEnableSoundFadeEffect", IsEnableSoundFadeEffect.Value);
-			ManagerServices.PreferencesManager.WindowSettings.Value
+			App.Models.Get<XmlPreferencesManager>().WindowSettings.Value
 				.SubElement("MediaListWindow", true, elm =>
 				{
 					elm
@@ -223,7 +224,7 @@ namespace SmartAudioPlayerFx.Views
 			DrawingBrush b = null;
 			if (isVideoDrawing)
 			{
-				b = ManagerServices.AudioPlayerManager.GetVideoBrush();
+				b = App.Models.Get<AudioPlayerManager>().GetVideoBrush();
 				if (b != null)
 					b.Stretch = Stretch.UniformToFill;
 			}

@@ -74,6 +74,20 @@ namespace Quala.Extensions
 			return defaultValue;
 		}
 
+		public static XElement GetAttributeValueEx<T>(this XElement element, string name, T defaultValue, Action<T> action)
+		{
+			// 属性＆変換チェック
+			var attr = (element != null) ? element.Attribute(name) : null;
+			var conv = TypeDescriptor.GetConverter(typeof(T));
+
+			var v = (attr != null && string.IsNullOrEmpty(attr.Value) == false && conv.CanConvertFrom(typeof(string))) ?
+				(T)conv.ConvertFromString(attr.Value) : // 変換
+				defaultValue;
+			action?.Invoke(v);
+
+			return element;
+		}
+
 		public static IEnumerable<T> GetArrayValues<T>(this XElement element, string name, Func<XElement, T> func)
 		{
 			// チェック

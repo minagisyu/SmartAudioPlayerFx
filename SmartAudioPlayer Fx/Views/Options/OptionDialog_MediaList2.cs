@@ -1,6 +1,5 @@
+using SmartAudioPlayerFx.MediaDB;
 using System;
-using SmartAudioPlayerFx.Data;
-using SmartAudioPlayerFx.Managers;
 
 namespace SmartAudioPlayerFx.Views.Options
 {

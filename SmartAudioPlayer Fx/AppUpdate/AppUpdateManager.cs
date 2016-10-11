@@ -1,6 +1,13 @@
-﻿using System;
+﻿using Quala;
+using Quala.Extensions;
+using Reactive.Bindings.Extensions;
+using SmartAudioPlayerFx.Notification;
+using SmartAudioPlayerFx.Preferences;
+using SmartAudioPlayerFx.Views;
+using System;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
@@ -13,18 +20,12 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Interop;
 using System.Xml.Linq;
-using SmartAudioPlayerFx.Data;
-using SmartAudioPlayerFx.Views;
 using WinForms = System.Windows.Forms;
-using Reactive.Bindings.Extensions;
-using System.IO.Compression;
-using Quala;
-using Quala.Extensions;
 
-namespace SmartAudioPlayerFx.Managers
+namespace SmartAudioPlayerFx.AppUpdate
 {
-//	[Require(typeof(XmlPreferencesManager))]
-//	[Require(typeof(TaskIconManager))]
+	//	[Require(typeof(XmlPreferencesManager))]
+	//	[Require(typeof(TaskIconManager))]
 	sealed class AppUpdateManager : IDisposable
 	{
 		#region ctor
@@ -36,32 +37,30 @@ namespace SmartAudioPlayerFx.Managers
 		public int CheckIntervalDays { get; private set; }
 		public bool IsAutoUpdateCheckEnabled { get; set; }
 
-		readonly object TasktrayTag = new object(); // BaloonTip用タグ
 		readonly CompositeDisposable _disposables = new CompositeDisposable();
 
 		public AppUpdateManager()
 		{
 			// Preferences
-			ManagerServices.PreferencesManager.UpdateSettings
-				.Subscribe(x => LoadUpdatePreferences(x))
-				.AddTo(_disposables);
-			ManagerServices.PreferencesManager.SerializeRequestAsObservable()
-				.Subscribe(_ => SavePreferences(ManagerServices.PreferencesManager.UpdateSettings.Value))
-				.AddTo(_disposables);
-
+			App.Models.Get<XmlPreferencesManager>(o =>
+			{
+				o.UpdateSettings
+					.Subscribe(x => LoadUpdatePreferences(x))
+					.AddTo(_disposables);
+				o.SerializeRequestAsObservable()
+					.Subscribe(_ => SavePreferences(o.UpdateSettings.Value))
+					.AddTo(_disposables);
+			});
 
 			// タスクトレイ連携
-			ManagerServices.TaskIconManager.BaloonTipClickedAsObservable()
-				.Where(x => x == TasktrayTag)
-				.Subscribe(async _ =>
+			App.Models.Get<NotificationService>().NotifyClicked += async () =>
+			{
+				if (App.Current.MainWindow == null) return;
+				if (await ShowUpdateMessageAsync(new WindowInteropHelper(App.Current.MainWindow).EnsureHandle()))
 				{
-					if (App.Current.MainWindow == null) return;
-					if (await ShowUpdateMessageAsync(new WindowInteropHelper(App.Current.MainWindow).EnsureHandle()))
-					{
-						App.Current.MainWindow.Close();
-					}
-				})
-				.AddTo(_disposables);
+					App.Current.MainWindow.Close();
+				}
+			};
 
 			// 定期チェック
 			Observable.Timer(TimeSpan.Zero, TimeSpan.FromDays(1))
@@ -75,12 +74,12 @@ namespace SmartAudioPlayerFx.Managers
 
 		void LoadUpdatePreferences(XElement element)
 		{
-			UpdateInfo = element.GetAttributeValueEx("UpdateInfoUri", new Uri("http://update.intre.net/sapfx/update.xml"));
-			LastCheckVersion = element.GetAttributeValueEx("LastCheckVersion", Assembly.GetExecutingAssembly().GetName().Version);
-			LastCheckDate = element.GetAttributeValueEx("LastCheckDate", DateTime.MinValue);
-			CheckIntervalDays = Math.Min(1, element.GetAttributeValueEx("CheckIntervalDays", 7));
-			IsAutoUpdateCheckEnabled = element.GetAttributeValueEx("IsAutoUpdateCheckEnabled", true);
-		//	ManagerServices.PreferencesManagerJson.UpdateSettings.Value
+			element
+				.GetAttributeValueEx("UpdateInfoUri", new Uri("http://update.intre.net/sapfx/update.xml"), o => UpdateInfo = o)
+				.GetAttributeValueEx("LastCheckVersion", Assembly.GetExecutingAssembly().GetName().Version, o => LastCheckVersion = o)
+				.GetAttributeValueEx("LastCheckDate", DateTime.MinValue, o => LastCheckDate = o)
+				.GetAttributeValueEx("CheckIntervalDays", 7, o => CheckIntervalDays = Math.Min(1, o))
+				.GetAttributeValueEx("IsAutoUpdateCheckEnabled", true, o => IsAutoUpdateCheckEnabled = o);
 		}
 		void SavePreferences(XElement element)
 		{
@@ -97,16 +96,15 @@ namespace SmartAudioPlayerFx.Managers
 			if (LastCheckDate.AddDays(CheckIntervalDays) >= DateTime.UtcNow) return;
 			CheckUpdate()
 				.ToObservable()
-				.Where(x=>x!=null)
+				.Where(x => x != null)
 				.Where(_ => IsUpdateReady)
 				.Where(x => x >= LastCheckVersion)
 				.ObserveOnUIDispatcher()
 				.Subscribe(x =>
 				{
-					ManagerServices.TaskIconManager.ShowBaloonTip(TimeSpan.FromSeconds(10), WinForms.ToolTipIcon.Info,
-						"新しいバージョンが利用可能です！",
-						"アップデートするにはここをクリックするか、メニューから選択してください。",
-						TasktrayTag);
+					App.Models.Get<NotificationService>().NotifyMessage.Value =
+						"新しいバージョンが利用可能です！" +
+						"アップデートするにはここをクリックするか、メニューから選択してください。";
 				});
 		}
 
@@ -301,7 +299,7 @@ namespace SmartAudioPlayerFx.Managers
 			try { Process.Start(psi); }
 			catch (Exception ex)
 			{
-				AppService.Log.AddErrorLog("--updateのプロセス起動に失敗", ex);
+				App.Models.Get<Logging>().AddErrorLog("--updateのプロセス起動に失敗", ex);
 				var result = WinForms.MessageBox.Show(
 					"アップデート用プロセスの起動に失敗しました",
 					"SmartAudioPlayer Fx",
@@ -343,7 +341,7 @@ namespace SmartAudioPlayerFx.Managers
 				}))
 				.Catch<bool?, WebException>(ex =>
 				{
-					AppService.Log.AddErrorLog(" - ダウンロード中にエラーが発生しました", ex);
+					App.Models.Get<Logging>().AddErrorLog(" - ダウンロード中にエラーが発生しました", ex);
 					var result = WinForms.MessageBox.Show(
 						"ダウンロード中にエラーが発生しました",
 						"SmartAudioPlayer Fx",
@@ -394,9 +392,9 @@ namespace SmartAudioPlayerFx.Managers
 				.Do(x =>
 				{
 					if (x)
-						AppService.Log.AddInfoLog(" - ダウンロードが完了しました ({0} => {1})", downloadUri, zipFilePath);
+						App.Models.Get<Logging>().AddInfoLog(" - ダウンロードが完了しました ({0} => {1})", downloadUri, zipFilePath);
 					else
-						AppService.Log.AddInfoLog(" - ダウンロードをキャンセルしました ({0} => {1})", downloadUri, zipFilePath);
+						App.Models.Get<Logging>().AddInfoLog(" - ダウンロードをキャンセルしました ({0} => {1})", downloadUri, zipFilePath);
 				});
 		}
 
@@ -436,7 +434,7 @@ namespace SmartAudioPlayerFx.Managers
 				{
 					File.Copy(targetfile, Path.Combine(old_version_dir, filename), true);
 					try { File.Delete(targetfile); }
-					catch (Exception e) { AppService.Log.AddErrorLog("OnUpdate", e); }
+					catch (Exception e) { App.Models.Get<Logging>().AddErrorLog("OnUpdate", e); }
 				}
 				int retrycount = 0;
 			retry:
@@ -444,13 +442,13 @@ namespace SmartAudioPlayerFx.Managers
 				try { File.Copy(i, targetfile, true); }
 				catch (Exception e)
 				{
-					AppService.Log.AddErrorLog("OnUpdate", e);
+					App.Models.Get<Logging>().AddErrorLog("OnUpdate", e);
 					Thread.Sleep(300);
 					// 10回やってダメなら諦める
 					if (retrycount < 10)
 						goto retry;
 					else
-						AppService.Log.AddErrorLog("OnUpdate", "ファイル(" + filename + ")のコピーに失敗しました");
+						App.Models.Get<Logging>().AddErrorLog("OnUpdate", "ファイル(" + filename + ")のコピーに失敗しました");
 				}
 			});
 
@@ -495,11 +493,11 @@ namespace SmartAudioPlayerFx.Managers
 				}
 				catch (Exception e)
 				{
-					AppService.Log.AddErrorLog("OnPostUpdate", e);
+					App.Models.Get<Logging>().AddErrorLog("OnPostUpdate", e);
 				}
 			}
 
-			AppService.Log.AddInfoLog("UpdateService", " - 更新完了");
+			App.Models.Get<Logging>().AddInfoLog("UpdateService", " - 更新完了");
 			WinForms.MessageBox.Show("アップデートが完了しました", "SmartAudioPlayer Fx", WinForms.MessageBoxButtons.OK, WinForms.MessageBoxIcon.Information);
 		}
 

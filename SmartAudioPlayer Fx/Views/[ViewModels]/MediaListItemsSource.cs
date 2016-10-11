@@ -7,11 +7,11 @@ using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Threading;
-using SmartAudioPlayerFx.Data;
-using SmartAudioPlayerFx.Managers;
 using Reactive.Bindings.Extensions;
 using Quala;
 using Quala.Extensions;
+using SmartAudioPlayerFx.MediaDB;
+using SmartAudioPlayerFx.MediaPlayer;
 
 namespace SmartAudioPlayerFx.Views
 {
@@ -96,7 +96,7 @@ namespace SmartAudioPlayerFx.Views
 
 		private void ReloadListItems()
 		{
-			AppService.Log.AddDebugLog("Call ReloadListItems", new object[0]);
+			App.Models.Get<Logging>().AddDebugLog("Call ReloadListItems", new object[0]);
 			Stopwatch sw = Stopwatch.StartNew();
 			this.ClearListItems();
 			Dictionary<string, MediaItem> tmp = new Dictionary<string, MediaItem>();
@@ -125,7 +125,7 @@ namespace SmartAudioPlayerFx.Views
 				return vm;
 			}));
 			sw.Stop();
-			AppService.Log.AddDebugLog(" **ReloadListItems({0}items): {1}ms", new object[] { this._items_cache.Count, sw.ElapsedMilliseconds });
+			App.Models.Get<Logging>().AddDebugLog(" **ReloadListItems({0}items): {1}ms", new object[] { this._items_cache.Count, sw.ElapsedMilliseconds });
 		}
 
 		// アイテムを追加、必要ならヘッダも追加する

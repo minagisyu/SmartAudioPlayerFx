@@ -5,7 +5,7 @@ using System.Reactive;
 using System.Reactive.Linq;
 using System.Xml.Linq;
 
-namespace SmartAudioPlayerFx.Managers
+namespace SmartAudioPlayerFx.Preferences
 {
 	public sealed class XmlPreferencesManager
 	{
@@ -54,14 +54,10 @@ namespace SmartAudioPlayerFx.Managers
 
 	}
 
-	public static class PreferencesManagerExtensions
+	public static class PreferenceManagerExtensions
 	{
 		public static IObservable<Unit> SerializeRequestAsObservable(this XmlPreferencesManager manager)
-		{
-			return Observable.FromEvent(
-				v => manager.SerializeRequest += v,
-				v => manager.SerializeRequest -= v);
-		}
+			=> Observable.FromEvent(v => manager.SerializeRequest += v, v => manager.SerializeRequest -= v);
 	}
 
 }

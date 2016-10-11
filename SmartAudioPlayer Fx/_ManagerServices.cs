@@ -1,17 +1,20 @@
 ﻿using System;
-using System.Threading;
-using System.Windows;
-using System.Windows.Threading;
+using SmartAudioPlayerFx.AppUpdate;
+using SmartAudioPlayerFx.MediaDB;
+using SmartAudioPlayerFx.MediaPlayer;
+using SmartAudioPlayerFx.Notification;
+using SmartAudioPlayerFx.Preferences;
+using SmartAudioPlayerFx.Shortcut;
 
-namespace SmartAudioPlayerFx.Managers
+namespace SmartAudioPlayerFx
 {
+	[Obsolete]
 	static class ManagerServices
 	{
 		// Standalone
-		public static XmlPreferencesManager PreferencesManager { get; } = App.Models.Get<XmlPreferencesManager>();
-		//	public static AudioPlayerManager AudioPlayerManager { get; } = new AudioPlayerManager();
-		public static VlcAudioPlayerManager AudioPlayerManager { get; } = App.Models.Get<VlcAudioPlayerManager>();
-		public static TaskIconManager TaskIconManager { get; } = App.Models.Get<TaskIconManager>();
+	//	public static XmlPreferencesManager PreferencesManager { get; } = App.Models.Get<XmlPreferencesManager>();
+	//	public static AudioPlayerManager AudioPlayerManager { get; } = new AudioPlayerManager();
+	//	public static TaskIconManager TaskIconManager { get; } = App.Models.Get<TaskIconManager>();
 		public static MediaDBManager MediaDBManager { get; } = App.Models.Get<MediaDBManager>();
 
 		// require Preferences+TaskIcon
@@ -31,7 +34,6 @@ namespace SmartAudioPlayerFx.Managers
 
 		public static void Initialize()
 		{
-			//	new VlcAudioPlayerManager();
 		}
 
 		public static void Dispose()
@@ -52,8 +54,8 @@ namespace SmartAudioPlayerFx.Managers
 			AppUpdateManager?.Dispose();
 
 			// Standalones
-			AudioPlayerManager?.Dispose();
-			TaskIconManager?.Dispose();
+			App.Models.DisposeObject<AudioPlayerManager>();
+		//	TaskIconManager?.Dispose();
 			MediaDBManager?.Dispose();
 		}
 

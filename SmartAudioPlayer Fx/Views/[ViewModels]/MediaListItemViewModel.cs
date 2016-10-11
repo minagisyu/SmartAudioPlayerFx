@@ -7,10 +7,9 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Windows;
 using System.Windows.Media;
-using SmartAudioPlayerFx.Data;
-using SmartAudioPlayerFx.Managers;
 using Reactive.Bindings.Extensions;
 using Quala.WPF;
+using SmartAudioPlayerFx.MediaDB;
 
 namespace SmartAudioPlayerFx.Views
 {

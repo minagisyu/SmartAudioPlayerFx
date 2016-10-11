@@ -1,31 +1,41 @@
 ﻿using Quala;
-using Quala.Extensions;
 using Reactive.Bindings;
-using SmartAudioPlayerFx.Managers;
+using SmartAudioPlayerFx.Notification;
+using SmartAudioPlayerFx.Preferences;
 using System;
 using System.Diagnostics;
-using System.Reactive.Disposables;
 using System.Windows;
 using System.Windows.Threading;
 using WinForms = System.Windows.Forms;
 
 namespace SmartAudioPlayerFx
 {
+	// Application-Domain.
+	// Controller? Presenter?
 	partial class App : Application
 	{
-		public static ReferenceManager Models { get; } = new ReferenceManager();
+		// model
+		public static ReferenceManager Models { get; private set; }
+		public static Logging Log { get; private set; }
+		public static Storage Storage { get; private set; }
 
-		static App()
-		{
-			// WinForms Initialize
-			WinForms.Application.EnableVisualStyles();
-			WinForms.Application.SetCompatibleTextRenderingDefault(false);
-		}
+		// ui
+		TasktrayIconView tasktray;
 
 		protected override void OnStartup(StartupEventArgs e)
 		{
 			base.OnStartup(e);
 			var sw = Stopwatch.StartNew();
+
+			// WinForms Initialize
+			WinForms.Application.EnableVisualStyles();
+			WinForms.Application.SetCompatibleTextRenderingDefault(false);
+
+			// Logger Setting
+			Models = new ReferenceManager();
+			Log =  Models.Get<Logging>();
+			Storage = Models.Get<Storage>();
+			Log.LogFilename = Storage.AppDataRoaming.CreateFilePath("SmartAudioPlayer Fx.log");
 
 #if DEBUG
 #else
@@ -35,18 +45,18 @@ namespace SmartAudioPlayerFx
 			this.DispatcherUnhandledException += (_, x) =>
 				App.Current?.ShowExceptionMessage(x.Exception);
 #endif
-			// Logger Setting
-			Models.Get<Logging>().LogFilename =
-				Models.Get<Storage>().AppDataRoaming.CreateFilePath("SmartAudioPlayer Fx.log");
 
 			// minimum Initialize
 			UIDispatcherScheduler.Initialize();
-		ManagerServices.Initialize();
+			ManagerServices.Initialize();
 			Exit += delegate
 			{
 				ManagerServices.Dispose();
 				Models.Dispose();
 			};
+
+			// tasktray
+			tasktray = new TasktrayIconView();
 
 			// アップデートチェック
 			// trueが帰ったときはShutdown()呼んだ後なのでretuenする
@@ -68,13 +78,13 @@ namespace SmartAudioPlayerFx
 			};
 
 			// Set TrayIcon Menus
-			ManagerServices.TaskIconManager.SetMenuItems();
+			tasktray.SetMenuItems();
 
 			// 定期保存(すぐに開始する)
 			new DispatcherTimer(
 				TimeSpan.FromMinutes(5),
 				DispatcherPriority.Normal,
-				(_, __) => ManagerServices.PreferencesManager.Save(),
+				(_, __) => App.Models.Get<XmlPreferencesManager>().Save(),
 				Dispatcher);
 
 			sw.Stop();

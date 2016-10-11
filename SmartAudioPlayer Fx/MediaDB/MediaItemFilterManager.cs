@@ -5,11 +5,11 @@ using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Xml.Linq;
-using SmartAudioPlayerFx.Data;
 using Reactive.Bindings.Extensions;
 using Quala.Extensions;
+using SmartAudioPlayerFx.Preferences;
 
-namespace SmartAudioPlayerFx.Managers
+namespace SmartAudioPlayerFx.MediaDB
 {
 	/// <summary>
 	/// 拡張子と単語によるファイルフィルタリング
@@ -27,11 +27,11 @@ namespace SmartAudioPlayerFx.Managers
 		{
 			Reset();
 
-			ManagerServices.PreferencesManager.PlayerSettings
+			App.Models.Get<XmlPreferencesManager>().PlayerSettings
 				.Subscribe(x => LoadPreferences(x))
 				.AddTo(_disposables);
-			ManagerServices.PreferencesManager.SerializeRequestAsObservable()
-				.Subscribe(_ => SavePreferences(ManagerServices.PreferencesManager.PlayerSettings.Value))
+			App.Models.Get<XmlPreferencesManager>().SerializeRequestAsObservable()
+				.Subscribe(_ => SavePreferences(App.Models.Get<XmlPreferencesManager>().PlayerSettings.Value))
 				.AddTo(_disposables);
 		}
 		public void Dispose()

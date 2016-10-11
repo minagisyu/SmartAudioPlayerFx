@@ -8,13 +8,12 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
-using SmartAudioPlayerFx.Data;
-using SmartAudioPlayerFx.Managers;
 using Drawing = System.Drawing;
 using WinForms = System.Windows.Forms;
 using Reactive.Bindings.Extensions;
 using Quala.Extensions;
 using Quala.WPF.Extensions;
+using SmartAudioPlayerFx.MediaDB;
 
 namespace SmartAudioPlayerFx.Views
 {

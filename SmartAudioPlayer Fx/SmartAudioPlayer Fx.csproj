@@ -125,17 +125,22 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Data\MediaItem.cs" />
-    <Compile Include="Data\MediaTagUtil.cs" />
+    <Compile Include="AppUpdate\AppUpdateManager.cs" />
     <Compile Include="ApplicationExtension.cs" />
-    <Compile Include="Managers\VlcAudioPlayerManager.cs" />
-    <Compile Include="Managers\AudioPlayerManager.cs" />
-    <Compile Include="Managers\MediaDBManager.cs" />
-    <Compile Include="Managers\MediaDBViewFocus.cs" />
-    <Compile Include="Managers\MediaDBViewManager.cs" />
-    <Compile Include="Managers\RecentsManager.cs" />
-    <Compile Include="Managers\XmlPreferencesManager.cs" />
-    <Compile Include="Managers\_ManagerServices.cs" />
+    <Compile Include="MediaDB\MediaDBManager.cs" />
+    <Compile Include="MediaDB\MediaDBViewFocus.cs" />
+    <Compile Include="MediaDB\MediaDBViewManager.cs" />
+    <Compile Include="MediaDB\MediaItem.cs" />
+    <Compile Include="MediaDB\MediaItemFilterManager.cs" />
+    <Compile Include="MediaDB\MediaTagUtil.cs" />
+    <Compile Include="MediaDB\RecentsManager.cs" />
+    <Compile Include="MediaPlayer\AudioPlayerManager.cs" />
+    <Compile Include="MediaPlayer\JukeboxManager.cs" />
+    <Compile Include="MediaPlayer\VlcAudioPlayerManager.cs" />
+    <Compile Include="Notification\NotificationService.cs" />
+    <Compile Include="Notification\TasktrayIconView.cs" />
+    <Compile Include="Preferences\XmlPreferencesManager.cs" />
+    <Compile Include="Shortcut\ShortcutKeyManager.cs" />
     <Compile Include="Views\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
     </Compile>
@@ -153,9 +158,6 @@
     <Compile Include="Views\Options\OptionDialog_MediaList2.Designer.cs">
       <DependentUpon>OptionDialog_MediaList2.cs</DependentUpon>
     </Compile>
-    <Compile Include="Managers\MediaItemFilterManager.cs" />
-    <Compile Include="Managers\JukeboxManager.cs" />
-    <Compile Include="Managers\ShortcutKeyManager.cs" />
     <Compile Include="Views\Options\OptionDialog_Update.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -168,7 +170,6 @@
     <Compile Include="Views\Options\OptionDialog_DB.Designer.cs">
       <DependentUpon>OptionDialog_DB.cs</DependentUpon>
     </Compile>
-    <Compile Include="Managers\TaskIconManager.cs" />
     <Compile Include="Views\[ViewModels]\MediaTreeItemViewModel.cs" />
     <Compile Include="Views\[ViewModels]\MediaListItemViewModel.cs" />
     <Compile Include="Views\[ViewModels]\MediaListItemsSource.cs" />
@@ -209,13 +210,13 @@
       <DependentUpon>MediaListWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Managers\AppUpdateManager.cs" />
     <Compile Include="Views\[Dialogs]\UpdateMessageBox.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Views\[Dialogs]\UpdateMessageBox.Designer.cs">
       <DependentUpon>UpdateMessageBox.cs</DependentUpon>
     </Compile>
+    <Compile Include="_ManagerServices.cs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">
@@ -246,6 +247,7 @@
     <Resource Include="Resources\検索：削除-デフォルト.png" />
     <Resource Include="Resources\検索：削除-フォーカス.png" />
     <Resource Include="Resources\カスタマイズ.png" />
+    <None Include="sample.md" />
     <None Include="SmartAudioPlayer Fx.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

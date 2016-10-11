@@ -11,13 +11,14 @@ using System.Windows.Interop;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
 using Microsoft.Win32;
-using SmartAudioPlayerFx.Managers;
 using WinForms = System.Windows.Forms;
 using Reactive.Bindings.Extensions;
-using SmartAudioPlayerFx.Data;
 using Quala;
 using Quala.Win32;
 using Quala.WPF.Extensions;
+using SmartAudioPlayerFx.MediaPlayer;
+using SmartAudioPlayerFx.Notification;
+using SmartAudioPlayerFx.Shortcut;
 
 namespace SmartAudioPlayerFx.Views
 {
@@ -67,9 +68,9 @@ namespace SmartAudioPlayerFx.Views
 				ev.Cancel = ClosingAnimation();
 				if (ev.Cancel == false)
 				{
-					AppService.Log.AddDebugLog("App MainWindow Closing, (save/hide)");
+					App.Models.Get<Logging>().AddDebugLog("App MainWindow Closing, (save/hide)");
 					ViewModel.SavePreferences();
-					ManagerServices.AudioPlayerManager.Close();
+					App.Models.Get<AudioPlayerManager>().Close();
 				}
 			};
 
@@ -184,7 +185,7 @@ namespace SmartAudioPlayerFx.Views
 			}
 
 			cmenu.MenuItems.Clear();
-			cmenu.MenuItems.AddRange(TaskIconManager.CreateWinFormsMenuItems());
+			cmenu.MenuItems.AddRange(TasktrayIconView.CreateWinFormsMenuItems());
 
 			var helper = new WindowInteropHelper(this);
 			WinAPI.SetForegroundWindow(helper.Handle);
@@ -197,11 +198,11 @@ namespace SmartAudioPlayerFx.Views
 				0x142, (int)screenPos.X, (int)screenPos.Y,
 				new HandleRef(helper, helper.Handle),
 				IntPtr.Zero);
-			AppService.Log.AddDebugLog("TrackPopupMenuEx() result: {0}", id);
+			App.Models.Get<Logging>().AddDebugLog("TrackPopupMenuEx() result: {0}", id);
 			if (id != 0)
 			{
 				var result = cmenu_executer.Invoke(null, new object[] { id });
-				AppService.Log.AddDebugLog("System.Windows.Forms.Command.DispatchID() result: {0}", result);
+				App.Models.Get<Logging>().AddDebugLog("System.Windows.Forms.Command.DispatchID() result: {0}", result);
 			}
 		}
 

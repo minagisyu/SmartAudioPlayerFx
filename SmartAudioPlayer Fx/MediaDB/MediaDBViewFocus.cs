@@ -3,13 +3,11 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reactive.Disposables;
-using System.Xml.Linq;
-using SmartAudioPlayerFx.Managers;
 using Reactive.Bindings.Extensions;
 using Quala;
 using Quala.Extensions;
 
-namespace SmartAudioPlayerFx.Data
+namespace SmartAudioPlayerFx.MediaDB
 {
 	// マーキング用
 	public interface ISpecialMediaDBViewFocus
@@ -81,7 +79,7 @@ namespace SmartAudioPlayerFx.Data
 
 		protected void LoadViewItems()
 		{
-			AppService.Log.AddDebugLog("Call LoadViewItems[{0}]", this.GetHashCode());
+			App.Models.Get<Logging>().AddDebugLog("Call LoadViewItems[{0}]", this.GetHashCode());
 
 			// 初期化
 			Items.Clear();
@@ -103,7 +101,7 @@ namespace SmartAudioPlayerFx.Data
 				.Where(x => ValidateItem(x))
 				.ForAll(x => Items.AddOrReplace(x));
 			sw.Stop();
-			AppService.Log.AddDebugLog(" **LoadViewItems[{0}]({1}items): {2}ms", this.GetHashCode(), Items.Count, sw.ElapsedMilliseconds);
+			App.Models.Get<Logging>().AddDebugLog(" **LoadViewItems[{0}]({1}items): {2}ms", this.GetHashCode(), Items.Count, sw.ElapsedMilliseconds);
 		}
 
 		#endregion

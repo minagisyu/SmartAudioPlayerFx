@@ -3,7 +3,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Security;
 
-namespace SmartAudioPlayerFx.Data
+namespace SmartAudioPlayerFx.MediaDB
 {
 	/// <summary>
 	/// mp3infp.dllを使用してタグ情報を取得します

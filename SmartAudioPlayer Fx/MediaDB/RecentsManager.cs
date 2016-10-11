@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Xml.Linq;
-using SmartAudioPlayerFx.Data;
 using Reactive.Bindings.Extensions;
 using Quala.Extensions;
+using SmartAudioPlayerFx.Preferences;
 
-namespace SmartAudioPlayerFx.Managers
+namespace SmartAudioPlayerFx.MediaDB
 {
 //	[Require(typeof(XmlPreferencesManager))]
 //	[Require(typeof(MediaDBViewManager))]
@@ -23,11 +23,11 @@ namespace SmartAudioPlayerFx.Managers
 
 		public RecentsManager()
 		{
-			ManagerServices.PreferencesManager.PlayerSettings
+			App.Models.Get<XmlPreferencesManager>().PlayerSettings
 				.Subscribe(x => LoadPreferences(x))
 				.AddTo(_disposables);
-			ManagerServices.PreferencesManager.SerializeRequestAsObservable()
-				.Subscribe(_ => SavePreferences(ManagerServices.PreferencesManager.PlayerSettings.Value))
+			App.Models.Get<XmlPreferencesManager>().SerializeRequestAsObservable()
+				.Subscribe(_ => SavePreferences(App.Models.Get<XmlPreferencesManager>().PlayerSettings.Value))
 				.AddTo(_disposables);
 
 			LoadRecentsPlayItemsFromDB();

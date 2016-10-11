@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using Microsoft.VisualBasic;
 
-namespace SmartAudioPlayerFx.Data
+namespace SmartAudioPlayerFx.MediaDB
 {
 	[DebuggerDisplay("{Title}")]
 	public sealed class MediaItem

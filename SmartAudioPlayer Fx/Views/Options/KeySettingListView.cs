@@ -1,6 +1,5 @@
 using System.Text;
 using System.Windows.Forms;
-using SmartAudioPlayerFx.Managers;
 using Quala.Win32;
 
 namespace SmartAudioPlayerFx.Views.Options

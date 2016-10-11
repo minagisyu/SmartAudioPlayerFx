@@ -1,7 +1,6 @@
 ﻿using Dapper;
 using Quala;
 using Reactive.Bindings.Extensions;
-using SmartAudioPlayerFx.Data;
 using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
@@ -12,7 +11,7 @@ using System.Reactive.Disposables;
 using System.Reflection;
 using System.Threading;
 
-namespace SmartAudioPlayerFx.Managers
+namespace SmartAudioPlayerFx.MediaDB
 {
 	// media.db操作用
 	public sealed class MediaDBManager : IDisposable
@@ -111,13 +110,13 @@ namespace SmartAudioPlayerFx.Managers
 				if (version < CURRENT_DB_VERSION)
 				{
 					// 古いバージョンなのでxmlエクスポートして修正とか？
-					AppService.Log.AddErrorLog(" - media db version " + meta["Version"] + ", not supported.");
+					App.Models.Get<Logging>().AddErrorLog(" - media db version " + meta["Version"] + ", not supported.");
 					throw new ApplicationException("db version not supported.");
 				}
 				else if (version > CURRENT_DB_VERSION)
 				{
 					// DBバージョンが新しい？
-					AppService.Log.AddErrorLog(" - media db version " + meta["Version"] + ", futured version?");
+					App.Models.Get<Logging>().AddErrorLog(" - media db version " + meta["Version"] + ", futured version?");
 					throw new ApplicationException("db version futured?");
 				}
 			}
@@ -368,7 +367,7 @@ namespace SmartAudioPlayerFx.Managers
 					}
 					catch (SQLiteException e)
 					{
-						AppService.Log.AddDebugLog("DBWriter Commit Exception: {0}", e);
+						App.Models.Get<Logging>().AddDebugLog("DBWriter Commit Exception: {0}", e);
 						Thread.Sleep(100);
 					}
 				}

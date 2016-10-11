@@ -1,8 +1,6 @@
 ﻿using Quala;
 using Quala.Win32;
 using Quala.Win32.Dialog;
-using SmartAudioPlayerFx.Data;
-using SmartAudioPlayerFx.Views;
 using System;
 using System.Diagnostics;
 using System.IO;

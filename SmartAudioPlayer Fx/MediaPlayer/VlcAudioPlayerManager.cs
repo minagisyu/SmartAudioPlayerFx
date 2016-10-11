@@ -3,16 +3,12 @@ using System.IO;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading;
-using System.Windows;
 using System.Windows.Media;
-using System.Windows.Threading;
-using Microsoft.Win32;
-using SmartAudioPlayerFx.Data;
 using Quala;
 using Vlc.DotNet.Core;
 using System.Reflection;
 
-namespace SmartAudioPlayerFx.Managers
+namespace SmartAudioPlayerFx.MediaPlayer
 {
 	public class PlayEndedEventArgs : EventArgs
 	{
@@ -81,7 +77,7 @@ namespace SmartAudioPlayerFx.Managers
 		/// </summary>
 		public void Close()
 		{
-			AppService.Log.AddDebugLog("Call Close");
+			App.Models.Get<Logging>().AddDebugLog("Call Close");
 			if (string.IsNullOrWhiteSpace(CurrentOpenedPath) == false)
 			{
 				VolumeFadeoutWithPause();
@@ -108,7 +104,7 @@ namespace SmartAudioPlayerFx.Managers
 		/// <param name="play_started">Openedイベントの前に呼ばれます</param>
 		public void PlayFrom(string path, bool isPause, TimeSpan? startPosition, Action play_started)
 		{
-			AppService.Log.AddDebugLog("Call Open: path={0}, isPause={1}, startPosition={2}", path ?? "(null)", isPause, startPosition.HasValue ? startPosition.Value.ToString() : "(null)");
+			App.Models.Get<Logging>().AddDebugLog("Call Open: path={0}, isPause={1}, startPosition={2}", path ?? "(null)", isPause, startPosition.HasValue ? startPosition.Value.ToString() : "(null)");
 			Close();
 
 			if (path == null) return;	// 停止状態へ
@@ -121,7 +117,7 @@ namespace SmartAudioPlayerFx.Managers
 			// error/event handling
 			on_failed = () => OnFailed_Handling(path, isPause, startPosition, play_started);
 
-			AppService.Log.AddDebugLog(" - opening file...");
+			App.Models.Get<Logging>().AddDebugLog(" - opening file...");
 			var media = player.SetMedia(new FileInfo(path));
 			media.ParsedChanged += delegate
 			{
@@ -133,17 +129,17 @@ namespace SmartAudioPlayerFx.Managers
 		{
 			var ext = Path.GetExtension(path);
 			if (string.IsNullOrEmpty(ext)) { ext = "."; }   // 拡張子無しはピリオドのみ
-			AppService.Log.AddDebugLog(" **open failed: extension[{0}]", ext);
+			App.Models.Get<Logging>().AddDebugLog(" **open failed: extension[{0}]", ext);
 			//
 			OnPlayEnded("再生に失敗しました");
 		}
 		void OnOpened_Handling(bool isPause, TimeSpan? startPosition, Action play_started)
 		{
 			on_failed = null; // 開けた合図
-			AppService.Log.AddDebugLog(" **open success!");
+			App.Models.Get<Logging>().AddDebugLog(" **open success!");
 			if (player.Audio.Tracks.Count > 0)
 			{
-				AppService.Log.AddDebugLog(" -- no have audio... skip.");
+				App.Models.Get<Logging>().AddDebugLog(" -- no have audio... skip.");
 				// 音声がないならスキップ
 				OnPlayEnded("音声がないため再生がスキップされました");
 				return;
@@ -152,7 +148,7 @@ namespace SmartAudioPlayerFx.Managers
 		//	player.Position = startPosition ?? TimeSpan.Zero;
 		//	Duration = (player.NaturalDuration.HasTimeSpan) ? player.NaturalDuration.TimeSpan : (TimeSpan?)null;
 			IsPaused = isPause;
-			AppService.Log.AddDebugLog(" **media duration: {0}", Duration.HasValue ? Duration.Value.ToString() : "(null)");
+			App.Models.Get<Logging>().AddDebugLog(" **media duration: {0}", Duration.HasValue ? Duration.Value.ToString() : "(null)");
 
 			if (isPause) { player.Pause(); }
 			else if (startPosition.HasValue) { VolumeFadeinWithPlay(); }
@@ -188,7 +184,7 @@ namespace SmartAudioPlayerFx.Managers
 			}
 			set
 			{
-				AppService.Log.AddDebugLog("Set Position: {0}", value);
+				App.Models.Get<Logging>().AddDebugLog("Set Position: {0}", value);
 			//	player.Position = value;
 				PositionSetted?.Invoke();
 			}
@@ -210,7 +206,7 @@ namespace SmartAudioPlayerFx.Managers
 			}
 			set
 			{
-				AppService.Log.AddDebugLog("Set Volume: {0}", value);
+				App.Models.Get<Logging>().AddDebugLog("Set Volume: {0}", value);
 			//	if (player.Volume == value) return;
 			//	player.Volume = value;
 				VolumeChanged?.Invoke();
@@ -272,7 +268,7 @@ namespace SmartAudioPlayerFx.Managers
 
 		void OnPlayEnded(string error_reason)
 		{
-			AppService.Log.AddDebugLog(" **play ended, ErrorReason={0}", error_reason);
+			App.Models.Get<Logging>().AddDebugLog(" **play ended, ErrorReason={0}", error_reason);
 			PlayEnded?.Invoke(new PlayEndedEventArgs() { ErrorReason = error_reason, });
 			Close();
 		}
@@ -283,12 +279,12 @@ namespace SmartAudioPlayerFx.Managers
 		/// </summary>
 		public void PlayPause()
 		{
-			AppService.Log.AddDebugLog("Call PlayPause");
+			App.Models.Get<Logging>().AddDebugLog("Call PlayPause");
 
 			// player.Open()直後、on_opened()実行前までに呼ばれると停止しないので操作を無視する
 			if (on_failed != null)
 			{
-				AppService.Log.AddDebugLog(" - suspess.(on_failed != null)");
+				App.Models.Get<Logging>().AddDebugLog(" - suspess.(on_failed != null)");
 				return;
 			}
 
@@ -304,7 +300,7 @@ namespace SmartAudioPlayerFx.Managers
 		/// </summary>
 		public void Replay()
 		{
-			AppService.Log.AddDebugLog("Call Replay");
+			App.Models.Get<Logging>().AddDebugLog("Call Replay");
 
 			var paused = IsPaused;
 			if (!paused)
@@ -322,7 +318,7 @@ namespace SmartAudioPlayerFx.Managers
 		// UIThreadから呼ぶこと
 		void VolumeFadeinWithPlay()
 		{
-			AppService.Log.AddDebugLog("Call VolumeFadeinWithPlay");
+			App.Models.Get<Logging>().AddDebugLog("Call VolumeFadeinWithPlay");
 		//	var vol = player.Volume;
 		//	AppService.Log.AddDebugLog(" - current Volume(1): {0}", vol);
 		//	player.Volume = 0;
@@ -354,7 +350,7 @@ namespace SmartAudioPlayerFx.Managers
 		// UIThreadから呼ぶこと
 		void VolumeFadeoutWithPause()
 		{
-			AppService.Log.AddDebugLog("Call VolumeFadeoutWithPause");
+			App.Models.Get<Logging>().AddDebugLog("Call VolumeFadeoutWithPause");
 		//	var vol = player.Volume;
 		//	AppService.Log.AddDebugLog(" - current Volume: {0}", vol);
 			/*	ValueAnimation_Wait(
@@ -384,7 +380,7 @@ namespace SmartAudioPlayerFx.Managers
 			try
 			{
 				var sleepTime = duration.TotalMilliseconds / 10.0;
-				AppService.Log.AddDebugLog("ValueAnimation_Wait: IsEnableSoundFadeEffect={0}, sleepTime={1}",
+				App.Models.Get<Logging>().AddDebugLog("ValueAnimation_Wait: IsEnableSoundFadeEffect={0}, sleepTime={1}",
 					IsEnableSoundFadeEffect, sleepTime);
 				if (IsEnableSoundFadeEffect)
 				{

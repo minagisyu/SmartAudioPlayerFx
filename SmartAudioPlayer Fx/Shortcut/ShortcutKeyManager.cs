@@ -6,14 +6,15 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Windows.Forms;
 using System.Xml.Linq;
-using SmartAudioPlayerFx.Data;
 using Reactive.Bindings.Extensions;
 using Quala;
 using Quala.Win32;
 using Quala.Extensions;
 using Quala.Win32.Components;
+using SmartAudioPlayerFx.Preferences;
+using SmartAudioPlayerFx.MediaPlayer;
 
-namespace SmartAudioPlayerFx.Managers
+namespace SmartAudioPlayerFx.Shortcut
 {
 	/// <summary>
 	/// HotKeyServiceを使って特定のキーが押された時の反応を管理する
@@ -34,11 +35,11 @@ namespace SmartAudioPlayerFx.Managers
 			ResetShortcuts();
 			_disposables = new CompositeDisposable(hotkey);
 
-			ManagerServices.PreferencesManager.PlayerSettings
+			App.Models.Get<XmlPreferencesManager>().PlayerSettings
 				.Subscribe(x => LoadPreferences(x))
 				.AddTo(_disposables);
-			ManagerServices.PreferencesManager.SerializeRequestAsObservable()
-				.Subscribe(_ => SavePreferences(ManagerServices.PreferencesManager.PlayerSettings.Value))
+			App.Models.Get<XmlPreferencesManager>().SerializeRequestAsObservable()
+				.Subscribe(_ => SavePreferences(App.Models.Get<XmlPreferencesManager>().PlayerSettings.Value))
 				.AddTo(_disposables);
 		}
 		public void Dispose()
@@ -117,7 +118,7 @@ namespace SmartAudioPlayerFx.Managers
 		/// <returns></returns>
 		public Keys GetShortcutKey(Features feature)
 		{
-			AppService.Log.AddDebugLog("Call GetShortcutKey: feature={0}", feature);
+			App.Models.Get<Logging>().AddDebugLog("Call GetShortcutKey: feature={0}", feature);
 
 			if (feature == Features.None) return Keys.None;
 			lock (shortcuts)
@@ -133,7 +134,7 @@ namespace SmartAudioPlayerFx.Managers
 		/// <param name="key"></param>
 		public void SetShortcutKey(Features feature, Keys key)
 		{
-			AppService.Log.AddDebugLog("Call SetShortcutKey: feature={0}, key={1}", feature, key);
+			App.Models.Get<Logging>().AddDebugLog("Call SetShortcutKey: feature={0}, key={1}", feature, key);
 
 			if (feature == Features.None && ((key & Keys.KeyCode) == Keys.None)) return;
 			lock (shortcuts)
@@ -177,7 +178,7 @@ namespace SmartAudioPlayerFx.Managers
 		// 指定機能のアクション用デリゲートを作成
 		Action CreateFeatureAction(Features feature)
 		{
-			AppService.Log.AddDebugLog("Call CreateFeatureAction: feature={0}", feature);
+			App.Models.Get<Logging>().AddDebugLog("Call CreateFeatureAction: feature={0}", feature);
 			switch (feature)
 			{
 				case Features.PlayMode_Random:
@@ -187,17 +188,17 @@ namespace SmartAudioPlayerFx.Managers
 				case Features.PlayMode_Repeat:
 					return () => ManagerServices.JukeboxManager.IsRepeat.Value = (!ManagerServices.JukeboxManager.IsRepeat.Value);
 				case Features.Player_PlayPause:
-					return () => ManagerServices.AudioPlayerManager.PlayPause();
+					return () => App.Models.Get<AudioPlayerManager>().PlayPause();
 				case Features.Player_Skip:
 					return () => ManagerServices.JukeboxManager.SelectNext(true);
 				case Features.Player_Replay:
-					return () => ManagerServices.AudioPlayerManager.Replay();
+					return () => App.Models.Get<AudioPlayerManager>().Replay();
 				case Features.Player_Previous:
 					return () => ManagerServices.JukeboxManager.SelectPrevious();
 				case Features.Volume_Up:
-					return () => ManagerServices.AudioPlayerManager.Volume = ManagerServices.AudioPlayerManager.Volume + 0.1;
+					return () => App.Models.Get<AudioPlayerManager>().Volume = App.Models.Get<AudioPlayerManager>().Volume + 0.1;
 				case Features.Volume_Down:
-					return () => ManagerServices.AudioPlayerManager.Volume = ManagerServices.AudioPlayerManager.Volume - 0.1;
+					return () => App.Models.Get<AudioPlayerManager>().Volume = App.Models.Get<AudioPlayerManager>().Volume - 0.1;
 				case Features.Window_ShowHide:
 					return () => { if (Window_ShowHide_Request != null) { Window_ShowHide_Request(); } };
 				case Features.Window_MoveRightDown:
@@ -278,7 +279,7 @@ namespace SmartAudioPlayerFx.Managers
 			/// <param name="action">呼び出されるデリゲート</param>
 			public void SetHotKey(Keys key, Action action)
 			{
-				AppService.Log.AddDebugLog("Call SetHotKey: key={0}", key);
+				App.Models.Get<Logging>().AddDebugLog("Call SetHotKey: key={0}", key);
 				lock (registered_keys)
 				{
 					registered_keys[key] = action;
@@ -291,7 +292,7 @@ namespace SmartAudioPlayerFx.Managers
 			/// <param name="key">解除されるキー</param>
 			public void RemoveHotKey(Keys key)
 			{
-				AppService.Log.AddDebugLog("Call RemoveHotKey: key={0}", key);
+				App.Models.Get<Logging>().AddDebugLog("Call RemoveHotKey: key={0}", key);
 				lock (registered_keys)
 				{
 					registered_keys.Remove(key);
@@ -303,7 +304,7 @@ namespace SmartAudioPlayerFx.Managers
 			/// </summary>
 			public void RemoveAll()
 			{
-				AppService.Log.AddDebugLog("Call RemoveAll");
+				App.Models.Get<Logging>().AddDebugLog("Call RemoveAll");
 				lock (registered_keys)
 				{
 					registered_keys.Clear();
@@ -326,7 +327,7 @@ namespace SmartAudioPlayerFx.Managers
 				// イベント抑制中 or キーが登録されていないならここで処理中断
 				if (e.IsKeyDown || SuspressKeyEvent || registered_keys.Count == 0) return;
 
-				AppService.Log.AddDebugLog(" **KeyboardHooked: LastDownKey={0}", LastDownKey);
+				App.Models.Get<Logging>().AddDebugLog(" **KeyboardHooked: LastDownKey={0}", LastDownKey);
 
 				lock (registered_keys)
 				{
@@ -351,7 +352,7 @@ namespace SmartAudioPlayerFx.Managers
 							try { x.Value(); }
 							catch (Exception ex)
 							{
-								AppService.Log.AddErrorLog(
+								App.Models.Get<Logging>().AddErrorLog(
 									"キーイベント処理中に例外が発生しました" + Environment.NewLine +
 									"キー：" + x.Key.ToString(),
 									ex);
