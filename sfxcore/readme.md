@@ -8,9 +8,9 @@ SmartAudioPlaer Fx Core Implements
 - Quala.Extensions
 
 ### Nuget
-- Reactive Property
+- Newtonsoft.Json
+- ReactiveProperty
 
 #### Framework
-- System.Xml
-- System.Xml.Linq
-
+.NET
+(.NET4.6, Core1.0, UWP1.0, Xamarin)
