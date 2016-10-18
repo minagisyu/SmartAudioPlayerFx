@@ -4,15 +4,15 @@ using System.Reactive.Disposables;
 
 namespace Quala
 {
-	/// <summary>
-	/// 複数参照されるオブジェクトを管理
-	/// </summary>
-	/// <remarks>
-	/// アプリケーション全体で利用されるモデルクラス等を一挙に管理
-	/// クラス名とキー名でいつでも作成・取得できる
-	/// キー名はStringComparer.InvariantCultureIgnoreCaseで比較される
-	/// </remarks>
-	public sealed class ReferenceManager : IDisposable
+    /// <summary>
+    /// 複数参照されるオブジェクトを管理
+    /// </summary>
+    /// <remarks>
+    /// アプリケーション全体で利用されるモデルクラス等を一挙に管理
+    /// クラス名とキー名でいつでも作成・取得できる
+    /// キー名はStringComparer.CurrentCultureIgnoreCaseで比較される
+    /// </remarks>
+    public sealed class ReferenceManager : IDisposable
 	{
 		// Type別、Key別、IDisposable
 		ConcurrentDictionary<Type, ConcurrentDictionary<string, DisposableWrapper>> instance =
@@ -23,7 +23,7 @@ namespace Quala
 		ConcurrentDictionary<string, DisposableWrapper> GetTypeDictionary<T>()
 		{
 			var type = typeof(T);
-			var typeDic = instance.GetOrAdd(type, (t) => new ConcurrentDictionary<string, DisposableWrapper>(StringComparer.InvariantCultureIgnoreCase));
+			var typeDic = instance.GetOrAdd(type, (t) => new ConcurrentDictionary<string, DisposableWrapper>(StringComparer.CurrentCultureIgnoreCase));
 			return typeDic;
 		}
 

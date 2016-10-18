@@ -96,7 +96,7 @@ namespace SmartAudioPlayerFx.Views
 
 		private void ReloadListItems()
 		{
-			App.Models.Get<Logging>().AddDebugLog("Call ReloadListItems", new object[0]);
+			App.Models.Get<LogManager>().AddDebugLog($"Call ReloadListItems");
 			Stopwatch sw = Stopwatch.StartNew();
 			this.ClearListItems();
 			Dictionary<string, MediaItem> tmp = new Dictionary<string, MediaItem>();
@@ -125,7 +125,7 @@ namespace SmartAudioPlayerFx.Views
 				return vm;
 			}));
 			sw.Stop();
-			App.Models.Get<Logging>().AddDebugLog(" **ReloadListItems({0}items): {1}ms", new object[] { this._items_cache.Count, sw.ElapsedMilliseconds });
+			App.Models.Get<LogManager>().AddDebugLog($" **ReloadListItems({this._items_cache.Count}items): {sw.ElapsedMilliseconds}ms");
 		}
 
 		// アイテムを追加、必要ならヘッダも追加する

@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Reactive.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Interop;
@@ -34,7 +35,7 @@ namespace SmartAudioPlayerFx.Notification
 			// NotificationService購読
 			var sv = App.Models.Get<NotificationService>();
 			BaloonTipClicked += () => sv.RaiseNotifyClicked();
-			sv.NotifyMessage.Subscribe(o => tray.ShowBalloonTip((int)TimeSpan.FromSeconds(10).TotalMilliseconds, "SmartAudioPlayer Fx", o, ToolTipIcon.Info));
+			sv.NotifyMessage.Where(o => string.IsNullOrWhiteSpace(o) == false).Subscribe(o => tray.ShowBalloonTip((int)TimeSpan.FromSeconds(10).TotalMilliseconds, "SmartAudioPlayer Fx", o, ToolTipIcon.Info));
 		}
 
 		public event Action BaloonTipClicked;

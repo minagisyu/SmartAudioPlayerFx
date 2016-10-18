@@ -1,5 +1,4 @@
 {
-  "locked": false,
   "version": 2,
   "targets": {
     ".NETPortable,Version=v4.5,Profile=Profile7": {
@@ -176,7 +175,7 @@
     "Newtonsoft.Json/9.0.1": {
       "sha512": "U82mHQSKaIk+lpSVCbWYKNavmNH1i5xrExDEquU1i6I5pV6UMOqRnJRSlKO3cMPfcpp0RgDY+8jUXHdQ4IfXvw==",
       "type": "package",
-      "path": "Newtonsoft.Json/9.0.1",
+      "path": "newtonsoft.json/9.0.1",
       "files": [
         "Newtonsoft.Json.9.0.1.nupkg.sha512",
         "Newtonsoft.Json.nuspec",
@@ -200,7 +199,7 @@
     "ReactiveProperty/3.2.0": {
       "sha512": "zJ2huSI43kSzRBT3+ay6UuBxdgzdeluLlqyZG82nhX81pvHAGu1f+vkQsFZFoNMBs+o4kHFCAGbu/0Dttvdllg==",
       "type": "package",
-      "path": "ReactiveProperty/3.2.0",
+      "path": "reactiveproperty/3.2.0",
       "files": [
         "Docs/ReadMe.txt",
         "LICENSE.txt",
@@ -268,7 +267,7 @@
     "System.Collections/4.0.11": {
       "sha512": "YUJGz6eFKqS0V//mLt25vFGrrCvOnsXjlvFQs+KimpwNxug9x0Pzy4PlFMU3Q2IzqAa9G2L4LsK3+9vCBK7oTg==",
       "type": "package",
-      "path": "System.Collections/4.0.11",
+      "path": "system.collections/4.0.11",
       "files": [
         "System.Collections.4.0.11.nupkg.sha512",
         "System.Collections.nuspec",
@@ -334,7 +333,7 @@
     "System.ComponentModel.Annotations/4.1.0": {
       "sha512": "rhnz80h8NnHJzoi0nbQJLRR2cJznyqG168q1bgoSpe5qpaME2SguXzuEzpY68nFCi2kBgHpbU4bRN2cP3unYRA==",
       "type": "package",
-      "path": "System.ComponentModel.Annotations/4.1.0",
+      "path": "system.componentmodel.annotations/4.1.0",
       "files": [
         "System.ComponentModel.Annotations.4.1.0.nupkg.sha512",
         "System.ComponentModel.Annotations.nuspec",
@@ -411,7 +410,7 @@
     "System.ObjectModel/4.0.12": {
       "sha512": "tAgJM1xt3ytyMoW4qn4wIqgJYm7L7TShRZG4+Q4Qsi2PCcj96pXN7nRywS9KkB3p/xDUjc2HSwP9SROyPYDYKQ==",
       "type": "package",
-      "path": "System.ObjectModel/4.0.12",
+      "path": "system.objectmodel/4.0.12",
       "files": [
         "System.ObjectModel.4.0.12.nupkg.sha512",
         "System.ObjectModel.nuspec",
@@ -479,7 +478,7 @@
     "System.Reactive/3.0.0": {
       "sha512": "W7fymxyUWjdbLiq257mCaiha1WfmShgXK8jwFuD9vMT4/HWLqDSvcpePGbkLogF3Rlc/sH6xTalNVj4nOVkk0g==",
       "type": "package",
-      "path": "System.Reactive/3.0.0",
+      "path": "system.reactive/3.0.0",
       "files": [
         "System.Reactive.3.0.0.nupkg.sha512",
         "System.Reactive.nuspec"
@@ -488,7 +487,7 @@
     "System.Reactive.Core/3.0.0": {
       "sha512": "1mnBTTNzTDaKYu2fYA0fcbWmWspwXheV9eFR0ynWd0nFjBwgSW0ZUAxe7dfvU5imv+K9QlfhV+pEKGOlJVZ8+w==",
       "type": "package",
-      "path": "System.Reactive.Core/3.0.0",
+      "path": "system.reactive.core/3.0.0",
       "files": [
         "System.Reactive.Core.3.0.0.nupkg.sha512",
         "System.Reactive.Core.nuspec",
@@ -515,7 +514,7 @@
     "System.Reactive.Interfaces/3.0.0": {
       "sha512": "MuLvWYegIrhvUVe3MRMIBxFGx4kiz0FEzN3TTvhX+m3WmJCi5+OE4J7yPWtZjGGTUh5wysGyaF9thcnCzx/J3w==",
       "type": "package",
-      "path": "System.Reactive.Interfaces/3.0.0",
+      "path": "system.reactive.interfaces/3.0.0",
       "files": [
         "System.Reactive.Interfaces.3.0.0.nupkg.sha512",
         "System.Reactive.Interfaces.nuspec",
@@ -528,7 +527,7 @@
     "System.Reactive.Linq/3.0.0": {
       "sha512": "CmQ+WpeOFzwYlDKafLQLT5McvR1TWCi3UudeBnajguvi/8ZGHDoQ2MPTo401EKkSvW48uTsJyvcKXN/C7g91Qg==",
       "type": "package",
-      "path": "System.Reactive.Linq/3.0.0",
+      "path": "system.reactive.linq/3.0.0",
       "files": [
         "System.Reactive.Linq.3.0.0.nupkg.sha512",
         "System.Reactive.Linq.nuspec",
@@ -547,7 +546,7 @@
     "System.Reactive.PlatformServices/3.0.0": {
       "sha512": "1yYsCsIqrpu228er3iC1naLcCnIpdDRuyFhD78P6C54YyiR84ElDUjWYEMVneUKxrP6PlwrZp2VEf0DHAHX8gw==",
       "type": "package",
-      "path": "System.Reactive.PlatformServices/3.0.0",
+      "path": "system.reactive.platformservices/3.0.0",
       "files": [
         "System.Reactive.PlatformServices.3.0.0.nupkg.sha512",
         "System.Reactive.PlatformServices.nuspec",
@@ -572,7 +571,7 @@
     "System.Reflection/4.1.0": {
       "sha512": "JCKANJ0TI7kzoQzuwB/OoJANy1Lg338B6+JVacPl4TpUwi3cReg3nMLplMq2uqYfHFQpKIlHAUVAJlImZz/4ng==",
       "type": "package",
-      "path": "System.Reflection/4.1.0",
+      "path": "system.reflection/4.1.0",
       "files": [
         "System.Reflection.4.1.0.nupkg.sha512",
         "System.Reflection.nuspec",
@@ -651,7 +650,7 @@
     "System.Reflection.Extensions/4.0.1": {
       "sha512": "GYrtRsZcMuHF3sbmRHfMYpvxZoIN2bQGrYGerUiWLEkqdEUQZhH3TRSaC/oI4wO0II1RKBPlpIa1TOMxIcOOzQ==",
       "type": "package",
-      "path": "System.Reflection.Extensions/4.0.1",
+      "path": "system.reflection.extensions/4.0.1",
       "files": [
         "System.Reflection.Extensions.4.0.1.nupkg.sha512",
         "System.Reflection.Extensions.nuspec",
@@ -706,7 +705,7 @@
     "System.Runtime/4.1.0": {
       "sha512": "v6c/4Yaa9uWsq+JMhnOFewrYkgdNHNG2eMKuNqRn8P733rNXeRCGvV5FkkjBXn2dbVkPXOsO0xjsEeM1q2zC0g==",
       "type": "package",
-      "path": "System.Runtime/4.1.0",
+      "path": "system.runtime/4.1.0",
       "files": [
         "System.Runtime.4.1.0.nupkg.sha512",
         "System.Runtime.nuspec",
@@ -796,7 +795,7 @@
     "System.Runtime.Serialization.Primitives/4.1.1": {
       "sha512": "HZ6Du5QrTG8MNJbf4e4qMO3JRAkIboGT5Fk804uZtg3Gq516S7hAqTm2UZKUHa7/6HUGdVy3AqMQKbns06G/cg==",
       "type": "package",
-      "path": "System.Runtime.Serialization.Primitives/4.1.1",
+      "path": "system.runtime.serialization.primitives/4.1.1",
       "files": [
         "System.Runtime.Serialization.Primitives.4.1.1.nupkg.sha512",
         "System.Runtime.Serialization.Primitives.nuspec",
@@ -867,7 +866,7 @@
     "System.Runtime.Serialization.Xml/4.1.1": {
       "sha512": "yqfKHkWUAdI0hdDIdD9KDzluKtZ8IIqLF3O7xIZlt6UTs1bOvFRpCvRTvGQva3Ak/ZM9/nq9IHBJ1tC4Ybcrjg==",
       "type": "package",
-      "path": "System.Runtime.Serialization.Xml/4.1.1",
+      "path": "system.runtime.serialization.xml/4.1.1",
       "files": [
         "System.Runtime.Serialization.Xml.4.1.1.nupkg.sha512",
         "System.Runtime.Serialization.Xml.nuspec",
@@ -937,7 +936,7 @@
     "System.Xml.ReaderWriter/4.0.11": {
       "sha512": "ZIiLPsf67YZ9zgr31vzrFaYQqxRPX9cVHjtPSnmx4eN6lbS/yEyYNr2vs1doGDEscF0tjCZFsk9yUg1sC9e8tg==",
       "type": "package",
-      "path": "System.Xml.ReaderWriter/4.0.11",
+      "path": "system.xml.readerwriter/4.0.11",
       "files": [
         "System.Xml.ReaderWriter.4.0.11.nupkg.sha512",
         "System.Xml.ReaderWriter.nuspec",
@@ -1011,5 +1010,8 @@
     ".NETPortable,Version=v4.5,Profile=Profile7": []
   },
   "tools": {},
-  "projectFileToolGroups": {}
+  "projectFileToolGroups": {},
+  "packageFolders": {
+    "C:\\Users\\minag\\.nuget\\packages\\": {}
+  }
 }

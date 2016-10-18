@@ -125,7 +125,7 @@ namespace SmartAudioPlayerFx.MediaDB
 		/// <returns></returns>
 		public MediaItem GetOrCreate(string filepath)
 		{
-			App.Models.Get<Logging>().AddDebugLog("Call GetOrCreate: filepath={0}", filepath);
+			App.Models.Get<LogManager>().AddDebugLog($"Call GetOrCreate: filepath={filepath}");
 			if (string.IsNullOrWhiteSpace(filepath)) return null;
 
 			// キャッシュ検索、無い場合はDBを検索
@@ -223,7 +223,7 @@ namespace SmartAudioPlayerFx.MediaDB
 
 		void LoadDBItems(string path)
 		{
-			App.Models.Get<Logging>().AddDebugLog("Call LoadDBItems: path={0}", path);
+			App.Models.Get<LogManager>().AddDebugLog($"Call LoadDBItems: path={path}");
 
 			// 以前の非同期処理をキャンセルして終了を待つ
 			if (_LoadDBItems_CTS != null)
@@ -265,7 +265,7 @@ namespace SmartAudioPlayerFx.MediaDB
 						Items.AddOrReplace(x);
 					});
 				sw.Stop();
-				App.Models.Get<Logging>().AddDebugLog(" **LoadDBItems({0}items): {1}ms", Items.Count, sw.ElapsedMilliseconds);
+				App.Models.Get<LogManager>().AddDebugLog($" **LoadDBItems({Items.Count}items): {sw.ElapsedMilliseconds}ms");
 			})
 			.ContinueWith(_ =>
 			{
@@ -275,7 +275,7 @@ namespace SmartAudioPlayerFx.MediaDB
 					CollectFiles(null).Wait();
 				if (itemsLoaded_ev != null)
 					itemsLoaded_ev();
-				App.Models.Get<Logging>().AddDebugLog(" **LoadDBItems(full-complete)");
+				App.Models.Get<LogManager>().AddDebugLog(" **LoadDBItems(full-complete)");
 			});
 		}
 
@@ -286,7 +286,7 @@ namespace SmartAudioPlayerFx.MediaDB
 		Task _revalidateItems_Task;
 		void RevalidateItems(string path)
 		{
-			App.Models.Get<Logging>().AddDebugLog("Call RevalidateItems: path={0}", path);
+			App.Models.Get<LogManager>().AddDebugLog($"Call RevalidateItems: path={path}");
 
 			// 以前の非同期操作をキャンセル
 			if (_revalidateItems_CTS != null)
@@ -304,11 +304,11 @@ namespace SmartAudioPlayerFx.MediaDB
 			{
 				if (string.IsNullOrWhiteSpace(path)) return;
 
-				App.Models.Get<Logging>().AddDebugLog(" ..RevalidateTask: items version:{0}", Items.Version);
+				App.Models.Get<LogManager>().AddDebugLog($" ..RevalidateTask: items version:{Items.Version}");
 				var sw = Stopwatch.StartNew();
 
 				// phase remove: 既存の項目に対して、Validate()が通らないものを削除
-				App.Models.Get<Logging>().AddDebugLog(" ..RevalidateTask-phase1: version:{0}", Items.Version);
+				App.Models.Get<LogManager>().AddDebugLog($" ..RevalidateTask-phase1: version:{Items.Version}");
 				Items.GetLatest()
 					.TakeWhile(_ => ct.IsCancellationRequested == false)
 					.AsParallel()
@@ -316,7 +316,7 @@ namespace SmartAudioPlayerFx.MediaDB
 					.ForAll(x => Items.Remove(x));
 
 				// phase db_add: DBを再読み込みして追加or更新
-				App.Models.Get<Logging>().AddDebugLog(" ..RevalidateTask-phase2: version:{0}", Items.Version);
+				App.Models.Get<LogManager>().AddDebugLog($" ..RevalidateTask-phase2: version:{Items.Version}");
 				ManagerServices.MediaDBManager.GetFromFilePath_ExistsOnly(path)
 					.TakeWhile(_ => ct.IsCancellationRequested == false)
 					.AsParallel()
@@ -324,7 +324,7 @@ namespace SmartAudioPlayerFx.MediaDB
 					.ForAll(x => Items.AddOrReplace(x));
 
 				sw.Stop();
-				App.Models.Get<Logging>().AddDebugLog(" **RevalidateItems: {0}ms", sw.ElapsedMilliseconds);
+				App.Models.Get<LogManager>().AddDebugLog($" **RevalidateItems: {sw.ElapsedMilliseconds}ms");
 			})
 			.ContinueWith(_ =>
 			{
@@ -335,7 +335,7 @@ namespace SmartAudioPlayerFx.MediaDB
 					CollectFiles(null).Wait();
 				if (itemsLoaded_ev != null)
 					itemsLoaded_ev();
-				App.Models.Get<Logging>().AddDebugLog(" **RevalidateItems(full-complete)");
+				App.Models.Get<LogManager>().AddDebugLog(" **RevalidateItems(full-complete)");
 			});
 		}
 
@@ -346,7 +346,7 @@ namespace SmartAudioPlayerFx.MediaDB
 		Task _collectFiles_Task;
 		Task CollectFiles(string path)
 		{
-			App.Models.Get<Logging>().AddDebugLog("Call CollectFiles: path={0}", path);
+			App.Models.Get<LogManager>().AddDebugLog($"Call CollectFiles: path={path}");
 
 			// 以前の検索をキャンセル
 			if (_collectFiles_CTS != null)
@@ -377,7 +377,7 @@ namespace SmartAudioPlayerFx.MediaDB
 					}
 					return;
 				}
-				App.Models.Get<Logging>().AddDebugLog(" - CollectItems start.");
+				App.Models.Get<LogManager>().AddDebugLog(" - CollectItems start.");
 
 				// フォルダ監視を有効に
 				var fsw = new FileSystemWatcher(path)
@@ -413,7 +413,7 @@ namespace SmartAudioPlayerFx.MediaDB
 						});
 					}
 					sw.Stop();
-					App.Models.Get<Logging>().AddDebugLog(" - CollectFiles phase1({0}items add, elapsed {1}ms)", add_count, sw.ElapsedMilliseconds);
+					App.Models.Get<LogManager>().AddDebugLog($" - CollectFiles phase1({add_count}items add, elapsed {sw.ElapsedMilliseconds}ms)");
 					if (notify != null)
 						notify(string.Empty);
 
@@ -457,7 +457,7 @@ namespace SmartAudioPlayerFx.MediaDB
 						});
 					}
 					sw.Stop();
-					App.Models.Get<Logging>().AddDebugLog(" - CollectFiles phase2({0}items update, elapsed {1}ms)", updateList.Count, sw.ElapsedMilliseconds);
+					App.Models.Get<LogManager>().AddDebugLog($" - CollectFiles phase2({updateList.Count}items update, elapsed {sw.ElapsedMilliseconds}ms)");
 
 					// corescan finish
 					if (corescan_finished != null)
@@ -512,7 +512,7 @@ namespace SmartAudioPlayerFx.MediaDB
 						});
 					}
 					sw.Stop();
-					App.Models.Get<Logging>().AddDebugLog(" - CollectFiles phase3({0}items update, ellapsed {1}ms", updateList.Count, sw.ElapsedMilliseconds);
+					App.Models.Get<LogManager>().AddDebugLog($" - CollectFiles phase3({updateList.Count}items update, ellapsed {sw.ElapsedMilliseconds}ms");
 
 					// scan finish
 					if (scan_finished != null)
@@ -528,12 +528,12 @@ namespace SmartAudioPlayerFx.MediaDB
 
 						// 最後の通知から2秒経過するまで待ってみる(2秒のタイムアウトが発生するまで待つ)
 						while (fsw.WaitForChanged(WatcherChangeTypes.All, 2000).TimedOut == false) ;
-						App.Models.Get<Logging>().AddDebugLog("FSW-Notify, RaiseRescan.");
+						App.Models.Get<LogManager>().AddDebugLog("FSW-Notify, RaiseRescan.");
 						Task.Run(() => CollectFiles(path));
 						break;
 					}
 				}
-				App.Models.Get<Logging>().AddDebugLog(" - CollectFiles finished.");
+				App.Models.Get<LogManager>().AddDebugLog(" - CollectFiles finished.");
 			});
 
 			return _collectFiles_Task;

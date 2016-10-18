@@ -5,11 +5,11 @@
     <MinimumVisualStudioVersion>14.0</MinimumVisualStudioVersion>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{0B9AEC7F-44DD-4795-B895-D738164D1F20}</ProjectGuid>
+    <ProjectGuid>{F5CE73B5-25CD-4D7B-83F4-70B725117428}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Quala</RootNamespace>
-    <AssemblyName>Quala.Extensions</AssemblyName>
+    <AssemblyName>Quala.Core</AssemblyName>
     <DefaultLanguage>ja-JP</DefaultLanguage>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -37,16 +37,19 @@
   <ItemGroup>
     <!-- A reference to the entire .NET Framework is automatically included -->
     <None Include="project.json" />
-    <None Include="readme.md" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AppMutexManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="[Collections]\CustomEqualityComparer.cs" />
-    <Compile Include="[Collections]\VersionedCollection.cs" />
-    <Compile Include="[Extensions]\DirectoryInfoExtension.cs" />
-    <Compile Include="[Extensions]\EnumerableExtension.cs" />
-    <Compile Include="[Extensions]\XElementExtension.cs" />
-    <Compile Include="[Utilities]\PreferenceSerializer.cs" />
+    <Compile Include="RefCountReferenceManager.cs" />
+    <Compile Include="ReferenceManager.cs" />
+    <Compile Include="[LogManager]\LogManager.cs" />
+    <Compile Include="[LogManager]\LogManagerExtension.cs" />
+    <Compile Include="[LogManager]\LogManager_Item.cs" />
+    <Compile Include="[LogManager]\LogManager_Level.cs" />
+    <Compile Include="[Preference]\EntryExtension.cs" />
+    <Compile Include="[Preference]\Preference.cs" />
+    <Compile Include="[Preference]\Preference_Entry.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

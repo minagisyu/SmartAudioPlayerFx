@@ -68,7 +68,7 @@ namespace SmartAudioPlayerFx.Views
 				ev.Cancel = ClosingAnimation();
 				if (ev.Cancel == false)
 				{
-					App.Models.Get<Logging>().AddDebugLog("App MainWindow Closing, (save/hide)");
+					App.Models.Get<LogManager>().AddDebugLog("App MainWindow Closing, (save/hide)");
 					ViewModel.SavePreferences();
 					App.Models.Get<AudioPlayerManager>().Close();
 				}
@@ -198,11 +198,11 @@ namespace SmartAudioPlayerFx.Views
 				0x142, (int)screenPos.X, (int)screenPos.Y,
 				new HandleRef(helper, helper.Handle),
 				IntPtr.Zero);
-			App.Models.Get<Logging>().AddDebugLog("TrackPopupMenuEx() result: {0}", id);
+			App.Models.Get<LogManager>().AddDebugLog($"TrackPopupMenuEx() result: {id}");
 			if (id != 0)
 			{
 				var result = cmenu_executer.Invoke(null, new object[] { id });
-				App.Models.Get<Logging>().AddDebugLog("System.Windows.Forms.Command.DispatchID() result: {0}", result);
+				App.Models.Get<LogManager>().AddDebugLog($"System.Windows.Forms.Command.DispatchID() result: {result}");
 			}
 		}
 

@@ -14,7 +14,7 @@ using System.Threading;
 namespace SmartAudioPlayerFx.MediaDB
 {
 	// media.db操作用
-	public sealed class MediaDBManager : IDisposable
+	sealed class MediaDBManager : IDisposable
 	{
 		#region ctor / Dispose
 
@@ -110,13 +110,13 @@ namespace SmartAudioPlayerFx.MediaDB
 				if (version < CURRENT_DB_VERSION)
 				{
 					// 古いバージョンなのでxmlエクスポートして修正とか？
-					App.Models.Get<Logging>().AddErrorLog(" - media db version " + meta["Version"] + ", not supported.");
+					App.Models.Get<LogManager>().AddErrorLog($" - media db version {meta["Version"]} not supported.");
 					throw new ApplicationException("db version not supported.");
 				}
 				else if (version > CURRENT_DB_VERSION)
 				{
 					// DBバージョンが新しい？
-					App.Models.Get<Logging>().AddErrorLog(" - media db version " + meta["Version"] + ", futured version?");
+					App.Models.Get<LogManager>().AddErrorLog($" - media db version {meta["Version"]} futured version?");
 					throw new ApplicationException("db version futured?");
 				}
 			}
@@ -367,7 +367,7 @@ namespace SmartAudioPlayerFx.MediaDB
 					}
 					catch (SQLiteException e)
 					{
-						App.Models.Get<Logging>().AddDebugLog("DBWriter Commit Exception: {0}", e);
+						App.Models.Get<LogManager>().AddDebugLog($"DBWriter Commit Exception: {e}");
 						Thread.Sleep(100);
 					}
 				}

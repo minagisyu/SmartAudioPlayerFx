@@ -460,7 +460,7 @@ namespace SmartAudioPlayerFx.Views
 					.GroupBy(x => x.GetFilePathDir(false))
 					.Subscribe(g => this.AppendByDirectoryPath(g.Key));
 				sw.Stop();
-				App.Models.Get<Logging>().AddDebugLog(" **ResetSubItems: {0}ms", new object[] { sw.ElapsedMilliseconds });
+				App.Models.Get<LogManager>().AddDebugLog($" **ResetSubItems: {sw.ElapsedMilliseconds}ms");
 			}
 		}
 

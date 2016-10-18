@@ -12,11 +12,14 @@ namespace SmartAudioPlayerFx
 {
 	// Application-Domain.
 	// Controller? Presenter?
+    // Controller
 	partial class App : Application
 	{
-		// model
-		public static ReferenceManager Models { get; private set; }
-		public static Logging Log { get; private set; }
+        // model
+        public static ReferenceManager Models { get; private set; }
+        public static ReferenceManager ModelServices { get; private set; }
+        public static ReferenceManager UIServices { get; private set; }
+        public static LogManager Log { get; private set; }
 		public static Storage Storage { get; private set; }
 
 		// ui
@@ -33,9 +36,18 @@ namespace SmartAudioPlayerFx
 
 			// Logger Setting
 			Models = new ReferenceManager();
-			Log =  Models.Get<Logging>();
+            ModelServices = new ReferenceManager();
+            UIServices = new ReferenceManager();
+			Log =  Models.Get<LogManager>();
+			Log.Output.Subscribe(s =>
+			{
+				Debug.WriteLine(s);
+				using (var stream = Models.Get<Storage>().AppDataRoaming.CreateFilePathInfo("SmartAudioPlayer Fx.log").AppendText())
+				{
+					stream.WriteLine(s);
+				}
+			});
 			Storage = Models.Get<Storage>();
-			Log.LogFilename = Storage.AppDataRoaming.CreateFilePath("SmartAudioPlayer Fx.log");
 
 #if DEBUG
 #else
@@ -88,7 +100,7 @@ namespace SmartAudioPlayerFx
 				Dispatcher);
 
 			sw.Stop();
-			Models.Get<Logging>().AddDebugLog("App.OnStartrup: {0}ms", sw.ElapsedMilliseconds);
+			Models.Get<LogManager>().AddDebugLog($"App.OnStartrup: {sw.ElapsedMilliseconds}ms");
 		}
 
 		bool HandleUpdateProcess(string[] args)

@@ -34,6 +34,10 @@ namespace SmartAudioPlayerFx
 
 		public static void Initialize()
 		{
+			App.Models.Get<XmlPreferencesManager>();
+			App.Models.Get<AudioPlayerManager>();
+			App.Models.Get<TasktrayIconView>();
+			App.Models.Get<MediaDBManager>();
 		}
 
 		public static void Dispose()

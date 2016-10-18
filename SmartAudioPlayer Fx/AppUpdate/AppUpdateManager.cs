@@ -128,11 +128,11 @@ namespace SmartAudioPlayerFx.AppUpdate
 
 		public async Task<Version> CheckUpdate()
 		{
-			App.Models.Get<Logging>().AddDebugLog("Call CheckUpdate");
+			App.Models.Get<LogManager>().AddDebugLog("Call CheckUpdate");
 
 			if (!NetworkInterface.GetIsNetworkAvailable())
 			{
-				App.Models.Get<Logging>().AddDebugLog(" - Network not available.");
+				App.Models.Get<LogManager>().AddDebugLog(" - Network not available.");
 				return null;
 			}
 
@@ -147,7 +147,7 @@ namespace SmartAudioPlayerFx.AppUpdate
 #endif
 					catch (Exception e)
 					{
-						App.Models.Get<Logging>().AddErrorLog(" - update.xml取得中にエラーが発生しました", e);
+						App.Models.Get<LogManager>().AddErrorLog(" - update.xml取得中にエラーが発生しました", e);
 						return null;
 					}
 
@@ -160,7 +160,7 @@ namespace SmartAudioPlayerFx.AppUpdate
 					{
 						if (currentVersion < newVersion)
 						{
-							App.Models.Get<Logging>().AddInfoLog(" - 新しいバージョンを確認しました: {0}", newVersion);
+							App.Models.Get<LogManager>().AddInfoLog($" - 新しいバージョンを確認しました: {newVersion}");
 							return newVersion;
 						}
 					}
@@ -299,7 +299,7 @@ namespace SmartAudioPlayerFx.AppUpdate
 			try { Process.Start(psi); }
 			catch (Exception ex)
 			{
-				App.Models.Get<Logging>().AddErrorLog("--updateのプロセス起動に失敗", ex);
+				App.Models.Get<LogManager>().AddErrorLog("--updateのプロセス起動に失敗", ex);
 				var result = WinForms.MessageBox.Show(
 					"アップデート用プロセスの起動に失敗しました",
 					"SmartAudioPlayer Fx",
@@ -341,7 +341,7 @@ namespace SmartAudioPlayerFx.AppUpdate
 				}))
 				.Catch<bool?, WebException>(ex =>
 				{
-					App.Models.Get<Logging>().AddErrorLog(" - ダウンロード中にエラーが発生しました", ex);
+					App.Models.Get<LogManager>().AddErrorLog(" - ダウンロード中にエラーが発生しました", ex);
 					var result = WinForms.MessageBox.Show(
 						"ダウンロード中にエラーが発生しました",
 						"SmartAudioPlayer Fx",
@@ -392,9 +392,9 @@ namespace SmartAudioPlayerFx.AppUpdate
 				.Do(x =>
 				{
 					if (x)
-						App.Models.Get<Logging>().AddInfoLog(" - ダウンロードが完了しました ({0} => {1})", downloadUri, zipFilePath);
+						App.Models.Get<LogManager>().AddInfoLog($" - ダウンロードが完了しました ({downloadUri} => {zipFilePath})");
 					else
-						App.Models.Get<Logging>().AddInfoLog(" - ダウンロードをキャンセルしました ({0} => {1})", downloadUri, zipFilePath);
+						App.Models.Get<LogManager>().AddInfoLog($" - ダウンロードをキャンセルしました ({downloadUri} => {zipFilePath})");
 				});
 		}
 
@@ -434,7 +434,7 @@ namespace SmartAudioPlayerFx.AppUpdate
 				{
 					File.Copy(targetfile, Path.Combine(old_version_dir, filename), true);
 					try { File.Delete(targetfile); }
-					catch (Exception e) { App.Models.Get<Logging>().AddErrorLog("OnUpdate", e); }
+					catch (Exception e) { App.Models.Get<LogManager>().AddErrorLog("OnUpdate", e); }
 				}
 				int retrycount = 0;
 			retry:
@@ -442,13 +442,13 @@ namespace SmartAudioPlayerFx.AppUpdate
 				try { File.Copy(i, targetfile, true); }
 				catch (Exception e)
 				{
-					App.Models.Get<Logging>().AddErrorLog("OnUpdate", e);
+					App.Models.Get<LogManager>().AddErrorLog("OnUpdate", e);
 					Thread.Sleep(300);
 					// 10回やってダメなら諦める
 					if (retrycount < 10)
 						goto retry;
 					else
-						App.Models.Get<Logging>().AddErrorLog("OnUpdate", "ファイル(" + filename + ")のコピーに失敗しました");
+						App.Models.Get<LogManager>().AddErrorLog($"OnUpdate - ファイル({filename})のコピーに失敗しました");
 				}
 			});
 
@@ -493,11 +493,11 @@ namespace SmartAudioPlayerFx.AppUpdate
 				}
 				catch (Exception e)
 				{
-					App.Models.Get<Logging>().AddErrorLog("OnPostUpdate", e);
+					App.Models.Get<LogManager>().AddErrorLog("OnPostUpdate", e);
 				}
 			}
 
-			App.Models.Get<Logging>().AddInfoLog("UpdateService", " - 更新完了");
+			App.Models.Get<LogManager>().AddInfoLog("UpdateService - 更新完了");
 			WinForms.MessageBox.Show("アップデートが完了しました", "SmartAudioPlayer Fx", WinForms.MessageBoxButtons.OK, WinForms.MessageBoxIcon.Information);
 		}
 
