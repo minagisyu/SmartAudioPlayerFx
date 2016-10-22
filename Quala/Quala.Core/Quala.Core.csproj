@@ -37,19 +37,22 @@
   <ItemGroup>
     <!-- A reference to the entire .NET Framework is automatically included -->
     <None Include="project.json" />
+    <None Include="readme.md" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AppMutexManager.cs" />
+    <Compile Include="[AppMutexManager]\AppMutexManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RefCountReferenceManager.cs" />
-    <Compile Include="ReferenceManager.cs" />
+    <Compile Include="[LogManager]\LogManager_LibrayDebug.cs" />
+    <Compile Include="[ReferenceManager]\DIReferenceManager.cs" />
+    <Compile Include="[ReferenceManager]\RefCountReferenceManager.cs" />
+    <Compile Include="[ReferenceManager]\ReferenceManager.cs" />
     <Compile Include="[LogManager]\LogManager.cs" />
     <Compile Include="[LogManager]\LogManagerExtension.cs" />
     <Compile Include="[LogManager]\LogManager_Item.cs" />
     <Compile Include="[LogManager]\LogManager_Level.cs" />
-    <Compile Include="[Preference]\EntryExtension.cs" />
-    <Compile Include="[Preference]\Preference.cs" />
-    <Compile Include="[Preference]\Preference_Entry.cs" />
+    <Compile Include="[PreferenceManager]\EntryExtension.cs" />
+    <Compile Include="[PreferenceManager]\Preference.cs" />
+    <Compile Include="[PreferenceManager]\Preference_Entry.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

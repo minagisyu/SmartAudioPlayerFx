@@ -2,14 +2,14 @@
 
 namespace Quala
 {
-	partial class Storage
+	partial class StorageManager
 	{
-		public sealed class AppDataPath
+		public sealed class DataPath
 		{
-			public DirectoryInfo PathInfo { get; private set; }
+			public DirectoryInfo PathInfo { get; }
 			public string PathName { get { return PathInfo.FullName; } }
 
-			public AppDataPath(DirectoryInfo directoryPath)
+			public DataPath(DirectoryInfo directoryPath)
 			{
 				PathInfo = directoryPath;
 			}

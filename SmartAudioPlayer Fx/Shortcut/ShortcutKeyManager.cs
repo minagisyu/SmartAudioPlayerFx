@@ -118,7 +118,7 @@ namespace SmartAudioPlayerFx.Shortcut
 		/// <returns></returns>
 		public Keys GetShortcutKey(Features feature)
 		{
-			App.Models.Get<LogManager>().AddDebugLog($"Call GetShortcutKey: feature={feature}");
+			App.Services.GetInstance<LogManager>().AddDebugLog($"Call GetShortcutKey: feature={feature}");
 
 			if (feature == Features.None) return Keys.None;
 			lock (shortcuts)
@@ -134,7 +134,7 @@ namespace SmartAudioPlayerFx.Shortcut
 		/// <param name="key"></param>
 		public void SetShortcutKey(Features feature, Keys key)
 		{
-			App.Models.Get<LogManager>().AddDebugLog($"Call SetShortcutKey: feature={feature}, key={key}");
+			App.Services.GetInstance<LogManager>().AddDebugLog($"Call SetShortcutKey: feature={feature}, key={key}");
 
 			if (feature == Features.None && ((key & Keys.KeyCode) == Keys.None)) return;
 			lock (shortcuts)
@@ -178,7 +178,7 @@ namespace SmartAudioPlayerFx.Shortcut
 		// 指定機能のアクション用デリゲートを作成
 		Action CreateFeatureAction(Features feature)
 		{
-			App.Models.Get<LogManager>().AddDebugLog($"Call CreateFeatureAction: feature={feature}");
+			App.Services.GetInstance<LogManager>().AddDebugLog($"Call CreateFeatureAction: feature={feature}");
 			switch (feature)
 			{
 				case Features.PlayMode_Random:
@@ -279,7 +279,7 @@ namespace SmartAudioPlayerFx.Shortcut
 			/// <param name="action">呼び出されるデリゲート</param>
 			public void SetHotKey(Keys key, Action action)
 			{
-				App.Models.Get<LogManager>().AddDebugLog($"Call SetHotKey: key={key}");
+				App.Services.GetInstance<LogManager>().AddDebugLog($"Call SetHotKey: key={key}");
 				lock (registered_keys)
 				{
 					registered_keys[key] = action;
@@ -292,7 +292,7 @@ namespace SmartAudioPlayerFx.Shortcut
 			/// <param name="key">解除されるキー</param>
 			public void RemoveHotKey(Keys key)
 			{
-				App.Models.Get<LogManager>().AddDebugLog($"Call RemoveHotKey: key={key}");
+				App.Services.GetInstance<LogManager>().AddDebugLog($"Call RemoveHotKey: key={key}");
 				lock (registered_keys)
 				{
 					registered_keys.Remove(key);
@@ -304,7 +304,7 @@ namespace SmartAudioPlayerFx.Shortcut
 			/// </summary>
 			public void RemoveAll()
 			{
-				App.Models.Get<LogManager>().AddDebugLog("Call RemoveAll");
+				App.Services.GetInstance<LogManager>().AddDebugLog("Call RemoveAll");
 				lock (registered_keys)
 				{
 					registered_keys.Clear();
@@ -327,7 +327,7 @@ namespace SmartAudioPlayerFx.Shortcut
 				// イベント抑制中 or キーが登録されていないならここで処理中断
 				if (e.IsKeyDown || SuspressKeyEvent || registered_keys.Count == 0) return;
 
-				App.Models.Get<LogManager>().AddDebugLog($" **KeyboardHooked: LastDownKey={LastDownKey}");
+				App.Services.GetInstance<LogManager>().AddDebugLog($" **KeyboardHooked: LastDownKey={LastDownKey}");
 
 				lock (registered_keys)
 				{
@@ -352,7 +352,7 @@ namespace SmartAudioPlayerFx.Shortcut
 							try { x.Value(); }
 							catch (Exception ex)
 							{
-								App.Models.Get<LogManager>().AddErrorLog(
+								App.Services.GetInstance<LogManager>().AddErrorLog(
 									"キーイベント処理中に例外が発生しました" + Environment.NewLine +
 									"キー：" + x.Key.ToString(),
 									ex);

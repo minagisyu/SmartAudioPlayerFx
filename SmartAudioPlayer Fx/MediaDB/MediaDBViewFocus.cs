@@ -79,7 +79,7 @@ namespace SmartAudioPlayerFx.MediaDB
 
 		protected void LoadViewItems()
 		{
-			App.Models.Get<LogManager>().AddDebugLog($"Call LoadViewItems[{this.GetHashCode()}]");
+			App.Services.GetInstance<LogManager>().AddDebugLog($"Call LoadViewItems[{this.GetHashCode()}]");
 
 			// 初期化
 			Items.Clear();
@@ -101,7 +101,7 @@ namespace SmartAudioPlayerFx.MediaDB
 				.Where(x => ValidateItem(x))
 				.ForAll(x => Items.AddOrReplace(x));
 			sw.Stop();
-			App.Models.Get<LogManager>().AddDebugLog($" **LoadViewItems[{this.GetHashCode()}]({Items.Count}items): {sw.ElapsedMilliseconds}ms");
+			App.Services.GetInstance<LogManager>().AddDebugLog($" **LoadViewItems[{this.GetHashCode()}]({Items.Count}items): {sw.ElapsedMilliseconds}ms");
 		}
 
 		#endregion

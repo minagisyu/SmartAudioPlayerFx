@@ -1,9 +1,12 @@
 ﻿using Quala;
 using Reactive.Bindings;
+using SimpleInjector;
 using SmartAudioPlayerFx.Notification;
 using SmartAudioPlayerFx.Preferences;
 using System;
 using System.Diagnostics;
+using System.IO;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Threading;
 using WinForms = System.Windows.Forms;
@@ -15,12 +18,9 @@ namespace SmartAudioPlayerFx
     // Controller
 	partial class App : Application
 	{
-        // model
+		// model
+		public static Container Services { get; } = new Container();
         public static ReferenceManager Models { get; private set; }
-        public static ReferenceManager ModelServices { get; private set; }
-        public static ReferenceManager UIServices { get; private set; }
-        public static LogManager Log { get; private set; }
-		public static Storage Storage { get; private set; }
 
 		// ui
 		TasktrayIconView tasktray;
@@ -36,18 +36,31 @@ namespace SmartAudioPlayerFx
 
 			// Logger Setting
 			Models = new ReferenceManager();
-            ModelServices = new ReferenceManager();
-            UIServices = new ReferenceManager();
-			Log =  Models.Get<LogManager>();
-			Log.Output.Subscribe(s =>
+
+			// Init Services
+			Services.RegisterSingleton<StorageManager>(() =>
 			{
-				Debug.WriteLine(s);
-				using (var stream = Models.Get<Storage>().AppDataRoaming.CreateFilePathInfo("SmartAudioPlayer Fx.log").AppendText())
-				{
-					stream.WriteLine(s);
-				}
+				var storage = new StorageManager();
+				var asm = Assembly.GetEntryAssembly();
+				var asmName = asm != null ? asm.GetName().Name : string.Empty;
+				storage.AppDataDirectory = new StorageManager.DataPath(new DirectoryInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), asmName)));
+				storage.AppDirectory = new StorageManager.DataPath(new DirectoryInfo(Path.Combine(Path.GetDirectoryName(asm.Location), asmName)));
+				return storage;
 			});
-			Storage = Models.Get<Storage>();
+			Services.RegisterSingleton<LogManager>(() =>
+			{
+				var log = new LogManager(Assembly.GetEntryAssembly());
+				log.MinLevel = LogManager.Level.LBRARY_DEBUG;
+				log.Output.Subscribe(s =>
+				{
+					Debug.WriteLine(s);
+					using (var stream = Services.GetInstance<StorageManager>().AppDataDirectory.CreateFilePathInfo("SmartAudioPlayer Fx.log").AppendText())
+					{
+						stream.WriteLine(s);
+					}
+				});
+				return log;
+			});
 
 #if DEBUG
 #else
@@ -100,7 +113,7 @@ namespace SmartAudioPlayerFx
 				Dispatcher);
 
 			sw.Stop();
-			Models.Get<LogManager>().AddDebugLog($"App.OnStartrup: {sw.ElapsedMilliseconds}ms");
+			App.Services.GetInstance<LogManager>().AddDebugLog($"App.OnStartrup: {sw.ElapsedMilliseconds}ms");
 		}
 
 		bool HandleUpdateProcess(string[] args)

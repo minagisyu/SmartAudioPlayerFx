@@ -23,7 +23,7 @@ namespace SmartAudioPlayerFx.MediaDB
 
 		public MediaDBManager()
 		{
-			var db_filename = App.Models.Get<Storage>().AppDataRoaming.CreateFilePath("data", "media.db");
+			var db_filename = App.Services.GetInstance<StorageManager>().AppDataDirectory.CreateFilePath("data", "media.db");
 
 			// ファイルが削除出来ないように開きっぱなしにする
 			Directory.CreateDirectory(Path.GetDirectoryName(db_filename));
@@ -110,13 +110,13 @@ namespace SmartAudioPlayerFx.MediaDB
 				if (version < CURRENT_DB_VERSION)
 				{
 					// 古いバージョンなのでxmlエクスポートして修正とか？
-					App.Models.Get<LogManager>().AddErrorLog($" - media db version {meta["Version"]} not supported.");
+					App.Services.GetInstance<LogManager>().AddErrorLog($" - media db version {meta["Version"]} not supported.");
 					throw new ApplicationException("db version not supported.");
 				}
 				else if (version > CURRENT_DB_VERSION)
 				{
 					// DBバージョンが新しい？
-					App.Models.Get<LogManager>().AddErrorLog($" - media db version {meta["Version"]} futured version?");
+					App.Services.GetInstance<LogManager>().AddErrorLog($" - media db version {meta["Version"]} futured version?");
 					throw new ApplicationException("db version futured?");
 				}
 			}
@@ -367,7 +367,7 @@ namespace SmartAudioPlayerFx.MediaDB
 					}
 					catch (SQLiteException e)
 					{
-						App.Models.Get<LogManager>().AddDebugLog($"DBWriter Commit Exception: {e}");
+						App.Services.GetInstance<LogManager>().AddDebugLog($"DBWriter Commit Exception: {e}");
 						Thread.Sleep(100);
 					}
 				}

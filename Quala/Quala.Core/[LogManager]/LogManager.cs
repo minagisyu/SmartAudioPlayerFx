@@ -1,6 +1,5 @@
 ﻿using Reactive.Bindings;
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -17,11 +16,11 @@ namespace Quala
 		ReactiveProperty<string> outputInternal;
 		public ReadOnlyReactiveProperty<string> Output { get; }
 
-		public LogManager()
+		public LogManager(Assembly entryAssembly)
 		{
 			// ヘッダを用意
 			var headerText = new StringBuilder();
-			var asm = Assembly.GetEntryAssembly();
+			var asm = entryAssembly;
 			var asmName = new AssemblyName(asm.FullName);
 			var version = asmName.Version;
 			headerText.AppendLine();

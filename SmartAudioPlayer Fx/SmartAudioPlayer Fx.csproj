@@ -1,6 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
+    <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
@@ -10,7 +11,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>SmartAudioPlayerFx</RootNamespace>
     <AssemblyName>SmartAudioPlayer Fx</AssemblyName>
-    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <TargetFrameworkProfile>
     </TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
@@ -215,8 +216,8 @@
     <Compile Include="Views\[Dialogs]\UpdateMessageBox.Designer.cs">
       <DependentUpon>UpdateMessageBox.cs</DependentUpon>
     </Compile>
-    <Compile Include="[Quala.Core]\[Storage]\Storage.cs" />
-    <Compile Include="[Quala.Core]\[Storage]\Storage_AppDataPath.cs" />
+    <Compile Include="[Quala.Core]\[StorageManager]\StorageManager.cs" />
+    <Compile Include="[Quala.Core]\[StorageManager]\StorageManager_AppDataPath.cs" />
     <Compile Include="[Quala.Extensions]\[Collections]\CustomEqualityComparer.cs" />
     <Compile Include="[Quala.Extensions]\[Collections]\VersionedCollection.cs" />
     <Compile Include="[Quala.Extensions]\[Extensions]\DirectoryInfoExtension.cs" />
@@ -2180,6 +2181,10 @@
     </Reference>
     <Reference Include="ReactiveProperty.NET46, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\ReactiveProperty.3.2.0\lib\net46\ReactiveProperty.NET46.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="SimpleInjector, Version=3.2.3.0, Culture=neutral, PublicKeyToken=984cb50dea722e99, processorArchitecture=MSIL">
+      <HintPath>..\packages\SimpleInjector.3.2.3\lib\net45\SimpleInjector.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />

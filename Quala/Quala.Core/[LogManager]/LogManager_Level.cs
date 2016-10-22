@@ -13,7 +13,7 @@ namespace Quala
 			TEST = 50,              // テスト
 			DEBUG = 60,             // デバッグ
 
-			LBRARY_DEBUG = 90,      // Qualaライブラリ用
+			LBRARY_DEBUG = 90,      // ライブラリ用
 		}
 	}
 }
