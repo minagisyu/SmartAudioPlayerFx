@@ -15,7 +15,7 @@ namespace SmartAudioPlayerFx.MediaDB
 	/// 拡張子と単語によるファイルフィルタリング
 	/// </summary>
 //	[Require(typeof(XmlPreferencesManager))]
-	sealed class MediaItemFilterManager : IDisposable
+	public sealed class MediaItemFilterManager : IDisposable
 	{
 		readonly object lockObj = new object();
 		HashSet<string> extlist_cache = new HashSet<string>(StringComparer.CurrentCultureIgnoreCase);

@@ -1,3 +1,4 @@
+using SmartAudioPlayerFx.MediaDB;
 using System;
 using System.Threading.Tasks;
 
@@ -16,7 +17,7 @@ namespace SmartAudioPlayerFx.Views.Options
 
 		void button1_Click(object sender, EventArgs e)
 		{
-			Task.Run(() => ManagerServices.MediaDBManager.Recycle(true));
+			Task.Run(() => App.Services.GetInstance<MediaDBManager>().Recycle(true));
 		}
 
 		public override void Save()

@@ -21,7 +21,7 @@ namespace SmartAudioPlayerFx.MediaDB
 //	[Require(typeof(MediaDBManager))]
 //	[Require(typeof(XmlPreferencesManager))]
 //	[Require(typeof(MediaItemFilterManager))]
-	sealed class MediaDBViewManager : IDisposable
+	public sealed class MediaDBViewManager : IDisposable
 	{
 		#region ctor
 

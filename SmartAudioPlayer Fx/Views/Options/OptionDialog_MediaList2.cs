@@ -1,4 +1,5 @@
 using SmartAudioPlayerFx.MediaDB;
+using SmartAudioPlayerFx.MediaPlayer;
 using System;
 
 namespace SmartAudioPlayerFx.Views.Options
@@ -23,10 +24,10 @@ namespace SmartAudioPlayerFx.Views.Options
 		{
 			RecentIntervalDays = Math.Min(Math.Max(1, recentInterval.Value), 365);
 			MediaDBViewFocus_LatestAddOnly.RecentIntervalDays = RecentIntervalDays;
-			var vf = ManagerServices.JukeboxManager.ViewFocus.Value;
+			var vf = App.Services.GetInstance<JukeboxManager>().ViewFocus.Value;
 			if (vf is MediaDBViewFocus_LatestAddOnly)
 			{
-				ManagerServices.JukeboxManager.ViewFocus.Value =
+				App.Services.GetInstance<JukeboxManager>().ViewFocus.Value =
 					new MediaDBViewFocus_LatestAddOnly(vf.FocusPath);
 			}
 		}

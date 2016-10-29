@@ -159,10 +159,10 @@ namespace SmartAudioPlayerFx.Views
 
 			//
 			// Shortcut Key Handling
-			ManagerServices.ShortcutKeyManager.Window_Move_On_RightDown_RequestAsObservable()
+			App.Services.GetInstance<ShortcutKeyManager>().Window_Move_On_RightDown_RequestAsObservable()
 				.ObserveOnUIDispatcher()
 				.Subscribe(_ => ResetWindowPosition());
-			ManagerServices.ShortcutKeyManager.Window_ShowHide_RequestAsObservable()
+			App.Services.GetInstance<ShortcutKeyManager>().Window_ShowHide_RequestAsObservable()
 				.ObserveOnUIDispatcher()
 				.Subscribe(_ => WindowShowHideToggle());
 		}
@@ -185,7 +185,7 @@ namespace SmartAudioPlayerFx.Views
 			}
 
 			cmenu.MenuItems.Clear();
-			cmenu.MenuItems.AddRange(TasktrayIconView.CreateWinFormsMenuItems());
+			cmenu.MenuItems.AddRange(App.Services.GetInstance<ContextMenuManager>().CreateWinFormsMenuItems());
 
 			var helper = new WindowInteropHelper(this);
 			WinAPI.SetForegroundWindow(helper.Handle);
@@ -210,7 +210,7 @@ namespace SmartAudioPlayerFx.Views
 		void OpacityAnimation(double to, double ms, Action complated)
 		{
 			var anim = new DoubleAnimation(to, new Duration(TimeSpan.FromMilliseconds(ms)));
-			if(complated != null)
+			if (complated != null)
 			{
 				Observable.FromEventPattern<EventHandler, EventArgs>(
 					v => anim.Completed += v,

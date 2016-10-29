@@ -14,7 +14,7 @@ using System.Threading;
 namespace SmartAudioPlayerFx.MediaDB
 {
 	// media.db操作用
-	sealed class MediaDBManager : IDisposable
+	public sealed class MediaDBManager : IDisposable
 	{
 		#region ctor / Dispose
 

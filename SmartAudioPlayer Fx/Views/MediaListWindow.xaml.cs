@@ -186,7 +186,7 @@ namespace SmartAudioPlayerFx.Views
 					{
 						return;
 					}
-					var targetVF = new MediaDBViewFocus_SearchWord(ManagerServices.MediaDBViewManager.FocusPath.Value, word);
+					var targetVF = new MediaDBViewFocus_SearchWord(App.Services.GetInstance<MediaDBViewManager>().FocusPath.Value, word);
 					ViewModel.ListFocus.Value = new MediaListItemsSource(targetVF);
 				});
 		}

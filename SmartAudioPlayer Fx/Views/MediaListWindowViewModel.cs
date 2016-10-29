@@ -92,16 +92,16 @@ namespace SmartAudioPlayerFx.Views
 			IsTitleFromFileName
 				.Subscribe(x => MediaListItemViewModel.IsTitleFromFilePath = x);
 
-			ManagerServices.JukeboxManager.CurrentMedia
+			App.Services.GetInstance<JukeboxManager>().CurrentMedia
 				.Subscribe(x => CurrentMedia.Value = x);
 			// 新しく再生 or 設定されたらビデオ描画用ブラシをリセット
-			App.Models.Get<AudioPlayerManager>().OpenedAsObservable()
+			App.Services.GetInstance<AudioPlayerManager>().OpenedAsObservable()
 				.Select(_ => IsVideoDrawing.Value)
 				.Merge(IsVideoDrawing)
 				.ObserveOnUIDispatcher()
 				.Subscribe(x => ResetVideoDrawing(x));
 			// TODO: ↓これ要らないかも？
-			ManagerServices.JukeboxManager.ViewFocus
+			App.Services.GetInstance<JukeboxManager>().ViewFocus
 				.Where(x => x != null)
 				.Subscribe(x =>
 				{
@@ -113,10 +113,10 @@ namespace SmartAudioPlayerFx.Views
 								xx.Item.ID == CurrentMedia.Value.ID)
 						.Subscribe(xx => CurrentMedia.Value = xx.Item);
 				});
-			ManagerServices.MediaDBViewManager.ItemCollect_ScanFinishedAsObservable()
-				.Merge(Observable.Return(Unit.Default))	// first drain
+			App.Services.GetInstance<MediaDBViewManager>().ItemCollect_ScanFinishedAsObservable()
+				.Merge(Observable.Return(Unit.Default)) // first drain
 				.Subscribe(_ => StatusBarVisibility.Value = System.Windows.Visibility.Collapsed);
-			ManagerServices.MediaDBViewManager.ItemsCollectingAsObservable()
+			App.Services.GetInstance<MediaDBViewManager>().ItemsCollectingAsObservable()
 				.Merge(Observable.Return(string.Empty))
 				.Subscribe(x => StatusBarText.Value = "ライブラリを更新しています... " + x);
 			StatusBarText
@@ -161,8 +161,8 @@ namespace SmartAudioPlayerFx.Views
 						var item = ((MediaListItemViewModel)x).Item;
 						item.SelectCount++;
 						item.LastUpdate = DateTime.UtcNow.Ticks;
-						ManagerServices.MediaDBViewManager.RaiseDBUpdateAsync(item, _ => _.SelectCount, _ => _.LastUpdate);
-						ManagerServices.JukeboxManager.CurrentMedia.Value = item;
+						App.Services.GetInstance<MediaDBViewManager>().RaiseDBUpdateAsync(item, _ => _.SelectCount, _ => _.LastUpdate);
+						App.Services.GetInstance<JukeboxManager>().CurrentMedia.Value = item;
 					}
 					// リスト選択時に、許可されていればウィンドウを閉じる
 					if (IsAutoCloseWhenListSelected.Value)
@@ -170,11 +170,11 @@ namespace SmartAudioPlayerFx.Views
 				});
 
 			// Preferences
-			App.Models.Get<XmlPreferencesManager>().PlayerSettings
+			App.Services.GetInstance<XmlPreferencesManager>().PlayerSettings
 				.Subscribe(x => LoadPlayerPreferences(x));
-			App.Models.Get<XmlPreferencesManager>().WindowSettings
+			App.Services.GetInstance<XmlPreferencesManager>().WindowSettings
 				.Subscribe(x => LoadWindowPrefrences(x));
-			App.Models.Get<XmlPreferencesManager>().SerializeRequestAsObservable()
+			App.Services.GetInstance<XmlPreferencesManager>().SerializeRequestAsObservable()
 				.Subscribe(_ => SavePreferences());
 		}
 
@@ -200,10 +200,10 @@ namespace SmartAudioPlayerFx.Views
 		}
 		void SavePreferences()
 		{
-			App.Models.Get<XmlPreferencesManager>().PlayerSettings.Value
+			App.Services.GetInstance<XmlPreferencesManager>().PlayerSettings.Value
 				.SetAttributeValueEx("IsVideoDrawing", IsVideoDrawing.Value)
 				.SetAttributeValueEx("IsEnableSoundFadeEffect", IsEnableSoundFadeEffect.Value);
-			App.Models.Get<XmlPreferencesManager>().WindowSettings.Value
+			App.Services.GetInstance<XmlPreferencesManager>().WindowSettings.Value
 				.SubElement("MediaListWindow", true, elm =>
 				{
 					elm
@@ -224,7 +224,7 @@ namespace SmartAudioPlayerFx.Views
 			DrawingBrush b = null;
 			if (isVideoDrawing)
 			{
-				b = App.Models.Get<AudioPlayerManager>().GetVideoBrush();
+				b = App.Services.GetInstance<AudioPlayerManager>().GetVideoBrush();
 				if (b != null)
 					b.Stretch = Stretch.UniformToFill;
 			}

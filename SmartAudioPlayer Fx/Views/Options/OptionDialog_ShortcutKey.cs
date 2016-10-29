@@ -33,7 +33,7 @@ namespace SmartAudioPlayerFx.Views.Options
 			};
 			foreach(var item in ks)
 			{
-				var key = ManagerServices.ShortcutKeyManager.GetShortcutKey(item.Feature);
+				var key = App.Services.GetInstance<ShortcutKeyManager>().GetShortcutKey(item.Feature);
 				var keyName = KeySettingListView.GetKeyName(key);
 				var item2 = new ListViewItem(item.Name) { Tag = item.Feature, };
 				item2.SubItems.Add(new ListViewItem.ListViewSubItem(item2, keyName) { Tag = key, });
@@ -46,7 +46,7 @@ namespace SmartAudioPlayerFx.Views.Options
 		{
 			foreach(ListViewItem item in keySetting.Items)
 			{
-				ManagerServices.ShortcutKeyManager.SetShortcutKey(
+				App.Services.GetInstance<ShortcutKeyManager>().SetShortcutKey(
 					(ShortcutKeyManager.Features)item.Tag,
 					(Keys)item.SubItems[1].Tag);
 			}

@@ -13,6 +13,7 @@ using Quala;
 using Quala.Extensions;
 using Quala.WPF;
 using SmartAudioPlayerFx.MediaDB;
+using SmartAudioPlayerFx.MediaPlayer;
 
 namespace SmartAudioPlayerFx.Views
 {
@@ -131,10 +132,10 @@ namespace SmartAudioPlayerFx.Views
 				{
 					_AddToIgnoreCommand = new DelegateCommand<string>(x =>
 					{
-						var list = ManagerServices.MediaItemFilterManager.IgnoreWords.ToList();
+						var list = App.Services.GetInstance < MediaItemFilterManager>().IgnoreWords.ToList();
 						list.RemoveAll(i => string.Equals(i.Word, x, StringComparison.CurrentCultureIgnoreCase));
 						list.Add(new MediaItemFilterManager.IgnoreWord(true, x));
-						ManagerServices.MediaItemFilterManager.SetIgnoreWords(list.ToArray());
+						App.Services.GetInstance < MediaItemFilterManager>().SetIgnoreWords(list.ToArray());
 					});
 				}
 				return _AddToIgnoreCommand;
@@ -154,7 +155,7 @@ namespace SmartAudioPlayerFx.Views
 						MediaListWindowViewModel rootVM = x as MediaListWindowViewModel;
 						if (rootVM != null)
 						{
-							MediaDBViewFocus oldViewFocus = ManagerServices.JukeboxManager.ViewFocus.Value;
+							MediaDBViewFocus oldViewFocus = App.Services.GetInstance <JukeboxManager>().ViewFocus.Value;
 							if (oldViewFocus != null)
 							{
 								oldViewFocus.Dispose();
@@ -162,7 +163,7 @@ namespace SmartAudioPlayerFx.Views
 								string newFP = null;
 								if (vm is ISpecialMediaTreeItem)
 								{
-									newFP = ManagerServices.MediaDBViewManager.FocusPath.Value;
+									newFP = App.Services.GetInstance < MediaDBViewManager>().FocusPath.Value;
 									if (vm is MediaTreeItem_AllItemsViewModel)
 									{
 										newVF = new MediaDBViewFocus(newFP);
@@ -189,7 +190,7 @@ namespace SmartAudioPlayerFx.Views
 											((MediaTreeItem_DefaultItemsViewModel)vm).BasePath,
 											StringComparison.CurrentCultureIgnoreCase)
 											?
-											ManagerServices.MediaDBViewManager.FocusPath.Value :
+											App.Services.GetInstance < MediaDBViewManager>().FocusPath.Value :
 											((MediaTreeItem_DefaultItemsViewModel)vm).BasePath;
 									}
 									else
@@ -200,7 +201,7 @@ namespace SmartAudioPlayerFx.Views
 								}
 								if (newVF != null)
 								{
-									ManagerServices.JukeboxManager.ViewFocus.Value = newVF;
+									App.Services.GetInstance <JukeboxManager>().ViewFocus.Value = newVF;
 									rootVM.FocusTreeItem(newFP);
 								}
 							}
@@ -227,7 +228,7 @@ namespace SmartAudioPlayerFx.Views
 
 			if (depth == 0)
 			{
-				ManagerServices.JukeboxManager.ViewFocus
+				App.Services.GetInstance <JukeboxManager>().ViewFocus
 					.Where(x => x != null)
 					.ObserveOnUIDispatcher()
 					.Subscribe<MediaDBViewFocus>(x =>
@@ -291,7 +292,7 @@ namespace SmartAudioPlayerFx.Views
 			{
 				if (this.Depth == 0)
 				{
-					MediaDBViewFocus vf = ManagerServices.JukeboxManager.ViewFocus.Value;
+					MediaDBViewFocus vf = App.Services.GetInstance <JukeboxManager>().ViewFocus.Value;
 					if (vf is ISpecialMediaDBViewFocus)
 					{
 						if (vf is MediaDBViewFocus_FavoriteOnly) { return "お気に入り"; }
@@ -312,8 +313,8 @@ namespace SmartAudioPlayerFx.Views
 		{
 			if (string.IsNullOrWhiteSpace(BasePath)) return null;
 
-			MediaDBViewFocus vf = ManagerServices.JukeboxManager.ViewFocus.Value;
-			string fp = (vf is MediaDBViewFocus) ? this.BasePath : ManagerServices.MediaDBViewManager.FocusPath.Value;
+			MediaDBViewFocus vf = App.Services.GetInstance < JukeboxManager>().ViewFocus.Value;
+			string fp = (vf is MediaDBViewFocus) ? this.BasePath : App.Services.GetInstance <MediaDBViewManager>().FocusPath.Value;
 			fp = this.BasePath;
 			return new MediaListItemsSource(
 				(vf is MediaDBViewFocus_FavoriteOnly) ? ((MediaDBViewFocus)new MediaDBViewFocus_FavoriteOnly(fp)) :
@@ -328,15 +329,15 @@ namespace SmartAudioPlayerFx.Views
 			protected set
 			{
 				// ViewMode=Default以外なら一番上以外ボタン非表示
-				if (ManagerServices.JukeboxManager.ViewFocus.Value is ISpecialMediaDBViewFocus &&
+				if (App.Services.GetInstance <JukeboxManager>().ViewFocus.Value is ISpecialMediaDBViewFocus &&
 					Depth != 0)
 				{
 					value = Visibility.Collapsed;
 				}
 				// ViewMode=DefaultでBasePathがFocusPathと一緒ならボタンを隠す
 				// (一番上のボタンを消すが、サブ項目がフォーカス持っているときにはボタンは消えないようにする)
-				if (!(ManagerServices.JukeboxManager.ViewFocus.Value is ISpecialMediaDBViewFocus) &&
-					string.Equals(BasePath, ManagerServices.MediaDBViewManager.FocusPath.Value, StringComparison.CurrentCultureIgnoreCase))
+				if (!(App.Services.GetInstance < JukeboxManager>().ViewFocus.Value is ISpecialMediaDBViewFocus) &&
+					string.Equals(BasePath, App.Services.GetInstance < MediaDBViewManager>().FocusPath.Value, StringComparison.CurrentCultureIgnoreCase))
 				{
 					value = Visibility.Collapsed;
 				}
@@ -519,19 +520,19 @@ namespace SmartAudioPlayerFx.Views
 		}
 		public override MediaListItemsSource CreateListItemsSource()
 		{
-			return new MediaListItemsSource(new MediaDBViewFocus(ManagerServices.MediaDBViewManager.FocusPath.Value));
+			return new MediaListItemsSource(new MediaDBViewFocus(App.Services.GetInstance < MediaDBViewManager>().FocusPath.Value));
 		}
 		public override Visibility TreeButtonVisibility
 		{
 			get { return base.TreeButtonVisibility; }
 			protected set
 			{
-				if (ManagerServices.JukeboxManager.ViewFocus.Value == null)
+				if (App.Services.GetInstance < JukeboxManager>().ViewFocus.Value == null)
 				{
 					value = Visibility.Collapsed;
 				}
-				else if (!(ManagerServices.JukeboxManager.ViewFocus.Value is ISpecialMediaDBViewFocus) &&
-						ManagerServices.JukeboxManager.ViewFocus.Value.FocusPath == ManagerServices.MediaDBViewManager.FocusPath.Value)
+				else if (!(App.Services.GetInstance <JukeboxManager>().ViewFocus.Value is ISpecialMediaDBViewFocus) &&
+						App.Services.GetInstance <JukeboxManager>().ViewFocus.Value.FocusPath == App.Services.GetInstance <MediaDBViewManager>().FocusPath.Value)
 				{
 					value = Visibility.Collapsed;
 				}
@@ -549,14 +550,14 @@ namespace SmartAudioPlayerFx.Views
 		}
 		public override MediaListItemsSource CreateListItemsSource()
 		{
-			return new MediaListItemsSource(new MediaDBViewFocus_NonPlayedOnly(ManagerServices.MediaDBViewManager.FocusPath.Value));
+			return new MediaListItemsSource(new MediaDBViewFocus_NonPlayedOnly(App.Services.GetInstance < MediaDBViewManager>().FocusPath.Value));
 		}
 		public override Visibility TreeButtonVisibility
 		{
 			get { return base.TreeButtonVisibility; }
 			protected set
 			{
-				if (ManagerServices.JukeboxManager.ViewFocus.Value is MediaDBViewFocus_NonPlayedOnly)
+				if (App.Services.GetInstance <JukeboxManager>().ViewFocus.Value is MediaDBViewFocus_NonPlayedOnly)
 				{
 					value = Visibility.Collapsed;
 				}
@@ -574,14 +575,14 @@ namespace SmartAudioPlayerFx.Views
 		}
 		public override MediaListItemsSource CreateListItemsSource()
 		{
-			return new MediaListItemsSource(new MediaDBViewFocus_LatestAddOnly(ManagerServices.MediaDBViewManager.FocusPath.Value));
+			return new MediaListItemsSource(new MediaDBViewFocus_LatestAddOnly(App.Services.GetInstance < MediaDBViewManager>().FocusPath.Value));
 		}
 		public override Visibility TreeButtonVisibility
 		{
 			get { return base.TreeButtonVisibility; }
 			protected set
 			{
-				if (ManagerServices.JukeboxManager.ViewFocus.Value is MediaDBViewFocus_LatestAddOnly)
+				if (App.Services.GetInstance <JukeboxManager>().ViewFocus.Value is MediaDBViewFocus_LatestAddOnly)
 				{
 					value = Visibility.Collapsed;
 				}
@@ -599,14 +600,14 @@ namespace SmartAudioPlayerFx.Views
 		}
 		public override MediaListItemsSource CreateListItemsSource()
 		{
-			return new MediaListItemsSource(new MediaDBViewFocus_FavoriteOnly(ManagerServices.MediaDBViewManager.FocusPath.Value));
+			return new MediaListItemsSource(new MediaDBViewFocus_FavoriteOnly(App.Services.GetInstance <MediaDBViewManager>().FocusPath.Value));
 		}
 		public override Visibility TreeButtonVisibility
 		{
 			get { return base.TreeButtonVisibility; }
 			protected set
 			{
-				if (ManagerServices.JukeboxManager.ViewFocus.Value is MediaDBViewFocus_FavoriteOnly)
+				if (App.Services.GetInstance <JukeboxManager>().ViewFocus.Value is MediaDBViewFocus_FavoriteOnly)
 				{
 					value = Visibility.Collapsed;
 				}

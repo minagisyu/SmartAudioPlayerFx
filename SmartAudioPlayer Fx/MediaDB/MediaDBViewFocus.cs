@@ -26,6 +26,7 @@ namespace SmartAudioPlayerFx.MediaDB
 		public string FocusPath { get; private set; }
 		public VersionedCollection<MediaItem> Items { get; private set; }
 		readonly CompositeDisposable _disposables;
+		readonly MediaDBViewManager _media_db_view;
 
 		public MediaDBViewFocus(string focusPath, bool loadItems = true)
 		{
@@ -33,8 +34,9 @@ namespace SmartAudioPlayerFx.MediaDB
 			Items = new VersionedCollection<MediaItem>(
 				new CustomEqualityComparer<MediaItem>(x => x.ID.GetHashCode(), (x, y) => x.ID == y.ID));
 			_disposables = new CompositeDisposable();
+			_media_db_view = App.Services.GetInstance<MediaDBViewManager>();
 
-			ManagerServices.MediaDBViewManager.Items	// SerialDisposableつかえる？
+			_media_db_view.Items	// SerialDisposableつかえる？
 				.GetNotifyObservable()
 				.Subscribe(x =>
 				{
@@ -95,7 +97,7 @@ namespace SmartAudioPlayerFx.MediaDB
 
 			// parentから読み込み
 			var sw = Stopwatch.StartNew();
-			ManagerServices.MediaDBViewManager.Items
+			_media_db_view.Items
 				.GetLatest()
 				.AsParallel()
 				.Where(x => ValidateItem(x))
@@ -107,7 +109,7 @@ namespace SmartAudioPlayerFx.MediaDB
 		#endregion
 	}
 
-	sealed class MediaDBViewFocus_FavoriteOnly : MediaDBViewFocus, ISpecialMediaDBViewFocus
+	public sealed class MediaDBViewFocus_FavoriteOnly : MediaDBViewFocus, ISpecialMediaDBViewFocus
 	{
 		public MediaDBViewFocus_FavoriteOnly(string focusPath) : base(focusPath) { }
 		protected override bool ValidateItem(MediaItem item)
@@ -115,7 +117,7 @@ namespace SmartAudioPlayerFx.MediaDB
 			return base.ValidateItem(item) && item.IsFavorite;
 		}
 	}
-	sealed class MediaDBViewFocus_NonPlayedOnly : MediaDBViewFocus, ISpecialMediaDBViewFocus
+	public sealed class MediaDBViewFocus_NonPlayedOnly : MediaDBViewFocus, ISpecialMediaDBViewFocus
 	{
 		public MediaDBViewFocus_NonPlayedOnly(string focusPath) : base(focusPath) { }
 		protected override bool ValidateItem(MediaItem item)
@@ -123,7 +125,7 @@ namespace SmartAudioPlayerFx.MediaDB
 			return base.ValidateItem(item) && (item.PlayCount == 0);
 		}
 	}
-	sealed class MediaDBViewFocus_LatestAddOnly : MediaDBViewFocus, ISpecialMediaDBViewFocus
+	public sealed class MediaDBViewFocus_LatestAddOnly : MediaDBViewFocus, ISpecialMediaDBViewFocus
 	{
 		public static int RecentIntervalDays = 60;
 
@@ -134,7 +136,7 @@ namespace SmartAudioPlayerFx.MediaDB
 			return base.ValidateItem(item) && (days < RecentIntervalDays);
 		}
 	}
-	sealed class MediaDBViewFocus_SearchWord : MediaDBViewFocus, ISpecialMediaDBViewFocus
+	public sealed class MediaDBViewFocus_SearchWord : MediaDBViewFocus, ISpecialMediaDBViewFocus
 	{
 		public string SearchWord { get; private set; }
 		string[] _splittedWords;

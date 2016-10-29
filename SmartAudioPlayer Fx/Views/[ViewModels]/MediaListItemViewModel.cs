@@ -10,6 +10,7 @@ using System.Windows.Media;
 using Reactive.Bindings.Extensions;
 using Quala.WPF;
 using SmartAudioPlayerFx.MediaDB;
+using SmartAudioPlayerFx.MediaPlayer;
 
 namespace SmartAudioPlayerFx.Views
 {
@@ -82,10 +83,10 @@ namespace SmartAudioPlayerFx.Views
 				{
 					_AddToIgnoreCommand = new DelegateCommand<string>(x =>
 					{
-						var list = ManagerServices.MediaItemFilterManager.IgnoreWords.ToList();
+						var list = App.Services.GetInstance<MediaItemFilterManager>().IgnoreWords.ToList();
 						list.RemoveAll(i => string.Equals(i.Word, x, StringComparison.CurrentCultureIgnoreCase));
 						list.Add(new MediaItemFilterManager.IgnoreWord(true, x));
-						ManagerServices.MediaItemFilterManager.SetIgnoreWords(list.ToArray());
+						App.Services.GetInstance<MediaItemFilterManager>().SetIgnoreWords(list.ToArray());
 					});
 				}
 				return _AddToIgnoreCommand;
@@ -153,7 +154,7 @@ namespace SmartAudioPlayerFx.Views
 					RaisePropertyChanged("CurrentItemName");
 				})
 				.AddTo(_disposables);
-			ManagerServices.JukeboxManager.CurrentMedia.Subscribe(x =>
+			App.Services.GetInstance <JukeboxManager>().CurrentMedia.Subscribe(x =>
 			{
 				RefreshCurrentPlay();
 			})
@@ -241,7 +242,7 @@ namespace SmartAudioPlayerFx.Views
 		{
 			get
 			{
-				var current = ManagerServices.JukeboxManager.CurrentMedia.Value;
+				var current = App.Services.GetInstance<JukeboxManager>().CurrentMedia.Value;
 				var is_current = (current != null) ?
 					current.FilePath.Equals(this.FilePath, StringComparison.CurrentCultureIgnoreCase) :
 					false;
@@ -350,10 +351,10 @@ namespace SmartAudioPlayerFx.Views
 				{
 					_AddToIgnoreCommand = new DelegateCommand<string>(x =>
 					{
-						var list = ManagerServices.MediaItemFilterManager.IgnoreWords.ToList();
+						var list = App.Services.GetInstance<MediaItemFilterManager>().IgnoreWords.ToList();
 						list.RemoveAll(i => string.Equals(i.Word, x, StringComparison.CurrentCultureIgnoreCase));
 						list.Add(new MediaItemFilterManager.IgnoreWord(true, x));
-						ManagerServices.MediaItemFilterManager.SetIgnoreWords(list.ToArray());
+						App.Services.GetInstance<MediaItemFilterManager>().SetIgnoreWords(list.ToArray());
 					});
 				}
 				return _AddToIgnoreCommand;
@@ -372,7 +373,7 @@ namespace SmartAudioPlayerFx.Views
 						// Twoway Bindingで変化するけど一応。
 						this.IsFavorite = x;
 						this.Item.LastUpdate = DateTime.UtcNow.Ticks;
-						ManagerServices.MediaDBViewManager.RaiseDBUpdateAsync(this.Item, _ => _.IsFavorite, _ => _.LastUpdate);
+						App.Services.GetInstance<MediaDBViewManager>().RaiseDBUpdateAsync(this.Item, _ => _.IsFavorite, _ => _.LastUpdate);
 					});
 				}
 				return _ChangeFavoriteCommand;

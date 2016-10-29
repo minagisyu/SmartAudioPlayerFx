@@ -30,12 +30,12 @@ namespace SmartAudioPlayerFx.Views.Options
 			optionPages.Add(new OptionDialog_DB() { ParentDialog = this, });
 
 			// Preferences
-			App.Models.Get<XmlPreferencesManager>().WindowSettings.Subscribe(x => LoadWindowPreferences(x));
+			App.Services.GetInstance<XmlPreferencesManager>().WindowSettings.Subscribe(x => LoadWindowPreferences(x));
 		}
 
 		void SavePreferences()
 		{
-			App.Models.Get<XmlPreferencesManager>().WindowSettings.Value
+			App.Services.GetInstance<XmlPreferencesManager>().WindowSettings.Value
 				.SetAttributeValueEx("OptionPage", PageIndex);
 		}
 		void LoadWindowPreferences(XElement windowSettings)

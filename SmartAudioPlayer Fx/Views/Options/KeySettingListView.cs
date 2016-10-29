@@ -1,6 +1,7 @@
 using System.Text;
 using System.Windows.Forms;
 using Quala.Win32;
+using SmartAudioPlayerFx.Shortcut;
 
 namespace SmartAudioPlayerFx.Views.Options
 {
@@ -15,12 +16,12 @@ namespace SmartAudioPlayerFx.Views.Options
 				case WinAPI.WM.KEYDOWN:
 				case WinAPI.WM.SYSKEYDOWN:
 					if(SelectedItems.Count == 0) return;
-					if((((int)m.LParam & 0x40000000) == 0) &&	// is_down
-						(int)m.WParam != 0x11 && 				// VK_CONTROL
-						(int)m.WParam != 0x12 && 				// VK_MENU
-						(int)m.WParam != 0x10) 					// VK_SHIFT
+					if ((((int)m.LParam & 0x40000000) == 0) &&  // is_down
+						(int)m.WParam != 0x11 &&                // VK_CONTROL
+						(int)m.WParam != 0x12 &&                // VK_MENU
+						(int)m.WParam != 0x10)                  // VK_SHIFT
 					{
-						var key = ManagerServices.ShortcutKeyManager.LastDownKey;
+						var key = App.Services.GetInstance<ShortcutKeyManager>().LastDownKey;
 						if (key.HasFlag(Keys.Control)) keyset++;
 						if (key.HasFlag(Keys.Alt)) keyset++;
 						if (key.HasFlag(Keys.Shift)) keyset++;

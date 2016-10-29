@@ -17,11 +17,11 @@ namespace SmartAudioPlayerFx.Views.Options
 
 		void OptionDialog_PlayList_Load(object sender, EventArgs e)
 		{
-			ManagerServices.MediaItemFilterManager.AcceptExtensions
+			App.Services.GetInstance<MediaItemFilterManager>().AcceptExtensions
 				.OrderBy(i => i.Extension, StringComparer.CurrentCultureIgnoreCase)
 				.Select(i => new object[] { i.IsEnable, i.Extension })
 				.ForEach(i => accept_exts.Rows.Add(i));
-			ManagerServices.MediaItemFilterManager.IgnoreWords
+			App.Services.GetInstance<MediaItemFilterManager>().IgnoreWords
 				.OrderBy(i => i.Word, StringComparer.CurrentCultureIgnoreCase)
 				.Select(i => new object[] { i.IsEnable, i.Word})
 				.ForEach(i => ignore_words.Rows.Add(i));
@@ -35,13 +35,13 @@ namespace SmartAudioPlayerFx.Views.Options
 				.Where(i => !ValueCheck_HasValue(i.Value))
 				.Select(i => new MediaItemFilterManager.AcceptExtension(i.Key, i.Value))
 				.ToArray();
-			ManagerServices.MediaItemFilterManager.SetAcceptExtensions(exts);
+			App.Services.GetInstance<MediaItemFilterManager>().SetAcceptExtensions(exts);
 			var words = GetDataGridViewItems(ignore_words)
 				.Where(i => !string.IsNullOrWhiteSpace(i.Value))
 				.Where(i => !ValueCheck_HasValue(i.Value))
 				.Select(i => new MediaItemFilterManager.IgnoreWord(i.Key, i.Value))
 				.ToArray();
-			ManagerServices.MediaItemFilterManager.SetIgnoreWords(words);
+			App.Services.GetInstance<MediaItemFilterManager>().SetIgnoreWords(words);
 		}
 
 		IEnumerable<KeyValuePair<bool, string>> GetDataGridViewItems(DataGridView grid)

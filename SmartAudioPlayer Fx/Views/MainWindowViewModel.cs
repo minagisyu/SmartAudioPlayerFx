@@ -65,58 +65,58 @@ namespace SmartAudioPlayerFx.Views
 		public MainWindowViewModel()
 		{
 			// Preferences
-			App.Models.Get<XmlPreferencesManager>().WindowSettings
+			App.Services.GetInstance<XmlPreferencesManager>().WindowSettings
 				.Subscribe(x => OnLoadWindowPrefernces(x));
-			App.Models.Get<XmlPreferencesManager>().SerializeRequestAsObservable()
+			App.Services.GetInstance<XmlPreferencesManager>().SerializeRequestAsObservable()
 				.Subscribe(_ => OnSavePreferences());
 
 			// Setup Events
 			PlayPauseCommand
-				.Subscribe(_ => App.Models.Get<AudioPlayerManager>().PlayPause());
+				.Subscribe(_ => App.Services.GetInstance<AudioPlayerManager>().PlayPause());
 
 			// Common Property
-			ManagerServices.JukeboxManager.IsServiceStarted
+			App.Services.GetInstance<JukeboxManager>().IsServiceStarted
 				.Subscribe(x => IsLoading.Value = !x);
-			ManagerServices.JukeboxManager.SelectMode
+			App.Services.GetInstance<JukeboxManager>().SelectMode
 				.Subscribe(x => SelectMode.Value = x);
-			ManagerServices.JukeboxManager.IsRepeat
+			App.Services.GetInstance<JukeboxManager>().IsRepeat
 				.Subscribe(x => IsRepeat.Value = x);
 			Observable.Merge(
-				App.Models.Get<AudioPlayerManager>().OpenedAsObservable(),
-				App.Models.Get<AudioPlayerManager>().IsPausedChangedAsObservable(),
+				App.Services.GetInstance<AudioPlayerManager>().OpenedAsObservable(),
+				App.Services.GetInstance<AudioPlayerManager>().IsPausedChangedAsObservable(),
 				Observable.Return(Unit.Default))    // イベント来るまで動かないので初期設定用にReturnを返してやる
-				.Subscribe(_ => IsPaused.Value = App.Models.Get<AudioPlayerManager>().IsPaused);
-			ManagerServices.JukeboxManager.CurrentMedia
+				.Subscribe(_ => IsPaused.Value = App.Services.GetInstance<AudioPlayerManager>().IsPaused);
+			App.Services.GetInstance<JukeboxManager>().CurrentMedia
 				.Subscribe(x => CurrentMedia.Value = x);
 
 			PositionSuspressEv = new ManualResetEventSlim(false);
 			Observable.Merge(
-				App.Models.Get<AudioPlayerManager>().OpenedAsObservable(),
-				App.Models.Get<AudioPlayerManager>().PositionSettedAsObservable(),
+				App.Services.GetInstance<AudioPlayerManager>().OpenedAsObservable(),
+				App.Services.GetInstance<AudioPlayerManager>().PositionSettedAsObservable(),
 				Observable.Timer(TimeSpan.Zero, TimeSpan.FromSeconds(1)).Select(_ => Unit.Default))
 				.ObserveOnUIDispatcher()
 				.Subscribe(_ =>
 				{
 					if (PositionSuspressEv.IsSet == false)
 					{
-						PositionTicks.Value = App.Models.Get<AudioPlayerManager>().Position.Ticks;
+						PositionTicks.Value = App.Services.GetInstance<AudioPlayerManager>().Position.Ticks;
 					}
 					PositionSuspressEv.Reset();
 				});
 
-			App.Models.Get<AudioPlayerManager>().OpenedAsObservable()
-				.Subscribe(_ => DurationTicks.Value = App.Models.Get<AudioPlayerManager>().Duration.HasValue ? App.Models.Get<AudioPlayerManager>().Duration.Value.Ticks : 0);
+			App.Services.GetInstance<AudioPlayerManager>().OpenedAsObservable()
+				.Subscribe(_ => DurationTicks.Value = App.Services.GetInstance<AudioPlayerManager>().Duration.HasValue ? App.Services.GetInstance<AudioPlayerManager>().Duration.Value.Ticks : 0);
 
 			VolumeSuspressEv = new ManualResetEventSlim(false);
 			Observable.Merge(
-				App.Models.Get<AudioPlayerManager>().VolumeChangedAsObservable(),
+				App.Services.GetInstance<AudioPlayerManager>().VolumeChangedAsObservable(),
 				Observable.Return(Unit.Default))
 				.ObserveOnUIDispatcher()
 				.Subscribe(_ =>
 				{
 					if (VolumeSuspressEv.IsSet == false)
 					{
-						Volume.Value = App.Models.Get<AudioPlayerManager>().Volume;
+						Volume.Value = App.Services.GetInstance<AudioPlayerManager>().Volume;
 					}
 					VolumeSuspressEv.Reset();
 				});
@@ -125,7 +125,7 @@ namespace SmartAudioPlayerFx.Views
 				.Subscribe(x =>
 				{
 					VolumeSuspressEv.Set();
-					App.Models.Get<AudioPlayerManager>().Volume = x;
+					App.Services.GetInstance<AudioPlayerManager>().Volume = x;
 				});
 
 			// SubProperty
@@ -134,23 +134,23 @@ namespace SmartAudioPlayerFx.Views
 			SelectModeToggleCommand
 				.Subscribe(_ =>
 				{
-					var newMode = (ManagerServices.JukeboxManager.SelectMode.Value == JukeboxManager.SelectionMode.Filename) ?
+					var newMode = (App.Services.GetInstance<JukeboxManager>().SelectMode.Value == JukeboxManager.SelectionMode.Filename) ?
 						JukeboxManager.SelectionMode.Random :
 						JukeboxManager.SelectionMode.Filename;
-					ManagerServices.JukeboxManager.SelectMode.Value = newMode;
+					App.Services.GetInstance<JukeboxManager>().SelectMode.Value = newMode;
 				});
 			IsRepeat
 				.Subscribe(x => RepeatTooltip.Value = RepeatModeToTooltipString(x));
 			RepeatToggleCommand
 				.Subscribe(_ =>
 				{
-					var newRepeat = !ManagerServices.JukeboxManager.IsRepeat.Value;
-					ManagerServices.JukeboxManager.IsRepeat.Value = newRepeat;
+					var newRepeat = !App.Services.GetInstance<JukeboxManager>().IsRepeat.Value;
+					App.Services.GetInstance<JukeboxManager>().IsRepeat.Value = newRepeat;
 				});
 			IsPaused
 				.Subscribe(x => StateTooltip.Value = PlayStateToTooltipString(x));
 			StateToggleCommand
-				.Subscribe(_ => App.Models.Get<AudioPlayerManager>().PlayPause());
+				.Subscribe(_ => App.Services.GetInstance<AudioPlayerManager>().PlayPause());
 			Observable.Merge(
 				MediaListItemViewModel._isTitleFromFilePathChangedAsObservable(),
 				Observable.Return(Unit.Default))
@@ -164,7 +164,7 @@ namespace SmartAudioPlayerFx.Views
 			TitleTooltip
 				.Subscribe(x => TitleTooltipEnable.Value = !string.IsNullOrWhiteSpace(x));
 			TitleSkipCommand
-				.Subscribe(_ => Task.Run(() => ManagerServices.JukeboxManager.SelectNext(true)));
+				.Subscribe(_ => Task.Run(() => App.Services.GetInstance<JukeboxManager>().SelectNext(true)));
 			Volume
 				.Subscribe(x =>
 				{
@@ -181,7 +181,7 @@ namespace SmartAudioPlayerFx.Views
 
 		void OnSavePreferences()
 		{
-			App.Models.Get<XmlPreferencesManager>().WindowSettings.Value
+			App.Services.GetInstance<XmlPreferencesManager>().WindowSettings.Value
 				.SetAttributeValueEx("WindowPlacement", WindowPlacement.Value)
 				.SetAttributeValueEx("InactiveOpacity", (int)(InactiveOpacity.Value * 100.0))
 				.SetAttributeValueEx("DeactiveOpacity", (int)(DeactiveOpacity.Value * 100.0))
@@ -215,19 +215,19 @@ namespace SmartAudioPlayerFx.Views
 		}
 		public void SavePreferences()
 		{
-			App.Models.Get<XmlPreferencesManager>().Save();
+			App.Services.GetInstance<XmlPreferencesManager>().Save();
 		}
 
 		public void JukeboxStart()
 		{
 			Task.Run(() =>
 			{
-				ManagerServices.JukeboxManager.Start();
+				App.Services.GetInstance<JukeboxManager>().Start();
 			});
 		}
 		public void SetPlayerPosition(TimeSpan value)
 		{
-			App.Models.Get<AudioPlayerManager>().Position = value;
+			App.Services.GetInstance<AudioPlayerManager>().Position = value;
 			PositionSuspressEv.Set();
 		}
 
