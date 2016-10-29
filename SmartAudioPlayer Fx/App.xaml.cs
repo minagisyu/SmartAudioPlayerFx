@@ -7,6 +7,7 @@ using SmartAudioPlayerFx.MediaPlayer;
 using SmartAudioPlayerFx.Notification;
 using SmartAudioPlayerFx.Preferences;
 using SmartAudioPlayerFx.Shortcut;
+using SmartAudioPlayerFx.Views;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -17,9 +18,6 @@ using WinForms = System.Windows.Forms;
 
 namespace SmartAudioPlayerFx
 {
-	// Application-Domain.
-	// Controller? Presenter?
-    // Controller
 	partial class App : Application
 	{
 		// model
@@ -31,54 +29,8 @@ namespace SmartAudioPlayerFx
 			WinForms.Application.EnableVisualStyles();
 			WinForms.Application.SetCompatibleTextRenderingDefault(false);
 
-			// Register and Pre-Initialize Services
-			Services.RegisterSingleton(() => new AppMutexManager("SmartAudioPlayer Fx"));
-
-			Services.RegisterSingleton<StorageManager>();
-			Services.RegisterInitializer<StorageManager>(storage =>
-			{
-				var asm = Assembly.GetEntryAssembly();
-				var asmName = asm != null ? asm.GetName().Name : string.Empty;
-				storage.AppDataDirectory = new StorageManager.DataPath(new DirectoryInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), asmName)));
-				storage.AppDirectory = new StorageManager.DataPath(new DirectoryInfo(Path.Combine(Path.GetDirectoryName(asm.Location), asmName)));
-			});
-
-			Services.RegisterSingleton<LogManager>();
-			Services.RegisterInitializer<LogManager>(log =>
-			{
-				var logDir = Services.GetInstance<StorageManager>()
-					.AppDataDirectory
-					.CreateFilePathInfo("SmartAudioPlayer Fx.log");
-				log.WriteLogHeader(Assembly.GetEntryAssembly());
-				log.Output.Subscribe(s =>
-				{
-					Debug.WriteLine(s);
-					using (var stream = logDir.AppendText())
-					{
-						stream.WriteLine(s);
-					}
-				});
-			});
-			//= standalone
-			Services.RegisterSingleton<XmlPreferencesManager>();
-			Services.RegisterSingleton<AudioPlayerManager>();
-			Services.RegisterSingleton<NotificationManager>();
-			Services.RegisterSingleton<TasktrayIconView>();//[NotificationManager]
-			Services.RegisterSingleton<MediaDBManager>();
-			//=require Preferences+TaskIcon
-			Services.RegisterSingleton<AppUpdateManager>();
-			//=require Preferences
-			Services.RegisterSingleton<MediaItemFilterManager>();
-			//=require Preferences+MediaDB+MediaItemFilter
-			Services.RegisterSingleton<MediaDBViewManager>();
-			//=require Preferences+MediaDBView
-			Services.RegisterSingleton<RecentsManager>();
-			//=require Preferences+AudioPlayer+MediaDBView
-			Services.RegisterSingleton<JukeboxManager>();
-			//=require Preferences+AudioPlayer+Jukebox
-			Services.RegisterSingleton<ShortcutKeyManager>();
-			//=add_xxx
-			Services.RegisterSingleton<ContextMenuManager>();
+			// SimpleInjector Initialize
+			RegisterServices(Services);
 		}
 
 		// ui
@@ -129,7 +81,7 @@ namespace SmartAudioPlayerFx
 			};
 
 			// Set TrayIcon Menus
-			tasktray.SetMenuItems();
+			tasktray.SetMenuItems((MainWindow)this.MainWindow);
 
 			// 定期保存(すぐに開始する)
 			new DispatcherTimer(
@@ -163,6 +115,64 @@ namespace SmartAudioPlayerFx
 				return true;
 			}
 			return false;
+		}
+
+		static void RegisterServices(Container container)
+		{
+			// Register and Pre-Initialize Services
+			container.RegisterSingleton(() => new AppMutexManager("SmartAudioPlayer Fx"));
+
+			container.RegisterSingleton<StorageManager>();
+			container.RegisterInitializer<StorageManager>(storage =>
+			{
+				var asm = Assembly.GetEntryAssembly();
+				var asmName = asm != null ? asm.GetName().Name : string.Empty;
+				storage.AppDataDirectory = new StorageManager.DataPath(new DirectoryInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), asmName)));
+				storage.AppDirectory = new StorageManager.DataPath(new DirectoryInfo(Path.Combine(Path.GetDirectoryName(asm.Location), asmName)));
+			});
+
+			container.RegisterSingleton<LogManager>();
+			container.RegisterInitializer<LogManager>(log =>
+			{
+				var logDir = container.GetInstance<StorageManager>()
+					.AppDataDirectory
+					.CreateFilePathInfo("SmartAudioPlayer Fx.log");
+				log.WriteLogHeader(Assembly.GetEntryAssembly());
+				log.Output.Subscribe(s =>
+				{
+					lock (logDir)
+					{
+						Debug.WriteLine(s);
+						using (var stream = logDir.AppendText())
+						{
+							stream.WriteLine(s);
+						}
+					}
+				});
+			});
+			//= standalone
+			container.RegisterSingleton<XmlPreferencesManager>();
+			container.RegisterSingleton<AudioPlayerManager>();
+			container.RegisterSingleton<NotificationManager>();
+			container.RegisterSingleton<TasktrayIconView>();//[NotificationManager]
+			container.RegisterSingleton<MediaDBManager>();
+			//=require Preferences+TaskIcon
+			container.RegisterSingleton<AppUpdateManager>();
+			//=require Preferences
+			container.RegisterSingleton<MediaItemFilterManager>();
+			//=require Preferences+MediaDB+MediaItemFilter
+			container.RegisterSingleton<MediaDBViewManager>();
+			//=require Preferences+MediaDBView
+			container.RegisterSingleton<RecentsManager>();
+			//=require Preferences+AudioPlayer+MediaDBView
+			container.RegisterSingleton<JukeboxManager>();
+			//=require Preferences+AudioPlayer+Jukebox
+			container.RegisterSingleton<ShortcutKeyManager>();
+			//=add_xxx
+			container.RegisterSingleton<ContextMenuManager>();
+
+			// verify (for DEBUG or TEST only)
+		//	container.Verify();
 		}
 
 	}

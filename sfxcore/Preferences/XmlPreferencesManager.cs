@@ -29,10 +29,6 @@ namespace SmartAudioPlayerFx.Preferences
 		public ReactiveProperty<XElement> UpdateSettings { get; } = new ReactiveProperty<XElement>(new XElement(UPDATE_ELEMENTNAME));
 
 		// Save()によりXElementを設定する必要があることを通知します
-		// 将来的にはhi同期にしたい
-		// [Preference]-[Object]-(OnComplete)>>
-		// イベントを反対向きにするか?
-		// イベントデリゲートをめて同期に実、Task.waitAllで待つとか?
 		public event Action SerializeRequest;
 
 		public XmlPreferencesManager(StorageManager storage)

@@ -99,7 +99,7 @@ namespace SmartAudioPlayerFx.MediaPlayer
 		/// <param name="play_started">Openedイベントの前に呼ばれます</param>
 		public void PlayFrom(string path, bool isPause, TimeSpan? startPosition, Action play_started)
 		{
-			App.Services.GetInstance<LogManager>().AddDebugLog($"Call Open: path={path ?? "(null)"}, isPause={isPause}, startPosition={startPosition.Value.ToString() ?? "(null)"}");
+			App.Services.GetInstance<LogManager>().AddDebugLog($"Call Open: path={path ?? "(null)"}, isPause={isPause}, startPosition={startPosition ?? TimeSpan.Zero}");
 			Close();
 
 			if (path == null) return;	// 停止状態へ

@@ -17,7 +17,6 @@ namespace SmartAudioPlayerFx.Shortcut
 {
 	class ContextMenuManager
 	{
-		MainWindow _main_window;
 		JukeboxManager _jukebox;
 		AudioPlayerManager _audio_player;
 		AppUpdateManager _app_update;
@@ -25,14 +24,13 @@ namespace SmartAudioPlayerFx.Shortcut
 		RecentsManager _recents;
 		ShortcutKeyManager _shortcut_key;
 
-		public ContextMenuManager(MainWindow main_window,
+		public ContextMenuManager(
 			JukeboxManager jukebox, AudioPlayerManager audio_player,
 			AppUpdateManager app_update,
 			MediaDBViewManager media_db_view,
 			RecentsManager recents,
 			ShortcutKeyManager shortcut_key)
 		{
-			_main_window = main_window;
 			_jukebox = jukebox;
 			_audio_player = audio_player;
 			_app_update = app_update;
@@ -42,9 +40,9 @@ namespace SmartAudioPlayerFx.Shortcut
 		}
 
 		// Tasktray & PlayerWindowで使う
-		public MenuItem[] CreateWinFormsMenuItems()
+		public MenuItem[] CreateWinFormsMenuItems(MainWindow mw)
 		{
-			return ConvertToWinFormsMenuItems(CreateMenuItems()).ToArray();
+			return ConvertToWinFormsMenuItems(CreateMenuItems(mw)).ToArray();
 		}
 		IEnumerable<MenuItem> ConvertToWinFormsMenuItems(IEnumerable<MenuItemDefinition> items)
 		{
@@ -67,10 +65,8 @@ namespace SmartAudioPlayerFx.Shortcut
 				yield return item;
 			}
 		}
-		IEnumerable<MenuItemDefinition> CreateMenuItems()
+		IEnumerable<MenuItemDefinition> CreateMenuItems(MainWindow mw)
 		{
-			var mw = _main_window;//((MainWindow)App.Current.MainWindow);
-			//
 			var is_videodraw = mw.MediaListWindow.ViewModel.IsVideoDrawing.Value;
 			var is_repeat = _jukebox.IsRepeat.Value;
 			var is_random = (_jukebox.SelectMode.Value == JukeboxManager.SelectionMode.Random);
@@ -98,24 +94,24 @@ namespace SmartAudioPlayerFx.Shortcut
 			yield return new MenuItemDefinition("始めから再生", clicked: () => _audio_player.Replay());
 			yield return new MenuItemDefinition("再生履歴", subitems: CreateRecentPlayMenuItems());
 			yield return new MenuItemDefinition("-");
-			yield return new MenuItemDefinition("開く", subitems: CreateRecentFolderMenuItems());
+			yield return new MenuItemDefinition("開く", subitems: CreateRecentFolderMenuItems(mw));
 			yield return new MenuItemDefinition("-");
 			var window_show_hide_text = mw.IsVisible ? "ウィンドウを隠す" : "ウィンドウを表示する";
 			yield return new MenuItemDefinition(window_show_hide_text, clicked: () => mw.WindowShowHideToggle());
 			yield return new MenuItemDefinition("ウィンドウを画面右下へ移動", clicked: () => mw.ResetWindowPosition());
 			yield return new MenuItemDefinition("-");
-			yield return new MenuItemDefinition("アップデート", enabled: !_app_update.IsShowingUpdateMessage, is_visibled: _app_update.IsUpdateReady, clicked: OnUpdate);
+			yield return new MenuItemDefinition("アップデート", enabled: !_app_update.IsShowingUpdateMessage, is_visibled: _app_update.IsUpdateReady, clicked: ()=> OnUpdate(mw));
 			yield return new MenuItemDefinition("オプション", enabled: !option_dialog_opened, clicked: OpenOptionDialog);
 			yield return new MenuItemDefinition("終了", clicked: () => mw.Close());
 		}
 
 		bool folder_dialog_opened = false;
 		bool option_dialog_opened = false;
-		MenuItemDefinition[] CreateRecentFolderMenuItems()
+		MenuItemDefinition[] CreateRecentFolderMenuItems(MainWindow mw)
 		{
 			var head = new[]
 			{
-				new MenuItemDefinition("フォルダ", clicked: OpenFolderDialog, enabled: !folder_dialog_opened),
+				new MenuItemDefinition("フォルダ", clicked: ()=>OpenFolderDialog(mw), enabled: !folder_dialog_opened),
 				new MenuItemDefinition("-"),
 			};
 			//
@@ -150,12 +146,12 @@ namespace SmartAudioPlayerFx.Shortcut
 				.ToArray();
 			return ret.Any() ? ret : new[] { new MenuItemDefinition("履歴はありません", enabled: false), };
 		}
-		async void OnUpdate()
+		async void OnUpdate(MainWindow mw)
 		{
-			if (await _app_update.ShowUpdateMessageAsync(new WindowInteropHelper(_main_window).EnsureHandle()))
+			if (await _app_update.ShowUpdateMessageAsync(new WindowInteropHelper(mw).EnsureHandle()))
 				App.Current.Shutdown();
 		}
-		void OpenFolderDialog()
+		void OpenFolderDialog(MainWindow mw)
 		{
 			if (folder_dialog_opened) return;
 			try
@@ -166,7 +162,7 @@ namespace SmartAudioPlayerFx.Shortcut
 					dlg.UseNewDialog = true;
 					dlg.SelectedPath = _media_db_view.FocusPath.Value;
 					var nativeWindow = new NativeWindow();
-					nativeWindow.AssignHandle(new WindowInteropHelper(_main_window).EnsureHandle());
+					nativeWindow.AssignHandle(new WindowInteropHelper(mw).EnsureHandle());
 					try
 					{
 						if (dlg.ShowDialog(nativeWindow) == DialogResult.OK)

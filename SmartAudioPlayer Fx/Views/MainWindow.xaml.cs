@@ -185,7 +185,7 @@ namespace SmartAudioPlayerFx.Views
 			}
 
 			cmenu.MenuItems.Clear();
-			cmenu.MenuItems.AddRange(App.Services.GetInstance<ContextMenuManager>().CreateWinFormsMenuItems());
+			cmenu.MenuItems.AddRange(App.Services.GetInstance<ContextMenuManager>().CreateWinFormsMenuItems(this));
 
 			var helper = new WindowInteropHelper(this);
 			WinAPI.SetForegroundWindow(helper.Handle);

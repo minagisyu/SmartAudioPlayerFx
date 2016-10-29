@@ -1,18 +1,10 @@
-﻿using Quala.Win32.Dialog;
-using SmartAudioPlayerFx.MediaDB;
-using SmartAudioPlayerFx.MediaPlayer;
-using SmartAudioPlayerFx.Shortcut;
+﻿using SmartAudioPlayerFx.Shortcut;
 using SmartAudioPlayerFx.Views;
-using SmartAudioPlayerFx.Views.Options;
 using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Windows.Interop;
 using System.Windows.Threading;
 
 namespace SmartAudioPlayerFx.Notification
@@ -44,7 +36,7 @@ namespace SmartAudioPlayerFx.Notification
 
 		public event Action BaloonTipClicked;
 
-		public void SetMenuItems()
+		public void SetMenuItems(MainWindow mw)
 		{
 			if (tray == null) return;
 			if (tray.ContextMenu != null) return;
@@ -55,7 +47,7 @@ namespace SmartAudioPlayerFx.Notification
 				var menu = s as ContextMenu;
 				if (menu == null) return;
 				menu.MenuItems.Clear();
-				menu.MenuItems.AddRange(_context_menu.CreateWinFormsMenuItems());
+				menu.MenuItems.AddRange(_context_menu.CreateWinFormsMenuItems(mw));
 			};
 		}
 
