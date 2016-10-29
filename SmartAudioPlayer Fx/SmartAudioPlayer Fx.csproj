@@ -137,9 +137,8 @@
     <Compile Include="MediaDB\RecentsManager.cs" />
     <Compile Include="MediaPlayer\AudioPlayerManager.cs" />
     <Compile Include="MediaPlayer\JukeboxManager.cs" />
-    <Compile Include="Notification\NotificationService.cs" />
     <Compile Include="Notification\TasktrayIconView.cs" />
-    <Compile Include="Preferences\XmlPreferencesManager.cs" />
+    <Compile Include="Shortcut\ContextMenuManager.cs" />
     <Compile Include="Shortcut\ShortcutKeyManager.cs" />
     <Compile Include="Views\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
@@ -216,13 +215,6 @@
     <Compile Include="Views\[Dialogs]\UpdateMessageBox.Designer.cs">
       <DependentUpon>UpdateMessageBox.cs</DependentUpon>
     </Compile>
-    <Compile Include="[Quala.Core]\[StorageManager]\StorageManager.cs" />
-    <Compile Include="[Quala.Core]\[StorageManager]\StorageManager_AppDataPath.cs" />
-    <Compile Include="[Quala.Extensions]\[Collections]\CustomEqualityComparer.cs" />
-    <Compile Include="[Quala.Extensions]\[Collections]\VersionedCollection.cs" />
-    <Compile Include="[Quala.Extensions]\[Extensions]\DirectoryInfoExtension.cs" />
-    <Compile Include="[Quala.Extensions]\[Extensions]\EnumerableExtension.cs" />
-    <Compile Include="[Quala.Extensions]\[Extensions]\XElementExtension.cs" />
     <Compile Include="_ManagerServices.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -2198,6 +2190,14 @@
     <Reference Include="System.Drawing.Design" />
     <Reference Include="System.IO.Compression" />
     <Reference Include="System.IO.Compression.FileSystem" />
+    <Reference Include="System.IO.FileSystem, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.IO.FileSystem.4.0.1\lib\net46\System.IO.FileSystem.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.IO.FileSystem.Primitives, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.IO.FileSystem.Primitives.4.0.1\lib\net46\System.IO.FileSystem.Primitives.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.Reactive.Core, Version=3.0.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Reactive.Core.3.0.0\lib\net46\System.Reactive.Core.dll</HintPath>
       <Private>True</Private>
@@ -2235,6 +2235,10 @@
       <Project>{f5ce73b5-25cd-4d7b-83f4-70b725117428}</Project>
       <Name>Quala.Core</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Quala\Quala.Extensions\Quala.Extensions.csproj">
+      <Project>{1790face-ed88-40fd-92fc-030d81eb9eee}</Project>
+      <Name>Quala.Extensions</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Quala\Quala.Win32\Quala.Win32.csproj">
       <Project>{ac33cea6-8564-4247-8841-02fec18aba1e}</Project>
       <Name>Quala.Win32</Name>
@@ -2242,6 +2246,10 @@
     <ProjectReference Include="..\Quala\Quala.WPF\Quala.WPF.csproj">
       <Project>{0ceadaf2-ee2f-4398-ae1f-274706a732fd}</Project>
       <Name>Quala.WPF</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\sfxcore\sfxcore.csproj">
+      <Project>{9cf7bdd7-5500-40f7-b613-35c90109cd17}</Project>
+      <Name>sfxcore</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup />

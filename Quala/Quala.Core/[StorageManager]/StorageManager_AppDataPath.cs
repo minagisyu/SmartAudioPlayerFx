@@ -7,7 +7,8 @@ namespace Quala
 		public sealed class DataPath
 		{
 			public DirectoryInfo PathInfo { get; }
-			public string PathName { get { return PathInfo.FullName; } }
+			public string PathName
+				=> PathInfo.FullName;
 
 			public DataPath(DirectoryInfo directoryPath)
 			{

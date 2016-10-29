@@ -7,16 +7,24 @@ using System.Text;
 
 namespace Quala
 {
+	[SingletonService]
 	public sealed partial class LogManager
 	{
 		// Outputに出力されるログの最低レベル
-		public Level MinLevel { get; set; } = Level.INFO;
+		public Level MinLevel { get; set; }
 
 		// 出力用IF、各プラットフォームで都合のいい実装で対応する
 		ReactiveProperty<string> outputInternal;
 		public ReadOnlyReactiveProperty<string> Output { get; }
 
-		public LogManager(Assembly entryAssembly)
+		public LogManager()
+		{
+			// 出力用IF
+			outputInternal = new ReactiveProperty<string>(mode: ReactivePropertyMode.RaiseLatestValueOnSubscribe);
+			Output = outputInternal.ToReadOnlyReactiveProperty();
+		}
+
+		public void WriteLogHeader(Assembly entryAssembly)
 		{
 			// ヘッダを用意
 			var headerText = new StringBuilder();
@@ -28,10 +36,7 @@ namespace Quala
 			headerText.AppendLine($"{asmName.Name} ver.{version}");
 			//sb.AppendLine($"{version.FileDescription} ver.{version.ProductVersion}");
 			headerText.AppendLine();
-
-			// 出力用IF
-			outputInternal = new ReactiveProperty<string>(headerText.ToString(), ReactivePropertyMode.RaiseLatestValueOnSubscribe);
-			Output = outputInternal.ToReadOnlyReactiveProperty();
+			outputInternal.Value = headerText.ToString();
 		}
 
 		// カスタムログ

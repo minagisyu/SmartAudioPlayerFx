@@ -23,15 +23,15 @@ namespace SmartAudioPlayerFx.MediaDB
 		public event Action<string> PropertyChanged;
 		readonly CompositeDisposable _disposables = new CompositeDisposable();
 
-		public MediaItemFilterManager()
+		public MediaItemFilterManager(XmlPreferencesManager preference)
 		{
 			Reset();
 
-			App.Models.Get<XmlPreferencesManager>().PlayerSettings
+			preference.PlayerSettings
 				.Subscribe(x => LoadPreferences(x))
 				.AddTo(_disposables);
-			App.Models.Get<XmlPreferencesManager>().SerializeRequestAsObservable()
-				.Subscribe(_ => SavePreferences(App.Models.Get<XmlPreferencesManager>().PlayerSettings.Value))
+			preference.SerializeRequestAsObservable()
+				.Subscribe(_ => SavePreferences(preference.PlayerSettings.Value))
 				.AddTo(_disposables);
 		}
 		public void Dispose()

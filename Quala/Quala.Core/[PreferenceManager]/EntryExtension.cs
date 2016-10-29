@@ -5,10 +5,10 @@ namespace Quala
 {
 	public static class EntryExtension
 	{
-		public static Preference.Entry GetValueFromJson<T>(this Preference.Entry entry, string key, Action<T> valueAction)
+		public static PreferenceManager.Entry GetValueFromJson<T>(this PreferenceManager.Entry entry, string key, Action<T> valueAction)
 			=> entry.GetValue(key, v => valueAction?.Invoke(JsonConvert.DeserializeObject<T>(v as string)));
 
-		public static Preference.Entry SetValueToJson(this Preference.Entry entry, string key, object value)
-			=> entry.SetValue(key, Preference.FormatOutput(JsonConvert.SerializeObject(value)));
+		public static PreferenceManager.Entry SetValueToJson(this PreferenceManager.Entry entry, string key, object value)
+			=> entry.SetValue(key, PreferenceManager.FormatOutput(JsonConvert.SerializeObject(value)));
 	}
 }

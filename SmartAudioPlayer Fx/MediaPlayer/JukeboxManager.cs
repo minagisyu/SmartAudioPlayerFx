@@ -31,8 +31,13 @@ namespace SmartAudioPlayerFx.MediaPlayer
 		public ReactiveProperty<SelectionMode> SelectMode { get; private set; }
 		public static event Action<MediaItem> PlayError; // 再生エラーが発生した
 		readonly CompositeDisposable _disposables;
+		AudioPlayerManager _audio_player;
+		MediaDBManager _media_db;
+		MediaDBViewManager _media_db_view;
+		RecentsManager _recents;
 
-		public JukeboxManager()
+
+		public JukeboxManager(XmlPreferencesManager preference, AudioPlayerManager audio_player, MediaDBManager media_db, MediaDBViewManager media_db_view, RecentsManager recents)
 		{
 			ViewFocus = new ReactiveProperty<MediaDBViewFocus>(new MediaDBViewFocus(null), ReactivePropertyMode.RaiseLatestValueOnSubscribe);
 			IsServiceStarted = new ReactiveProperty<bool>(false);
@@ -41,17 +46,21 @@ namespace SmartAudioPlayerFx.MediaPlayer
 			IsRepeat = new ReactiveProperty<bool>(false);
 			SelectMode = new ReactiveProperty<SelectionMode>(SelectionMode.Random);
 			_disposables = new CompositeDisposable(ViewFocus, IsServiceStarted, CurrentMedia, IsRepeat, SelectMode);
+			_audio_player = audio_player;
+			_media_db = media_db;
+			_media_db_view = media_db_view;
+			_recents = recents;
 
 			// Preferences
-			App.Models.Get<XmlPreferencesManager>().PlayerSettings
+			preference.PlayerSettings
 				.Subscribe(x => LoadPreferences(x))
 				.AddTo(_disposables);
-			App.Models.Get<XmlPreferencesManager>().SerializeRequestAsObservable()
-				.Subscribe(_ => SavePreferences(App.Models.Get<XmlPreferencesManager>().PlayerSettings.Value))
+			preference.SerializeRequestAsObservable()
+				.Subscribe(_ => SavePreferences(preference.PlayerSettings.Value))
 				.AddTo(_disposables);
 
 			// 再生が完了したら次の曲を再生
-			App.Models.Get<AudioPlayerManager>().PlayEndedAsObservable()
+			audio_player.PlayEndedAsObservable()
 				.Subscribe(x =>
 				{
 					var by_error = x.ErrorReason != null;	// エラーが発生した？
@@ -62,7 +71,7 @@ namespace SmartAudioPlayerFx.MediaPlayer
 				.AddTo(_disposables);
 
 			// メディア情報が変更されたら更新する
-			ManagerServices.MediaDBViewManager.Items
+			media_db_view.Items
 				.GetNotifyObservable()
 				.Where(x => x.Type == VersionedCollection<MediaItem>.NotifyType.Update)
 				.Subscribe(x =>
@@ -80,7 +89,7 @@ namespace SmartAudioPlayerFx.MediaPlayer
 				.AddTo(_disposables);
 
 			// MediaDBViewManagerによるスキャンが完了したとき、再生してなかったら自動再生を試みる
-			ManagerServices.MediaDBViewManager.ItemCollect_CoreScanFinishedAsObservable()
+			media_db_view.ItemCollect_CoreScanFinishedAsObservable()
 				.Where(_ => CurrentMedia.Value == null || CurrentMedia.Value.IsNotExist == true)
 				.Subscribe(_ => SelectNext(true))
 				.AddTo(_disposables);
@@ -108,7 +117,7 @@ namespace SmartAudioPlayerFx.MediaPlayer
 
 			SelectMode.Value = element.GetAttributeValueEx("SelectMode", SelectionMode.Random);
 			IsRepeat.Value = element.GetAttributeValueEx("IsRepeat", false);
-			App.Models.Get<AudioPlayerManager>().Volume = element.GetAttributeValueEx("Volume", 0.5);
+			_audio_player.Volume = element.GetAttributeValueEx("Volume", 0.5);
 			NextPlaingAttribute = new PlaingAttributeInfo(
 				false,
 				false,
@@ -130,9 +139,9 @@ namespace SmartAudioPlayerFx.MediaPlayer
 				// this
 				.SetAttributeValueEx("SelectMode", SelectMode.Value)
 				.SetAttributeValueEx("IsRepeat", IsRepeat.Value)
-				.SetAttributeValueEx("IsPaused", App.Models.Get<AudioPlayerManager>().IsPaused)
-				.SetAttributeValueEx("Volume", App.Models.Get<AudioPlayerManager>().Volume.ToString("F3"))
-				.SetAttributeValueEx("Position", App.Models.Get<AudioPlayerManager>().Position.ToString()) // ToString()しないと戻せない
+				.SetAttributeValueEx("IsPaused", _audio_player.IsPaused)
+				.SetAttributeValueEx("Volume", _audio_player.Volume.ToString("F3"))
+				.SetAttributeValueEx("Position", _audio_player.Position.ToString()) // ToString()しないと戻せない
 				.SetAttributeValueEx("CurrentMedia", (CurrentMedia.Value != null) ? CurrentMedia.Value.FilePath : null)
 				.SetAttributeValueEx("ViewMode", ViewFocusToString(ViewFocus.Value))
 				.SetAttributeValueEx("ViewFocusPath", ViewFocus.Value.FocusPath)
@@ -189,12 +198,12 @@ namespace SmartAudioPlayerFx.MediaPlayer
 			// MEMO: 再生エラー項目の除外はしない
 			if (item == null)
 			{
-				App.Models.Get<AudioPlayerManager>().Close();
+				_audio_player.Close();
 			}
 			else
 			{
 				// 再生を試みる
-				App.Models.Get<AudioPlayerManager>().PlayFrom(item.FilePath, attr.PlayOnPaused, attr.PlayOnPosition, () =>
+				_audio_player.PlayFrom(item.FilePath, attr.PlayOnPaused, attr.PlayOnPosition, () =>
 				{
 					// 再生カウント更新
 					Task.Run(() =>
@@ -214,7 +223,7 @@ namespace SmartAudioPlayerFx.MediaPlayer
 								item.PlayCount++;
 								args.Add(_ => _.PlayCount);
 							}
-							ManagerServices.MediaDBViewManager.RaiseDBUpdateAsync(item, args.ToArray());
+							_media_db_view.RaiseDBUpdateAsync(item, args.ToArray());
 						}
 						// 曲情報更新
 						if (item != null && item.ID != 0)
@@ -222,7 +231,7 @@ namespace SmartAudioPlayerFx.MediaPlayer
 
 						// 再生リストを更新
 						if (attr.UpdateLastPlay)
-							ManagerServices.RecentsManager.AddRecentsPlayItem(item);
+							_recents.AddRecentsPlayItem(item);
 					});
 				});
 			}
@@ -251,7 +260,7 @@ namespace SmartAudioPlayerFx.MediaPlayer
 				}
 				if (update_db)
 				{
-					ManagerServices.MediaDBViewManager.RaiseDBUpdateAsync(item,
+					_media_db_view.RaiseDBUpdateAsync(item,
 						_ => _.FilePath,
 						_ => _.Title, _ => _.Artist, _ => _.Album, _ => _.Comment, _ => _.SearchHint,
 						_ => _.CreatedDate, _ => _.LastUpdate, _ => _.LastWrite, _ => _.IsNotExist);
@@ -276,7 +285,7 @@ namespace SmartAudioPlayerFx.MediaPlayer
 			// リピート
 			if (skipMode == false && IsRepeat.Value && CurrentMedia.Value != null && by_error == false)
 			{
-				App.Models.Get<AudioPlayerManager>().Replay();
+				_audio_player.Replay();
 				// 再生カウント更新
 				var item = CurrentMedia.Value;
 				Task.Factory.StartNew(() =>
@@ -286,7 +295,7 @@ namespace SmartAudioPlayerFx.MediaPlayer
 						item.PlayCount++;
 						item.LastPlay = DateTime.UtcNow.Ticks;
 						item.LastUpdate = DateTime.UtcNow.Ticks;
-						ManagerServices.MediaDBViewManager.RaiseDBUpdateAsync(item, _ => _.PlayCount, _ => _.LastPlay, _ => _.LastUpdate);
+						_media_db_view.RaiseDBUpdateAsync(item, _ => _.PlayCount, _ => _.LastPlay, _ => _.LastUpdate);
 					}
 				});
 				return;
@@ -334,7 +343,7 @@ namespace SmartAudioPlayerFx.MediaPlayer
 			{
 				CurrentMedia.Value.SkipCount++;
 				CurrentMedia.Value.LastUpdate = DateTime.UtcNow.Ticks;
-				ManagerServices.MediaDBViewManager.RaiseDBUpdateAsync(CurrentMedia.Value, _ => _.SkipCount, _ => _.LastUpdate);
+				_media_db_view.RaiseDBUpdateAsync(CurrentMedia.Value, _ => _.SkipCount, _ => _.LastUpdate);
 			}
 
 			// 再生エラーが無いアイテム群。
@@ -395,7 +404,7 @@ namespace SmartAudioPlayerFx.MediaPlayer
 				// 既存の曲を選択しないための措置
 				// デフォルトで全体の10%程度(min:1, max:100)はしばらく再生しない
 				var latestplayednum = Math.Min(Math.Max(1, (items.Length / 10)), 100);
-				var latestplayed = ManagerServices.RecentsManager.GetRecentsPlayItems(latestplayednum);
+				var latestplayed = _recents.GetRecentsPlayItems(latestplayednum);
 				var r = new Random();
 			ReSelect:
 				var item = itemsQuery
@@ -422,21 +431,21 @@ namespace SmartAudioPlayerFx.MediaPlayer
 		{
 			// CurrentMediaがあって、index指定がないときは再生履歴1つ前を再生
 			var prev = (CurrentMedia.Value != null && !index.HasValue) ?
-				ManagerServices.MediaDBManager.PreviousPlayItem(CurrentMedia.Value) : null;
+				_media_db.PreviousPlayItem(CurrentMedia.Value) : null;
 			if (prev == null)
 			{
 				// indexが100未満ならGetCachedRecentPlayItemsPath()を使う
 				var idx = index ?? 0;
 				prev = ((idx > 100) ?
-					ManagerServices.MediaDBManager.RecentPlayItemsPath(idx + 1) :
-					ManagerServices.RecentsManager.GetRecentsPlayItems(idx + 1))
+					_media_db.RecentPlayItemsPath(idx + 1) :
+					_recents.GetRecentsPlayItems(idx + 1))
 					.Skip(idx)
 					.FirstOrDefault();
 			}
 			if (prev != null)
 			{
 				// LastPlayを更新させない
-				var item = ManagerServices.MediaDBViewManager.GetOrCreate(prev);
+				var item = _media_db_view.GetOrCreate(prev);
 				NextPlaingAttribute = new PlaingAttributeInfo(false);
 				CurrentMedia.Value = item;
 			}

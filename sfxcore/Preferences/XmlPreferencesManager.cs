@@ -1,17 +1,17 @@
-﻿using Reactive.Bindings;
+﻿using Quala;
+using Reactive.Bindings;
 using System;
 using System.IO;
 using System.Reactive;
 using System.Reactive.Linq;
-using System.Reflection;
 using System.Xml;
 using System.Xml.Linq;
 
 namespace SmartAudioPlayerFx.Preferences
 {
 	// 将来的にはjsonに切り替えるため、Windows依存でok
-
-	sealed class XmlPreferencesManager
+	[SingletonService]
+	public sealed class XmlPreferencesManager
 	{
 		const string DATADIRNAME = "data";
 		public string BaseDir { get; set; }
@@ -29,15 +29,16 @@ namespace SmartAudioPlayerFx.Preferences
 		public ReactiveProperty<XElement> UpdateSettings { get; } = new ReactiveProperty<XElement>(new XElement(UPDATE_ELEMENTNAME));
 
 		// Save()によりXElementを設定する必要があることを通知します
+		// 将来的にはhi同期にしたい
+		// [Preference]-[Object]-(OnComplete)>>
+		// イベントを反対向きにするか?
+		// イベントデリゲートをめて同期に実、Task.waitAllで待つとか?
 		public event Action SerializeRequest;
 
-		public XmlPreferencesManager()
+		public XmlPreferencesManager(StorageManager storage)
 		{
 			// BaseDir
-			var asm = Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly();
-			var appdata = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-			var appname = asm.GetName().Name;
-			BaseDir = Path.Combine(appdata, appname);
+			BaseDir = storage.AppDataDirectory.PathName;
 
 			// Load
 			Load();
@@ -96,7 +97,7 @@ namespace SmartAudioPlayerFx.Preferences
 				return new XElement(name);
 
 			using (var stream = File.OpenRead(path))
-			using (var reader = XmlTextReader.Create(stream, new XmlReaderSettings() { CheckCharacters = false, }))
+			using (var reader = XmlReader.Create(stream, new XmlReaderSettings() { CheckCharacters = false, }))
 			{
 				var element = XElement.Load(reader);
 				return (element != null && element.Name.Equals(name)) ? element : new XElement(name);
@@ -104,7 +105,7 @@ namespace SmartAudioPlayerFx.Preferences
 		}
 	}
 
-	static class PreferenceManagerExtensions
+	public static class PreferenceManagerExtensions
 	{
 		public static IObservable<Unit> SerializeRequestAsObservable(this XmlPreferencesManager manager)
 			=> Observable.FromEvent(v => manager.SerializeRequest += v, v => manager.SerializeRequest -= v);

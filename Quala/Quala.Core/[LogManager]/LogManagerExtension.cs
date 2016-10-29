@@ -44,10 +44,5 @@ namespace Quala
 		public static void AddDebugLog(this LogManager manager, string message,
 			[CallerFilePath] string file = "", [CallerLineNumber] int line = 0, [CallerMemberName] string member = "")
 			=> manager.AddLog(LogManager.Level.DEBUG, message, file, line, member);
-
-		// QualaLibrayデバッグログ
-		public static void AddLibraryDebugLog(this LogManager manager, string message,
-			[CallerFilePath] string file = "", [CallerLineNumber] int line = 0, [CallerMemberName] string member = "")
-			=> manager.AddLog(LogManager.Level.LBRARY_DEBUG, message, file, line, member);
 	}
 }

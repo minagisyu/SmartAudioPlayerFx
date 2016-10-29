@@ -6,7 +6,7 @@ using System.IO;
 
 namespace Quala
 {
-	partial class Preference
+	partial class PreferenceManager
 	{
 		public class Entry
 		{

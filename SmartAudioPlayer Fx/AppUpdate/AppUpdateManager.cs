@@ -38,22 +38,21 @@ namespace SmartAudioPlayerFx.AppUpdate
 		public bool IsAutoUpdateCheckEnabled { get; set; }
 
 		readonly CompositeDisposable _disposables = new CompositeDisposable();
+		NotificationManager _notification;
 
-		public AppUpdateManager()
+		public AppUpdateManager(XmlPreferencesManager preference, NotificationManager notification)
 		{
 			// Preferences
-			App.Models.Get<XmlPreferencesManager>(o =>
-			{
-				o.UpdateSettings
-					.Subscribe(x => LoadUpdatePreferences(x))
-					.AddTo(_disposables);
-				o.SerializeRequestAsObservable()
-					.Subscribe(_ => SavePreferences(o.UpdateSettings.Value))
-					.AddTo(_disposables);
-			});
+			preference.UpdateSettings
+				.Subscribe(x => LoadUpdatePreferences(x))
+				.AddTo(_disposables);
+			preference.SerializeRequestAsObservable()
+				.Subscribe(_ => SavePreferences(preference.UpdateSettings.Value))
+				.AddTo(_disposables);
 
 			// タスクトレイ連携
-			App.Models.Get<NotificationService>().NotifyClicked += async () =>
+			_notification = notification;
+			notification.NotifyClicked += async () =>
 			{
 				if (App.Current.MainWindow == null) return;
 				if (await ShowUpdateMessageAsync(new WindowInteropHelper(App.Current.MainWindow).EnsureHandle()))
@@ -102,7 +101,7 @@ namespace SmartAudioPlayerFx.AppUpdate
 				.ObserveOnUIDispatcher()
 				.Subscribe(x =>
 				{
-					App.Models.Get<NotificationService>().NotifyMessage.Value =
+					_notification.NotifyMessage.Value =
 						"新しいバージョンが利用可能です！" +
 						"アップデートするにはここをクリックするか、メニューから選択してください。";
 				});

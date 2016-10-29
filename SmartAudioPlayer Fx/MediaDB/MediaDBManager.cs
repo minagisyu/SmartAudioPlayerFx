@@ -21,9 +21,9 @@ namespace SmartAudioPlayerFx.MediaDB
 		CompositeDisposable _disposables = new CompositeDisposable();
 		SQLiteConnectionStringBuilder connStrBuilder;
 
-		public MediaDBManager()
+		public MediaDBManager(StorageManager storage)
 		{
-			var db_filename = App.Services.GetInstance<StorageManager>().AppDataDirectory.CreateFilePath("data", "media.db");
+			var db_filename = storage.AppDataDirectory.CreateFilePath("data", "media.db");
 
 			// ファイルが削除出来ないように開きっぱなしにする
 			Directory.CreateDirectory(Path.GetDirectoryName(db_filename));

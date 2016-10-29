@@ -5,46 +5,47 @@ using System.Text;
 
 namespace Quala
 {
-	public sealed partial class Preference : IDisposable
+	public sealed partial class PreferenceManager
 	{
-		//= Preference
-		void IDisposable.Dispose() { }
-
 		//= Entry
 		readonly ConcurrentDictionary<string, Entry> _entries = new ConcurrentDictionary<string, Entry>(StringComparer.CurrentCultureIgnoreCase);
 
-		public Preference ClearEntry()
+		public PreferenceManager ClearEntry()
 		{
-			lock (_entries) { _entries.Clear(); }
+			_entries.Clear();
 			return this;
 		}
 
-		public Preference AddEntry(string key, string jsonFilePath)
+		public PreferenceManager AddEntry(string key, string jsonFilePath)
 		{
-			lock (_entries) { _entries[key] = new Entry(jsonFilePath); }
+			_entries[key] = new Entry(jsonFilePath);
 			return this;
 		}
 
-		public Preference RemoveEntry(string key)
+		public PreferenceManager RemoveEntry(string key)
 		{
-			lock (_entries) { Entry v; _entries.TryRemove(key, out v); }
+			Entry v;
+			_entries.TryRemove(key, out v);
 			return this;
 		}
 
-		public Entry this[string key]
-		{
-			get { lock (_entries) { return _entries[key]; } }
-		}
+		public Entry this[string key] => _entries[key];
 
 		//= Save/Load
 		public void LoadAll()
 		{
-			lock (_entries) { foreach (var e in _entries.Values) { e.Load(); } }
+			foreach (var e in _entries.Values)
+			{
+				e.Load();
+			}
 		}
 
 		public void SaveAll()
 		{
-			lock (_entries) { foreach (var e in _entries.Values) { e.Save(); } }
+			foreach (var e in _entries.Values)
+			{
+				e.Save();
+			}
 		}
 
 		//= Json

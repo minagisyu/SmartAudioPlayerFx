@@ -28,25 +28,29 @@ namespace SmartAudioPlayerFx.MediaDB
 		public ReactiveProperty<string> FocusPath { get; private set; }
 		public VersionedCollection<MediaItem> Items { get; private set; }
 		readonly CompositeDisposable _disposables;
+		MediaDBManager _media_db;
+		MediaItemFilterManager _item_filter;
 
-		public MediaDBViewManager()
+		public MediaDBViewManager(XmlPreferencesManager preference, MediaDBManager media_db, MediaItemFilterManager item_filter)
 		{
 			FocusPath = new ReactiveProperty<string>(mode: ReactivePropertyMode.RaiseLatestValueOnSubscribe);
 			Items = new VersionedCollection<MediaItem>(
 				new CustomEqualityComparer<MediaItem>(x => x.ID.GetHashCode(), (x, y) => x.ID == y.ID));
 			_disposables = new CompositeDisposable(FocusPath);
+			_media_db = media_db;
+			_item_filter = item_filter;
 
 			// Preferences
-			App.Services.GetInstance<XmlPreferencesManager>().PlayerSettings
+			preference.PlayerSettings
 				.Subscribe(x => LoadPreferences(x))
 				.AddTo(_disposables);
-			App.Services.GetInstance<XmlPreferencesManager>().SerializeRequestAsObservable()
-				.Subscribe(_ => SavePreferences(App.Services.GetInstance<XmlPreferencesManager>().PlayerSettings.Value))
+			preference.SerializeRequestAsObservable()
+				.Subscribe(_ => SavePreferences(preference.PlayerSettings.Value))
 				.AddTo(_disposables);
 
 			// MediaItemFilter
 			// 最後の通知から500ms後にItemsの再検証
-			ManagerServices.MediaItemFilterManager.PropertyChangedAsObservable()
+			item_filter.PropertyChangedAsObservable()
 				.Throttle(TimeSpan.FromMilliseconds(500))
 				.Subscribe(_ => RevalidateItems(FocusPath.Value))
 				.AddTo(_disposables);
@@ -132,7 +136,7 @@ namespace SmartAudioPlayerFx.MediaDB
 			var item = Items.GetLatest()
 				.Where(x => filepath.Equals(x.FilePath, StringComparison.InvariantCultureIgnoreCase))
 				.FirstOrDefault()
-				?? ManagerServices.MediaDBManager.Get(filepath);
+				?? _media_db.Get(filepath);
 
 			// リアルファイルは存在する？
 			var exists = File.Exists(filepath);
@@ -182,11 +186,11 @@ namespace SmartAudioPlayerFx.MediaDB
 			if (item.ID == 0) return null;
 			return _RaiseDBUpdate_Task = Task.Run(()=>
 			{
-				ManagerServices.MediaDBManager.UseTransaction(dbaction =>
+				_media_db.UseTransaction(dbaction =>
 				{
 					dbaction.Update(new[] { item }, columns)
 						.AsParallel()
-						.Where(x => ManagerServices.MediaItemFilterManager.Validate(x))
+						.Where(x => _item_filter.Validate(x))
 						.ForAll(x => Items.AddOrReplace(x));
 				});
 			});
@@ -205,11 +209,11 @@ namespace SmartAudioPlayerFx.MediaDB
 			if (item == null) return null;
 			return _RaiseDBInsert_Task = Task.Run(() =>
 			{
-				ManagerServices.MediaDBManager.UseTransaction(dbaction =>
+				_media_db.UseTransaction(dbaction =>
 				{
 					dbaction.Insert(new[] { item })
 						.AsParallel()
-						.Where(x => ManagerServices.MediaItemFilterManager.Validate(x))
+						.Where(x => _item_filter.Validate(x))
 						.ForAll(x => Items.AddOrReplace(x));
 				});
 			});
@@ -251,10 +255,10 @@ namespace SmartAudioPlayerFx.MediaDB
 				var cd = new ConcurrentDictionary<string, object>(StringComparer.CurrentCultureIgnoreCase);
 				var notify = ItemsCollecting;
 
-				ManagerServices.MediaDBManager.GetFromFilePath_ExistsOnly(path)
+				_media_db.GetFromFilePath_ExistsOnly(path)
 					.TakeWhile(_ => ct.IsCancellationRequested == false)
 					.AsParallel()
-					.Where(x => ManagerServices.MediaItemFilterManager.Validate(x))
+					.Where(x => _item_filter.Validate(x))
 					.ForAll(x =>
 					{
 						var dir = x.GetFilePathDir();
@@ -312,15 +316,15 @@ namespace SmartAudioPlayerFx.MediaDB
 				Items.GetLatest()
 					.TakeWhile(_ => ct.IsCancellationRequested == false)
 					.AsParallel()
-					.Where(x => ManagerServices.MediaItemFilterManager.Validate(x) == false)
+					.Where(x => _item_filter.Validate(x) == false)
 					.ForAll(x => Items.Remove(x));
 
 				// phase db_add: DBを再読み込みして追加or更新
 				App.Services.GetInstance<LogManager>().AddDebugLog($" ..RevalidateTask-phase2: version:{Items.Version}");
-				ManagerServices.MediaDBManager.GetFromFilePath_ExistsOnly(path)
+				_media_db.GetFromFilePath_ExistsOnly(path)
 					.TakeWhile(_ => ct.IsCancellationRequested == false)
 					.AsParallel()
-					.Where(x => ManagerServices.MediaItemFilterManager.Validate(x))
+					.Where(x => _item_filter.Validate(x))
 					.ForAll(x => Items.AddOrReplace(x));
 
 				sw.Stop();
@@ -398,13 +402,13 @@ namespace SmartAudioPlayerFx.MediaDB
 						if (notify != null)
 							notify("[1] " + x.DirectoryName);
 
-						ManagerServices.MediaDBManager.UseTransaction(dbaction =>
+						_media_db.UseTransaction(dbaction =>
 						{
 							// MEMO:
 							// LastWrite = MinValueはphase3で更新する際に識別するためのフラグとして使用する
 							var xs = x.Files
 								.Select(y => new MediaItem(y) { LastWrite = DateTime.MinValue.Ticks })
-								.Where(y => ManagerServices.MediaItemFilterManager.Validate(y));
+								.Where(y => _item_filter.Validate(y));
 							foreach (var y in dbaction.Insert(xs))
 							{
 								add_count++;
@@ -421,10 +425,10 @@ namespace SmartAudioPlayerFx.MediaDB
 					sw.Restart();
 					var cd = new ConcurrentDictionary<string, object>(StringComparer.CurrentCultureIgnoreCase);
 					var updateList = new ConcurrentBag<MediaItem>();
-					ManagerServices.MediaDBManager.GetFromFilePath(path)
+					_media_db.GetFromFilePath(path)
 						.TakeWhile(_ => ct.IsCancellationRequested == false)
 						.AsParallel()
-						.Where(x => ManagerServices.MediaItemFilterManager.Validate(x))
+						.Where(x => _item_filter.Validate(x))
 						.ForAll(x =>
 						{
 							var dir = x.GetFilePathDir();
@@ -448,7 +452,7 @@ namespace SmartAudioPlayerFx.MediaDB
 						notify(string.Empty);
 					if (!updateList.IsEmpty)
 					{
-						ManagerServices.MediaDBManager.UseTransaction(dbaction =>
+						_media_db.UseTransaction(dbaction =>
 						{
 							// MEMO:
 							// .ToArray()で引っ張ってならないとupdateListの中身が処理されない...
@@ -462,16 +466,16 @@ namespace SmartAudioPlayerFx.MediaDB
 					// corescan finish
 					if (corescan_finished != null)
 						corescan_finished();
-					ManagerServices.MediaDBManager.Recycle(false);
+					_media_db.Recycle(false);
 
 					// phase.3: taginfo recheck...
 					sw.Restart();
 					cd.Clear();
 					updateList = new ConcurrentBag<MediaItem>();
-					ManagerServices.MediaDBManager.GetFromFilePath_ExistsOnly(path)
+					_media_db.GetFromFilePath_ExistsOnly(path)
 						.TakeWhile(_ => ct.IsCancellationRequested == false)
 						.AsParallel()
-						.Where(x => ManagerServices.MediaItemFilterManager.Validate(x))
+						.Where(x => _item_filter.Validate(x))
 						.ForAll(x =>
 						{
 							var dir = x.GetFilePathDir();
@@ -502,7 +506,7 @@ namespace SmartAudioPlayerFx.MediaDB
 						notify(string.Empty);
 					if (!updateList.IsEmpty)
 					{
-						ManagerServices.MediaDBManager.UseTransaction(dbaction =>
+						_media_db.UseTransaction(dbaction =>
 						{
 							dbaction.Update(updateList,
 								_ => _.FilePath,

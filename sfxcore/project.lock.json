@@ -233,28 +233,6 @@
           "lib/netstandard1.0/_._": {}
         }
       },
-      "SimpleInjector/3.2.3": {
-        "dependencies": {
-          "NETStandard.Library": "1.6.0",
-          "System.ComponentModel": "4.0.1",
-          "System.Diagnostics.Debug": "4.0.11",
-          "System.Diagnostics.Tools": "4.0.1",
-          "System.Globalization": "4.0.11",
-          "System.Linq": "4.1.0",
-          "System.Linq.Expressions": "4.1.0",
-          "System.Reflection": "4.1.0",
-          "System.Reflection.Extensions": "4.0.1",
-          "System.Runtime": "4.1.0",
-          "System.Runtime.Extensions": "4.1.0",
-          "System.Threading": "4.0.11"
-        },
-        "compile": {
-          "lib/netstandard1.0/SimpleInjector.dll": {}
-        },
-        "runtime": {
-          "lib/netstandard1.0/SimpleInjector.dll": {}
-        }
-      },
       "System.AppContext/4.1.0": {
         "dependencies": {
           "System.Runtime": "4.1.0"
@@ -1574,23 +1552,6 @@
         "lib/netstandard1.0/_._",
         "runtime.native.System.Security.Cryptography.4.0.0.nupkg.sha512",
         "runtime.native.System.Security.Cryptography.nuspec"
-      ]
-    },
-    "SimpleInjector/3.2.3": {
-      "sha512": "K+sanT0SyWF6ZfkzNne0yYmTUgKo4KEFKccrgngJkGMqLxkYyXhT9V4/tN3G6J1GR0ucvPwNVop0RuU+J+4jMg==",
-      "type": "package",
-      "path": "SimpleInjector/3.2.3",
-      "files": [
-        "SimpleInjector.3.2.3.nupkg.sha512",
-        "SimpleInjector.nuspec",
-        "lib/net40-client/SimpleInjector.dll",
-        "lib/net40-client/SimpleInjector.xml",
-        "lib/net45/SimpleInjector.dll",
-        "lib/net45/SimpleInjector.xml",
-        "lib/netstandard1.0/SimpleInjector.dll",
-        "lib/netstandard1.0/SimpleInjector.xml",
-        "lib/portable-net4+sl4+wp8+win8+wpa81/SimpleInjector.dll",
-        "lib/portable-net4+sl4+wp8+win8+wpa81/SimpleInjector.xml"
       ]
     },
     "System.AppContext/4.1.0": {

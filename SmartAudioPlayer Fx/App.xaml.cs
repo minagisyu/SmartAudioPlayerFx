@@ -1,8 +1,12 @@
 ﻿using Quala;
 using Reactive.Bindings;
 using SimpleInjector;
+using SmartAudioPlayerFx.AppUpdate;
+using SmartAudioPlayerFx.MediaDB;
+using SmartAudioPlayerFx.MediaPlayer;
 using SmartAudioPlayerFx.Notification;
 using SmartAudioPlayerFx.Preferences;
+using SmartAudioPlayerFx.Shortcut;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -20,7 +24,62 @@ namespace SmartAudioPlayerFx
 	{
 		// model
 		public static Container Services { get; } = new Container();
-        public static ReferenceManager Models { get; private set; }
+
+		static App()
+		{
+			// WinForms Initialize
+			WinForms.Application.EnableVisualStyles();
+			WinForms.Application.SetCompatibleTextRenderingDefault(false);
+
+			// Register and Pre-Initialize Services
+			Services.RegisterSingleton(() => new AppMutexManager("SmartAudioPlayer Fx"));
+
+			Services.RegisterSingleton<StorageManager>();
+			Services.RegisterInitializer<StorageManager>(storage =>
+			{
+				var asm = Assembly.GetEntryAssembly();
+				var asmName = asm != null ? asm.GetName().Name : string.Empty;
+				storage.AppDataDirectory = new StorageManager.DataPath(new DirectoryInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), asmName)));
+				storage.AppDirectory = new StorageManager.DataPath(new DirectoryInfo(Path.Combine(Path.GetDirectoryName(asm.Location), asmName)));
+			});
+
+			Services.RegisterSingleton<LogManager>();
+			Services.RegisterInitializer<LogManager>(log =>
+			{
+				var logDir = Services.GetInstance<StorageManager>()
+					.AppDataDirectory
+					.CreateFilePathInfo("SmartAudioPlayer Fx.log");
+				log.WriteLogHeader(Assembly.GetEntryAssembly());
+				log.Output.Subscribe(s =>
+				{
+					Debug.WriteLine(s);
+					using (var stream = logDir.AppendText())
+					{
+						stream.WriteLine(s);
+					}
+				});
+			});
+			//= standalone
+			Services.RegisterSingleton<XmlPreferencesManager>();
+			Services.RegisterSingleton<AudioPlayerManager>();
+			Services.RegisterSingleton<NotificationManager>();
+			Services.RegisterSingleton<TasktrayIconView>();//[NotificationManager]
+			Services.RegisterSingleton<MediaDBManager>();
+			//=require Preferences+TaskIcon
+			Services.RegisterSingleton<AppUpdateManager>();
+			//=require Preferences
+			Services.RegisterSingleton<MediaItemFilterManager>();
+			//=require Preferences+MediaDB+MediaItemFilter
+			Services.RegisterSingleton<MediaDBViewManager>();
+			//=require Preferences+MediaDBView
+			Services.RegisterSingleton<RecentsManager>();
+			//=require Preferences+AudioPlayer+MediaDBView
+			Services.RegisterSingleton<JukeboxManager>();
+			//=require Preferences+AudioPlayer+Jukebox
+			Services.RegisterSingleton<ShortcutKeyManager>();
+			//=add_xxx
+			Services.RegisterSingleton<ContextMenuManager>();
+		}
 
 		// ui
 		TasktrayIconView tasktray;
@@ -29,38 +88,6 @@ namespace SmartAudioPlayerFx
 		{
 			base.OnStartup(e);
 			var sw = Stopwatch.StartNew();
-
-			// WinForms Initialize
-			WinForms.Application.EnableVisualStyles();
-			WinForms.Application.SetCompatibleTextRenderingDefault(false);
-
-			// Logger Setting
-			Models = new ReferenceManager();
-
-			// Init Services
-			Services.RegisterSingleton<StorageManager>(() =>
-			{
-				var storage = new StorageManager();
-				var asm = Assembly.GetEntryAssembly();
-				var asmName = asm != null ? asm.GetName().Name : string.Empty;
-				storage.AppDataDirectory = new StorageManager.DataPath(new DirectoryInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), asmName)));
-				storage.AppDirectory = new StorageManager.DataPath(new DirectoryInfo(Path.Combine(Path.GetDirectoryName(asm.Location), asmName)));
-				return storage;
-			});
-			Services.RegisterSingleton<LogManager>(() =>
-			{
-				var log = new LogManager(Assembly.GetEntryAssembly());
-				log.MinLevel = LogManager.Level.LBRARY_DEBUG;
-				log.Output.Subscribe(s =>
-				{
-					Debug.WriteLine(s);
-					using (var stream = Services.GetInstance<StorageManager>().AppDataDirectory.CreateFilePathInfo("SmartAudioPlayer Fx.log").AppendText())
-					{
-						stream.WriteLine(s);
-					}
-				});
-				return log;
-			});
 
 #if DEBUG
 #else
@@ -73,26 +100,25 @@ namespace SmartAudioPlayerFx
 
 			// minimum Initialize
 			UIDispatcherScheduler.Initialize();
-			ManagerServices.Initialize();
 			Exit += delegate
 			{
-				ManagerServices.Dispose();
-				Models.Dispose();
+				Services.Dispose();
 			};
 
 			// tasktray
-			tasktray = new TasktrayIconView();
+			tasktray = Services.GetInstance<TasktrayIconView>();
 
 			// アップデートチェック
 			// trueが帰ったときはShutdown()呼んだ後なのでretuenする
 			if (HandleUpdateProcess(e.Args))
 				return;
 
+#if !DEBUG
 			// 多重起動の抑制
 			// trueが帰ったときはShutdown()呼んだ後なのでretuenする
 			if (CheckApplicationInstance())
 				return;
-
+#endif
 			this.MainWindow = new Views.MainWindow();
 			this.MainWindow.Show();
 
@@ -109,7 +135,7 @@ namespace SmartAudioPlayerFx
 			new DispatcherTimer(
 				TimeSpan.FromMinutes(5),
 				DispatcherPriority.Normal,
-				(_, __) => App.Models.Get<XmlPreferencesManager>().Save(),
+				(_, __) => App.Services.GetInstance<XmlPreferencesManager>().Save(),
 				Dispatcher);
 
 			sw.Stop();
@@ -118,8 +144,9 @@ namespace SmartAudioPlayerFx
 
 		bool HandleUpdateProcess(string[] args)
 		{
-			ManagerServices.AppUpdateManager.OnPostUpdate(args);
-			if (ManagerServices.AppUpdateManager.OnUpdate(args))
+			var app_update = Services.GetInstance<AppUpdateManager>();
+			app_update.OnPostUpdate(args);
+			if (app_update.OnUpdate(args))
 			{
 				Shutdown(-2);
 				return true;
@@ -128,11 +155,7 @@ namespace SmartAudioPlayerFx
 		}
 		bool CheckApplicationInstance()
 		{
-#if DEBUG
-			return false;
-#else
-			AppService.AppMutex.Name = "SmartAudioPlayer Fx";
-			if (AppService.AppMutex.ExistApplicationInstance())
+			if (Services.GetInstance<AppMutexManager>().ExistApplicationInstance())
 			{
 				// すでに起動しているインスタンスがある
 				App.Current?.ShowMessage("多重起動は出来ません。アプリケーションを終了します。");
@@ -140,7 +163,6 @@ namespace SmartAudioPlayerFx
 				return true;
 			}
 			return false;
-#endif
 		}
 
 	}

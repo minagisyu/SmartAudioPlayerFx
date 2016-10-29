@@ -70,7 +70,7 @@ namespace SmartAudioPlayerFx.Views
 				{
 					App.Services.GetInstance<LogManager>().AddDebugLog("App MainWindow Closing, (save/hide)");
 					ViewModel.SavePreferences();
-					App.Models.Get<AudioPlayerManager>().Close();
+					App.Services.GetInstance<AudioPlayerManager>().Close();
 				}
 			};
 

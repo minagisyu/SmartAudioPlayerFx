@@ -1,8 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Reflection;
-
-namespace Quala
+﻿namespace Quala
 {
 	public sealed partial class StorageManager
 	{

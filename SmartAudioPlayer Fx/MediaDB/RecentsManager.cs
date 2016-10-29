@@ -20,18 +20,21 @@ namespace SmartAudioPlayerFx.MediaDB
 		readonly List<string> _recents_opened_folder = new List<string>();
 		readonly List<string> _recents_play_items = new List<string>();
 		readonly CompositeDisposable _disposables = new CompositeDisposable();
+		MediaDBManager _media_db;
 
-		public RecentsManager()
+		public RecentsManager(XmlPreferencesManager preference, MediaDBManager media_db, MediaDBViewManager media_db_view)
 		{
-			App.Models.Get<XmlPreferencesManager>().PlayerSettings
+			_media_db = media_db;
+
+			preference.PlayerSettings
 				.Subscribe(x => LoadPreferences(x))
 				.AddTo(_disposables);
-			App.Models.Get<XmlPreferencesManager>().SerializeRequestAsObservable()
-				.Subscribe(_ => SavePreferences(App.Models.Get<XmlPreferencesManager>().PlayerSettings.Value))
+			preference.SerializeRequestAsObservable()
+				.Subscribe(_ => SavePreferences(preference.PlayerSettings.Value))
 				.AddTo(_disposables);
 
 			LoadRecentsPlayItemsFromDB();
-			ManagerServices.MediaDBViewManager.FocusPath
+			media_db_view.FocusPath
 				.Subscribe(x => AddRecentsOpenedFolder(x))
 				.AddTo(_disposables);
 		}
@@ -42,7 +45,7 @@ namespace SmartAudioPlayerFx.MediaDB
 
 		void LoadRecentsPlayItemsFromDB()
 		{
-			var items = ManagerServices.MediaDBManager.RecentPlayItemsPath(100)
+			var items = _media_db.RecentPlayItemsPath(100)
 				.Distinct(StringComparer.CurrentCultureIgnoreCase)
 				.ToArray();
 			lock (_recents_play_items)

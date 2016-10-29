@@ -12,8 +12,6 @@ namespace Quala
 			CRITICAL_ERROR = 40,    // 重大なエラー
 			TEST = 50,              // テスト
 			DEBUG = 60,             // デバッグ
-
-			LBRARY_DEBUG = 90,      // ライブラリ用
 		}
 	}
 }

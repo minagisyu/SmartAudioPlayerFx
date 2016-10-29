@@ -29,17 +29,21 @@ namespace SmartAudioPlayerFx.Shortcut
 		HotKey hotkey = new HotKey();
 		Dictionary<Features, Keys> shortcuts = new Dictionary<Features, Keys>();
 		readonly CompositeDisposable _disposables;
+		AudioPlayerManager _audio_player;
+		JukeboxManager _jukebox;
 
-		public ShortcutKeyManager()
+		public ShortcutKeyManager(XmlPreferencesManager preference, AudioPlayerManager audio_player, JukeboxManager jukebox)
 		{
 			ResetShortcuts();
 			_disposables = new CompositeDisposable(hotkey);
+			_audio_player = audio_player;
+			_jukebox = jukebox;
 
-			App.Models.Get<XmlPreferencesManager>().PlayerSettings
+			preference.PlayerSettings
 				.Subscribe(x => LoadPreferences(x))
 				.AddTo(_disposables);
-			App.Models.Get<XmlPreferencesManager>().SerializeRequestAsObservable()
-				.Subscribe(_ => SavePreferences(App.Models.Get<XmlPreferencesManager>().PlayerSettings.Value))
+			preference.SerializeRequestAsObservable()
+				.Subscribe(_ => SavePreferences(preference.PlayerSettings.Value))
 				.AddTo(_disposables);
 		}
 		public void Dispose()
@@ -182,29 +186,29 @@ namespace SmartAudioPlayerFx.Shortcut
 			switch (feature)
 			{
 				case Features.PlayMode_Random:
-					return () => ManagerServices.JukeboxManager.SelectMode.Value = JukeboxManager.SelectionMode.Random;
+					return () => _jukebox.SelectMode.Value = JukeboxManager.SelectionMode.Random;
 				case Features.PlayMode_FileName:
-					return () => ManagerServices.JukeboxManager.SelectMode.Value = JukeboxManager.SelectionMode.Filename;
+					return () => _jukebox.SelectMode.Value = JukeboxManager.SelectionMode.Filename;
 				case Features.PlayMode_Repeat:
-					return () => ManagerServices.JukeboxManager.IsRepeat.Value = (!ManagerServices.JukeboxManager.IsRepeat.Value);
+					return () => _jukebox.IsRepeat.Value = (!_jukebox.IsRepeat.Value);
 				case Features.Player_PlayPause:
-					return () => App.Models.Get<AudioPlayerManager>().PlayPause();
+					return () => _audio_player.PlayPause();
 				case Features.Player_Skip:
-					return () => ManagerServices.JukeboxManager.SelectNext(true);
+					return () => _jukebox.SelectNext(true);
 				case Features.Player_Replay:
-					return () => App.Models.Get<AudioPlayerManager>().Replay();
+					return () => _audio_player.Replay();
 				case Features.Player_Previous:
-					return () => ManagerServices.JukeboxManager.SelectPrevious();
+					return () => _jukebox.SelectPrevious();
 				case Features.Volume_Up:
-					return () => App.Models.Get<AudioPlayerManager>().Volume = App.Models.Get<AudioPlayerManager>().Volume + 0.1;
+					return () => _audio_player.Volume = _audio_player.Volume + 0.1;
 				case Features.Volume_Down:
-					return () => App.Models.Get<AudioPlayerManager>().Volume = App.Models.Get<AudioPlayerManager>().Volume - 0.1;
+					return () => _audio_player.Volume = _audio_player.Volume - 0.1;
 				case Features.Window_ShowHide:
-					return () => { if (Window_ShowHide_Request != null) { Window_ShowHide_Request(); } };
+					return () => Window_ShowHide_Request?.Invoke();
 				case Features.Window_MoveRightDown:
-					return () => { if (Window_Move_On_RightDown_Request != null) { Window_Move_On_RightDown_Request(); } };
+					return () => Window_Move_On_RightDown_Request?.Invoke();
 				case Features.App_Exit:
-					return () => { if (App.Current != null) { App.Current.Shutdown(); } };
+					return () => App.Current?.Shutdown();
 			}
 			return null;
 		}

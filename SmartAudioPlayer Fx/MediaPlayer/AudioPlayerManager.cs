@@ -14,6 +14,7 @@ namespace SmartAudioPlayerFx.MediaPlayer
 	// 音楽を再生するためのプレーヤー
 	// 内部でWPFのMediaPlayerクラスを利用するが、再生エラー時にレジストリ追加してリトライするなどの機能を実装。
 	// 将来的にはFFmpegの再生クラスに移行するのでWindows依存でok
+	[SingletonService]
 	sealed class AudioPlayerManager : IDisposable
 	{
 		public static bool IsEnableSoundFadeEffect { get; set; } = true;

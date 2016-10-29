@@ -1,9 +1,11 @@
-﻿using Reactive.Bindings;
+﻿using Quala;
+using Reactive.Bindings;
 using System;
 
 namespace SmartAudioPlayerFx.Notification
 {
-	sealed class NotificationService
+	[SingletonService]
+	public sealed class NotificationManager
 	{
 		public event Action NotifyClicked;
 		public void RaiseNotifyClicked() => NotifyClicked?.Invoke();

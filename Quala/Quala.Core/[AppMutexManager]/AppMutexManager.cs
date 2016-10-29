@@ -3,45 +3,28 @@ using System.Threading;
 
 namespace Quala
 {
+	[SingletonService]
 	public sealed partial class AppMutexManager : IDisposable
 	{
-		string name = null;
-		Mutex _mutex = null;
+		Mutex _mutex;
+
+		public AppMutexManager(string name)
+		{
+			_mutex = new Mutex(false, name);
+		}
 
 		public void Dispose()
 		{
-			if (_mutex == null) return;
-
-			lock (_mutex)
-			{
-				// ReleaseMutex()呼ばないとMutexが残る...
-				_mutex.ReleaseMutex();
-				_mutex.Dispose();
-				_mutex = null;
-			}
-		}
-
-		// Nameが設定されるとMutexが生成される
-		public string Name
-		{
-			get { return name; }
-			set
-			{
-				this.Dispose();
-				name = value;
-				_mutex = new Mutex(false, value);
-			}
+			// ReleaseMutex()呼ばないとMutexが残る...
+			_mutex.ReleaseMutex();
+			_mutex.Dispose();
+			_mutex = null;
 		}
 
 		// Mutexを調べることでインスタンス状態をチェック
 		public bool ExistApplicationInstance()
 		{
-			if (_mutex == null) return false;
-			
-			lock(_mutex)
-			{
-				return (_mutex.WaitOne(0) == false);
-			}
+			return (_mutex?.WaitOne(0) == false);
 		}
 
 	}
