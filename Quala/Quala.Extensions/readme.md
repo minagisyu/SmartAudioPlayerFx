@@ -7,7 +7,7 @@ Utility, Framework Extension, and Collections.
 ### Assembly References
 
 #### Nuget
- - Rx-Main
+ - System.Reactive
 
 #### Framework
  - System
