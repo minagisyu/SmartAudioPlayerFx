@@ -9,7 +9,7 @@ using System.Windows.Threading;
 
 namespace SmartAudioPlayerFx.Notification
 {
-	sealed class TasktrayIconView
+	sealed class TasktrayIconView : IDisposable
 	{
 		NotifyIcon tray;
 		ContextMenuManager _context_menu;
@@ -35,6 +35,11 @@ namespace SmartAudioPlayerFx.Notification
 		}
 
 		public event Action BaloonTipClicked;
+
+		public void Dispose()
+		{
+			tray.Dispose();
+		}
 
 		public void SetMenuItems(MainWindow mw)
 		{

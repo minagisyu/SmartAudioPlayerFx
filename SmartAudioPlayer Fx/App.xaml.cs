@@ -33,9 +33,6 @@ namespace SmartAudioPlayerFx
 			RegisterServices(Services);
 		}
 
-		// ui
-		TasktrayIconView tasktray;
-
 		protected override void OnStartup(StartupEventArgs e)
 		{
 			base.OnStartup(e);
@@ -56,9 +53,6 @@ namespace SmartAudioPlayerFx
 			{
 				Services.Dispose();
 			};
-
-			// tasktray
-			tasktray = Services.GetInstance<TasktrayIconView>();
 
 			// アップデートチェック
 			// trueが帰ったときはShutdown()呼んだ後なのでretuenする
@@ -81,13 +75,17 @@ namespace SmartAudioPlayerFx
 			};
 
 			// Set TrayIcon Menus
-			tasktray.SetMenuItems((MainWindow)this.MainWindow);
+			Services.GetInstance<TasktrayIconView>().SetMenuItems((MainWindow)this.MainWindow);
 
 			// 定期保存(すぐに開始する)
 			new DispatcherTimer(
 				TimeSpan.FromMinutes(5),
 				DispatcherPriority.Normal,
-				(_, __) => App.Services.GetInstance<XmlPreferencesManager>().Save(),
+				(_, __) =>
+				{
+					App.Services.GetInstance<XmlPreferencesManager>().Save();
+					App.Services.GetInstance<JsonPreferencesManager>().Save();
+				},
 				Dispatcher);
 
 			sw.Stop();
@@ -152,6 +150,7 @@ namespace SmartAudioPlayerFx
 			});
 			//= standalone
 			container.RegisterSingleton<XmlPreferencesManager>();
+			container.RegisterSingleton<JsonPreferencesManager>();
 			container.RegisterSingleton<AudioPlayerManager>();
 			container.RegisterSingleton<NotificationManager>();
 			container.RegisterSingleton<TasktrayIconView>();//[NotificationManager]

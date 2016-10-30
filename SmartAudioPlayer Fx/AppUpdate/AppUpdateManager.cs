@@ -1,4 +1,5 @@
-﻿using Quala;
+﻿using Newtonsoft.Json.Linq;
+using Quala;
 using Quala.Extensions;
 using Reactive.Bindings.Extensions;
 using SmartAudioPlayerFx.Notification;
@@ -49,6 +50,14 @@ namespace SmartAudioPlayerFx.AppUpdate
 			preference.SerializeRequestAsObservable()
 				.Subscribe(_ => SavePreferences(preference.UpdateSettings.Value))
 				.AddTo(_disposables);
+			// json
+			var json = App.Services.GetInstance<JsonPreferencesManager>();
+			json.UpdateSettings
+				.Subscribe(x => LoadUpdateJsonPreferences(x))
+				.AddTo(_disposables);
+			json.SerializeRequestAsObservable()
+				.Subscribe(_disposables => SaveJsonPreferences(json.UpdateSettings.Value))
+				.AddTo(_disposables);
 
 			// タスクトレイ連携
 			_notification = notification;
@@ -88,6 +97,24 @@ namespace SmartAudioPlayerFx.AppUpdate
 				.SetAttributeValueEx("LastCheckDate", LastCheckDate)
 				.SetAttributeValueEx("CheckIntervalDays", CheckIntervalDays)
 				.SetAttributeValueEx("IsAutoUpdateCheckEnabled", IsAutoUpdateCheckEnabled);
+		}
+		void LoadUpdateJsonPreferences(JObject element)
+		{
+			/*	element
+					.GetAttributeValueEx("UpdateInfoUri", new Uri("http://update.intre.net/sapfx/update.xml"), o => UpdateInfo = o)
+					.GetAttributeValueEx("LastCheckVersion", Assembly.GetExecutingAssembly().GetName().Version, o => LastCheckVersion = o)
+					.GetAttributeValueEx("LastCheckDate", DateTime.MinValue, o => LastCheckDate = o)
+					.GetAttributeValueEx("CheckIntervalDays", 7, o => CheckIntervalDays = Math.Min(1, o))
+					.GetAttributeValueEx("IsAutoUpdateCheckEnabled", true, o => IsAutoUpdateCheckEnabled = o);
+			*/
+		}
+		void SaveJsonPreferences(JObject element)
+		{
+			element["UpdateInfoUri"] = UpdateInfo;
+			element["LastCheckVersion"] = LastCheckVersion.ToString();
+			element["LastCheckDate"] = LastCheckDate;
+			element["CheckIntervalDays"] = CheckIntervalDays;
+			element["IsAutoUpdateCheckEnabled"] = IsAutoUpdateCheckEnabled;
 		}
 		void OnAutoUpdateCheck()
 		{

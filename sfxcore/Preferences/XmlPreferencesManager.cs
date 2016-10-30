@@ -101,7 +101,7 @@ namespace SmartAudioPlayerFx.Preferences
 		}
 	}
 
-	public static class PreferenceManagerExtensions
+	public static class XmlPreferenceManagerExtensions
 	{
 		public static IObservable<Unit> SerializeRequestAsObservable(this XmlPreferencesManager manager)
 			=> Observable.FromEvent(v => manager.SerializeRequest += v, v => manager.SerializeRequest -= v);
