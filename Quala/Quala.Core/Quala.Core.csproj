@@ -47,6 +47,9 @@
     <Compile Include="[LogManager]\LogManagerExtension.cs" />
     <Compile Include="[LogManager]\LogManager_Item.cs" />
     <Compile Include="[LogManager]\LogManager_Level.cs" />
+    <Compile Include="[PreferenceManager]\EntryExtension.cs" />
+    <Compile Include="[PreferenceManager]\PreferenceManager.cs" />
+    <Compile Include="[PreferenceManager]\PreferenceManager_Entry.cs" />
     <Compile Include="[StorageManager]\StorageManager.cs" />
     <Compile Include="[StorageManager]\StorageManager_AppDataPath.cs" />
   </ItemGroup>

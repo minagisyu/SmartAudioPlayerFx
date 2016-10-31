@@ -61,7 +61,8 @@ namespace SmartAudioPlayerFx.Preferences
 			var path = Path.Combine(BaseDir ?? string.Empty, Path.Combine(filepaths));
 			Directory.CreateDirectory(Path.GetDirectoryName(path));
 
-			var json_string = FormatOutput(element.ToString());
+			//	var json_string = FormatOutput(element.ToString());
+			var json_string = element.ToString(Formatting.Indented);
 			File.WriteAllText(path, json_string);
 		}
 

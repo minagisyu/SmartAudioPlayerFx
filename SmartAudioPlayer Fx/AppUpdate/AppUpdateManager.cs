@@ -25,9 +25,8 @@ using WinForms = System.Windows.Forms;
 
 namespace SmartAudioPlayerFx.AppUpdate
 {
-	//	[Require(typeof(XmlPreferencesManager))]
-	//	[Require(typeof(TaskIconManager))]
-	sealed class AppUpdateManager : IDisposable
+	[SingletonService]
+	public sealed class AppUpdateManager : IDisposable
 	{
 		#region ctor
 
@@ -56,7 +55,7 @@ namespace SmartAudioPlayerFx.AppUpdate
 				.Subscribe(x => LoadUpdateJsonPreferences(x))
 				.AddTo(_disposables);
 			json.SerializeRequestAsObservable()
-				.Subscribe(_disposables => SaveJsonPreferences(json.UpdateSettings.Value))
+				.Subscribe(_ => SaveJsonPreferences(json.UpdateSettings.Value))
 				.AddTo(_disposables);
 
 			// タスクトレイ連携
@@ -116,6 +115,7 @@ namespace SmartAudioPlayerFx.AppUpdate
 			element["CheckIntervalDays"] = CheckIntervalDays;
 			element["IsAutoUpdateCheckEnabled"] = IsAutoUpdateCheckEnabled;
 		}
+
 		void OnAutoUpdateCheck()
 		{
 			if (IsAutoUpdateCheckEnabled == false) return;

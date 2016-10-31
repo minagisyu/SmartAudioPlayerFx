@@ -43,6 +43,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{9EAA56A9-2
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "test", "test\test\test.csproj", "{E66999C0-42ED-476D-8F6E-F9752612FD71}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleApplication1", "test\ConsoleApplication1\ConsoleApplication1.csproj", "{7DD39827-7E49-4E1E-B357-16CD351A841E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -407,6 +409,30 @@ Global
 		{E66999C0-42ED-476D-8F6E-F9752612FD71}.UpdateTest|x64.Build.0 = Release|Any CPU
 		{E66999C0-42ED-476D-8F6E-F9752612FD71}.UpdateTest|x86.ActiveCfg = Release|Any CPU
 		{E66999C0-42ED-476D-8F6E-F9752612FD71}.UpdateTest|x86.Build.0 = Release|Any CPU
+		{7DD39827-7E49-4E1E-B357-16CD351A841E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7DD39827-7E49-4E1E-B357-16CD351A841E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7DD39827-7E49-4E1E-B357-16CD351A841E}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{7DD39827-7E49-4E1E-B357-16CD351A841E}.Debug|ARM.Build.0 = Debug|Any CPU
+		{7DD39827-7E49-4E1E-B357-16CD351A841E}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{7DD39827-7E49-4E1E-B357-16CD351A841E}.Debug|x64.Build.0 = Debug|Any CPU
+		{7DD39827-7E49-4E1E-B357-16CD351A841E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{7DD39827-7E49-4E1E-B357-16CD351A841E}.Debug|x86.Build.0 = Debug|Any CPU
+		{7DD39827-7E49-4E1E-B357-16CD351A841E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7DD39827-7E49-4E1E-B357-16CD351A841E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7DD39827-7E49-4E1E-B357-16CD351A841E}.Release|ARM.ActiveCfg = Release|Any CPU
+		{7DD39827-7E49-4E1E-B357-16CD351A841E}.Release|ARM.Build.0 = Release|Any CPU
+		{7DD39827-7E49-4E1E-B357-16CD351A841E}.Release|x64.ActiveCfg = Release|Any CPU
+		{7DD39827-7E49-4E1E-B357-16CD351A841E}.Release|x64.Build.0 = Release|Any CPU
+		{7DD39827-7E49-4E1E-B357-16CD351A841E}.Release|x86.ActiveCfg = Release|Any CPU
+		{7DD39827-7E49-4E1E-B357-16CD351A841E}.Release|x86.Build.0 = Release|Any CPU
+		{7DD39827-7E49-4E1E-B357-16CD351A841E}.UpdateTest|Any CPU.ActiveCfg = Release|Any CPU
+		{7DD39827-7E49-4E1E-B357-16CD351A841E}.UpdateTest|Any CPU.Build.0 = Release|Any CPU
+		{7DD39827-7E49-4E1E-B357-16CD351A841E}.UpdateTest|ARM.ActiveCfg = Release|Any CPU
+		{7DD39827-7E49-4E1E-B357-16CD351A841E}.UpdateTest|ARM.Build.0 = Release|Any CPU
+		{7DD39827-7E49-4E1E-B357-16CD351A841E}.UpdateTest|x64.ActiveCfg = Release|Any CPU
+		{7DD39827-7E49-4E1E-B357-16CD351A841E}.UpdateTest|x64.Build.0 = Release|Any CPU
+		{7DD39827-7E49-4E1E-B357-16CD351A841E}.UpdateTest|x86.ActiveCfg = Release|Any CPU
+		{7DD39827-7E49-4E1E-B357-16CD351A841E}.UpdateTest|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -425,6 +451,7 @@ Global
 		{02520D4A-C47F-4D27-95B0-7BCE1E7F3E12} = {B9E3AD87-ACB1-4E20-926D-82B0BF13BD1B}
 		{F5CE73B5-25CD-4D7B-83F4-70B725117428} = {0BE10BE1-D713-4C9E-BC30-BF72CBEA32DD}
 		{E66999C0-42ED-476D-8F6E-F9752612FD71} = {9EAA56A9-2779-4430-91BA-C136014EB2D2}
+		{7DD39827-7E49-4E1E-B357-16CD351A841E} = {9EAA56A9-2779-4430-91BA-C136014EB2D2}
 	EndGlobalSection
 	GlobalSection(MercurialSourceControlSolutionProperties) = preSolution
 		SolutionBindings = <Solution Location In Database>
