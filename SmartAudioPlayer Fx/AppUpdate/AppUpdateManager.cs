@@ -1,8 +1,7 @@
-﻿using Newtonsoft.Json.Linq;
-using Quala;
+﻿using Quala;
 using Quala.Extensions;
 using Reactive.Bindings.Extensions;
-using SmartAudioPlayerFx.Notification;
+using SmartAudioPlayerFx.Messaging;
 using SmartAudioPlayerFx.Preferences;
 using SmartAudioPlayerFx.Views;
 using System;
@@ -38,9 +37,9 @@ namespace SmartAudioPlayerFx.AppUpdate
 		public bool IsAutoUpdateCheckEnabled { get; set; }
 
 		readonly CompositeDisposable _disposables = new CompositeDisposable();
-		NotificationManager _notification;
+		NotificationMessage _notification;
 
-		public AppUpdateManager(XmlPreferencesManager preference, NotificationManager notification)
+		public AppUpdateManager(XmlPreferencesManager preference, NotificationMessage notification)
 		{
 			// Preferences
 			preference.UpdateSettings
@@ -49,21 +48,13 @@ namespace SmartAudioPlayerFx.AppUpdate
 			preference.SerializeRequestAsObservable()
 				.Subscribe(_ => SavePreferences(preference.UpdateSettings.Value))
 				.AddTo(_disposables);
-			// json
-			var json = App.Services.GetInstance<JsonPreferencesManager>();
-			json.UpdateSettings
-				.Subscribe(x => LoadUpdateJsonPreferences(x))
-				.AddTo(_disposables);
-			json.SerializeRequestAsObservable()
-				.Subscribe(_ => SaveJsonPreferences(json.UpdateSettings.Value))
-				.AddTo(_disposables);
 
 			// タスクトレイ連携
 			_notification = notification;
 			notification.NotifyClicked += async () =>
 			{
-				if (App.Current.MainWindow == null) return;
-				if (await ShowUpdateMessageAsync(new WindowInteropHelper(App.Current.MainWindow).EnsureHandle()))
+				if (App.Current?.MainWindow == null) return;
+				if (await ShowUpdateMessageAsync(new WindowInteropHelper(App.Current?.MainWindow).EnsureHandle()))
 				{
 					App.Current.MainWindow.Close();
 				}
@@ -97,24 +88,6 @@ namespace SmartAudioPlayerFx.AppUpdate
 				.SetAttributeValueEx("CheckIntervalDays", CheckIntervalDays)
 				.SetAttributeValueEx("IsAutoUpdateCheckEnabled", IsAutoUpdateCheckEnabled);
 		}
-		void LoadUpdateJsonPreferences(JObject element)
-		{
-			/*	element
-					.GetAttributeValueEx("UpdateInfoUri", new Uri("http://update.intre.net/sapfx/update.xml"), o => UpdateInfo = o)
-					.GetAttributeValueEx("LastCheckVersion", Assembly.GetExecutingAssembly().GetName().Version, o => LastCheckVersion = o)
-					.GetAttributeValueEx("LastCheckDate", DateTime.MinValue, o => LastCheckDate = o)
-					.GetAttributeValueEx("CheckIntervalDays", 7, o => CheckIntervalDays = Math.Min(1, o))
-					.GetAttributeValueEx("IsAutoUpdateCheckEnabled", true, o => IsAutoUpdateCheckEnabled = o);
-			*/
-		}
-		void SaveJsonPreferences(JObject element)
-		{
-			element["UpdateInfoUri"] = UpdateInfo;
-			element["LastCheckVersion"] = LastCheckVersion.ToString();
-			element["LastCheckDate"] = LastCheckDate;
-			element["CheckIntervalDays"] = CheckIntervalDays;
-			element["IsAutoUpdateCheckEnabled"] = IsAutoUpdateCheckEnabled;
-		}
 
 		void OnAutoUpdateCheck()
 		{
@@ -128,9 +101,10 @@ namespace SmartAudioPlayerFx.AppUpdate
 				.ObserveOnUIDispatcher()
 				.Subscribe(x =>
 				{
-					_notification.NotifyMessage.Value =
+					_notification.Message =
 						"新しいバージョンが利用可能です！" +
 						"アップデートするにはここをクリックするか、メニューから選択してください。";
+					_notification.ShowNotification.Execute();
 				});
 		}
 
@@ -142,10 +116,7 @@ namespace SmartAudioPlayerFx.AppUpdate
 		/// <summary>
 		/// アップデートが使用できる場合はtrue
 		/// </summary>
-		public bool IsUpdateReady
-		{
-			get { return (last_checked_update_info != null); }
-		}
+		public bool IsUpdateReady => (last_checked_update_info != null);
 
 		/// <summary>
 		/// ShowUpdateMessageが表示中かどうか

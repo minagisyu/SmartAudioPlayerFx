@@ -40,9 +40,9 @@
     <None Include="readme.md" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Notification\NotificationManager.cs" />
+    <Compile Include="Messaging\DialogMessage.cs" />
+    <Compile Include="Messaging\NotificationMessage.cs" />
     <Compile Include="Preferences\AppPreference.cs" />
-    <Compile Include="Preferences\JsonPreferencesManager.cs" />
     <Compile Include="Preferences\XmlPreferencesManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -52,9 +52,7 @@
       <Name>Quala.Core</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Preferences\未使用\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

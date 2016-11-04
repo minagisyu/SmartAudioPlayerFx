@@ -17,7 +17,7 @@ using Quala;
 using Quala.Win32;
 using Quala.WPF.Extensions;
 using SmartAudioPlayerFx.MediaPlayer;
-using SmartAudioPlayerFx.Notification;
+using SmartAudioPlayerFx.Messaging;
 using SmartAudioPlayerFx.Shortcut;
 
 namespace SmartAudioPlayerFx.Views

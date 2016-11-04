@@ -4,7 +4,7 @@ using SimpleInjector;
 using SmartAudioPlayerFx.AppUpdate;
 using SmartAudioPlayerFx.MediaDB;
 using SmartAudioPlayerFx.MediaPlayer;
-using SmartAudioPlayerFx.Notification;
+using SmartAudioPlayerFx.Messaging;
 using SmartAudioPlayerFx.Preferences;
 using SmartAudioPlayerFx.Shortcut;
 using SmartAudioPlayerFx.Views;
@@ -23,73 +23,64 @@ namespace SmartAudioPlayerFx
 		// model
 		public static Container Services { get; } = new Container();
 
-		static App()
-		{
-			// WinForms Initialize
-			WinForms.Application.EnableVisualStyles();
-			WinForms.Application.SetCompatibleTextRenderingDefault(false);
-
-			// SimpleInjector Initialize
-			RegisterServices(Services);
-		}
-
 		protected override void OnStartup(StartupEventArgs e)
 		{
-			base.OnStartup(e);
 			var sw = Stopwatch.StartNew();
 
-#if DEBUG
-#else
-			// Exception Handling
-			AppDomain.CurrentDomain.UnhandledException += (_, x) =>
-				App.Current?.ShowExceptionMessage(x.ExceptionObject as Exception);
-			this.DispatcherUnhandledException += (_, x) =>
-				App.Current?.ShowExceptionMessage(x.Exception);
-#endif
-
-			// minimum Initialize
+			// Component Initialize
+			WinForms.Application.EnableVisualStyles();
+			WinForms.Application.SetCompatibleTextRenderingDefault(false);
 			UIDispatcherScheduler.Initialize();
-			Exit += delegate
-			{
-				Services.Dispose();
-			};
+			RegisterServices(Services);
+			Exit += (_, __) => Services.Dispose();
+
+			// Exception Handling
+			HandleUnhandledException();
+
+			// 表示系の購読、Domain<->View間のバインド？ (DialogMessage / NotificationMessage / ShortcutAction)
+			Services.GetInstance<DialogMessageView>().Configure();
+			Services.GetInstance<TasktrayIconView>().Configure();
 
 			// アップデートチェック
 			// trueが帰ったときはShutdown()呼んだ後なのでretuenする
 			if (HandleUpdateProcess(e.Args))
 				return;
 
-#if !DEBUG
 			// 多重起動の抑制
 			// trueが帰ったときはShutdown()呼んだ後なのでretuenする
 			if (CheckApplicationInstance())
 				return;
-#endif
+
+			// MainWindow
 			this.MainWindow = new Views.MainWindow();
 			this.MainWindow.Show();
+			App.Current.SessionEnding += (_, __) => MainWindow?.Close(); // LogOff -> Close
+			Services.GetInstance<TasktrayIconView>().SetMenuItems((MainWindow)this.MainWindow); // Set TrayIcon Menus
 
-			// LogOff -> Close
-			App.Current.SessionEnding += delegate
-			{
-				MainWindow?.Close();
-			};
+			// Preference
+			ConfigureAutoSave();
 
-			// Set TrayIcon Menus
-			Services.GetInstance<TasktrayIconView>().SetMenuItems((MainWindow)this.MainWindow);
-
-			// 定期保存(すぐに開始する)
-			new DispatcherTimer(
-				TimeSpan.FromMinutes(5),
-				DispatcherPriority.Normal,
-				(_, __) =>
-				{
-					App.Services.GetInstance<XmlPreferencesManager>().Save();
-					App.Services.GetInstance<JsonPreferencesManager>().Save();
-				},
-				Dispatcher);
-
+			base.OnStartup(e);
 			sw.Stop();
 			App.Services.GetInstance<LogManager>().AddDebugLog($"App.OnStartrup: {sw.ElapsedMilliseconds}ms");
+		}
+
+		void ConfigureAutoSave()
+		{
+			// 定期保存(すぐに開始する)
+			var timer = new DispatcherTimer(TimeSpan.FromMinutes(5), DispatcherPriority.Normal,
+				(_, __) => App.Services.GetInstance<XmlPreferencesManager>().Save(),
+				Dispatcher);
+			Exit += (_, __) => timer.Stop();
+		}
+
+		void HandleUnhandledException()
+		{
+			/*	AppDomain.CurrentDomain.UnhandledException += (_, x) =>
+					App.Current?.ShowExceptionMessage(x.ExceptionObject as Exception);
+				this.DispatcherUnhandledException += (_, x) =>
+					App.Current?.ShowExceptionMessage(x.Exception);
+			*/
 		}
 
 		bool HandleUpdateProcess(string[] args)
@@ -103,19 +94,20 @@ namespace SmartAudioPlayerFx
 			}
 			return false;
 		}
+
 		bool CheckApplicationInstance()
 		{
 			if (Services.GetInstance<AppMutexManager>().ExistApplicationInstance())
 			{
 				// すでに起動しているインスタンスがある
-				App.Current?.ShowMessage("多重起動は出来ません。アプリケーションを終了します。");
+			//	App.Current?.ShowMessage("多重起動は出来ません。アプリケーションを終了します。");
 				Shutdown(-1);
 				return true;
 			}
 			return false;
 		}
 
-		static void RegisterServices(Container container)
+		void RegisterServices(Container container)
 		{
 			// Register and Pre-Initialize Services
 			container.RegisterSingleton(() => new AppMutexManager("SmartAudioPlayer Fx"));
@@ -150,9 +142,8 @@ namespace SmartAudioPlayerFx
 			});
 			//= standalone
 			container.RegisterSingleton<XmlPreferencesManager>();
-			container.RegisterSingleton<JsonPreferencesManager>();
 			container.RegisterSingleton<AudioPlayerManager>();
-			container.RegisterSingleton<NotificationManager>();
+			container.RegisterSingleton<NotificationMessage>();
 			container.RegisterSingleton<TasktrayIconView>();//[NotificationManager]
 			container.RegisterSingleton<MediaDBManager>();
 			//=require Preferences+TaskIcon

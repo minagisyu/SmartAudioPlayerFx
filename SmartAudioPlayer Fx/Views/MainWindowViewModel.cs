@@ -216,7 +216,6 @@ namespace SmartAudioPlayerFx.Views
 		public void SavePreferences()
 		{
 			App.Services.GetInstance<XmlPreferencesManager>().Save();
-			App.Services.GetInstance<JsonPreferencesManager>().Save();
 		}
 
 		public void JukeboxStart()

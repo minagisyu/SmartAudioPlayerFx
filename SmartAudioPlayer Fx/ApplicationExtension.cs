@@ -56,31 +56,6 @@ namespace SmartAudioPlayerFx
 			dispatcher.BeginInvoke(action, priority);
 		}
 
-		[Obsolete]
-		public static void ShowMessage(this Application app, string message)
-		{
-			// WPFのMessageBoxはビジュアルスタイルが効かないから使わない
-			WinForms.MessageBox.Show(message, "SmartAudioPlayer Fx");
-		}
-		[Obsolete]
-		public static void ShowExceptionMessage(this Application app, Exception ex)
-		{
-			// todo: 専用のダイアログ使う？
-			App.Services.GetInstance<LogManager>().AddCriticalErrorLog("UnhandledException", ex);
-			var message = string.Format(
-				"未処理の例外エラーが発生しました{0}" +
-				"----------------------------------------{0}" +
-				"{1}",
-				Environment.NewLine,
-				ex);
-			using (var dlg = new MessageDialog())
-			{
-				dlg.Title = "SmartAudioPlayer Fx";
-				dlg.HeaderMessage = "未処理の例外エラーが発生しました";
-				dlg.DescriptionMessage = ex.ToString();
-				dlg.ShowDialog();
-			}
-		}
 
 		/// <summary>
 		/// 保存場所をエクスプローラで開く

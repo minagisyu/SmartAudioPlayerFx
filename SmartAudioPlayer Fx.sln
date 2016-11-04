@@ -45,6 +45,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "test", "test\test\test.cspr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleApplication1", "test\ConsoleApplication1\ConsoleApplication1.csproj", "{7DD39827-7E49-4E1E-B357-16CD351A841E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "sfxui.droid", "xamarin\sfxui.droid\sfxui.droid.csproj", "{4EDC366E-26BE-4AEB-A487-1745850AD412}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -433,6 +435,42 @@ Global
 		{7DD39827-7E49-4E1E-B357-16CD351A841E}.UpdateTest|x64.Build.0 = Release|Any CPU
 		{7DD39827-7E49-4E1E-B357-16CD351A841E}.UpdateTest|x86.ActiveCfg = Release|Any CPU
 		{7DD39827-7E49-4E1E-B357-16CD351A841E}.UpdateTest|x86.Build.0 = Release|Any CPU
+		{4EDC366E-26BE-4AEB-A487-1745850AD412}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4EDC366E-26BE-4AEB-A487-1745850AD412}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4EDC366E-26BE-4AEB-A487-1745850AD412}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{4EDC366E-26BE-4AEB-A487-1745850AD412}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{4EDC366E-26BE-4AEB-A487-1745850AD412}.Debug|ARM.Build.0 = Debug|Any CPU
+		{4EDC366E-26BE-4AEB-A487-1745850AD412}.Debug|ARM.Deploy.0 = Debug|Any CPU
+		{4EDC366E-26BE-4AEB-A487-1745850AD412}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{4EDC366E-26BE-4AEB-A487-1745850AD412}.Debug|x64.Build.0 = Debug|Any CPU
+		{4EDC366E-26BE-4AEB-A487-1745850AD412}.Debug|x64.Deploy.0 = Debug|Any CPU
+		{4EDC366E-26BE-4AEB-A487-1745850AD412}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{4EDC366E-26BE-4AEB-A487-1745850AD412}.Debug|x86.Build.0 = Debug|Any CPU
+		{4EDC366E-26BE-4AEB-A487-1745850AD412}.Debug|x86.Deploy.0 = Debug|Any CPU
+		{4EDC366E-26BE-4AEB-A487-1745850AD412}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4EDC366E-26BE-4AEB-A487-1745850AD412}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4EDC366E-26BE-4AEB-A487-1745850AD412}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{4EDC366E-26BE-4AEB-A487-1745850AD412}.Release|ARM.ActiveCfg = Release|Any CPU
+		{4EDC366E-26BE-4AEB-A487-1745850AD412}.Release|ARM.Build.0 = Release|Any CPU
+		{4EDC366E-26BE-4AEB-A487-1745850AD412}.Release|ARM.Deploy.0 = Release|Any CPU
+		{4EDC366E-26BE-4AEB-A487-1745850AD412}.Release|x64.ActiveCfg = Release|Any CPU
+		{4EDC366E-26BE-4AEB-A487-1745850AD412}.Release|x64.Build.0 = Release|Any CPU
+		{4EDC366E-26BE-4AEB-A487-1745850AD412}.Release|x64.Deploy.0 = Release|Any CPU
+		{4EDC366E-26BE-4AEB-A487-1745850AD412}.Release|x86.ActiveCfg = Release|Any CPU
+		{4EDC366E-26BE-4AEB-A487-1745850AD412}.Release|x86.Build.0 = Release|Any CPU
+		{4EDC366E-26BE-4AEB-A487-1745850AD412}.Release|x86.Deploy.0 = Release|Any CPU
+		{4EDC366E-26BE-4AEB-A487-1745850AD412}.UpdateTest|Any CPU.ActiveCfg = Release|Any CPU
+		{4EDC366E-26BE-4AEB-A487-1745850AD412}.UpdateTest|Any CPU.Build.0 = Release|Any CPU
+		{4EDC366E-26BE-4AEB-A487-1745850AD412}.UpdateTest|Any CPU.Deploy.0 = Release|Any CPU
+		{4EDC366E-26BE-4AEB-A487-1745850AD412}.UpdateTest|ARM.ActiveCfg = Release|Any CPU
+		{4EDC366E-26BE-4AEB-A487-1745850AD412}.UpdateTest|ARM.Build.0 = Release|Any CPU
+		{4EDC366E-26BE-4AEB-A487-1745850AD412}.UpdateTest|ARM.Deploy.0 = Release|Any CPU
+		{4EDC366E-26BE-4AEB-A487-1745850AD412}.UpdateTest|x64.ActiveCfg = Release|Any CPU
+		{4EDC366E-26BE-4AEB-A487-1745850AD412}.UpdateTest|x64.Build.0 = Release|Any CPU
+		{4EDC366E-26BE-4AEB-A487-1745850AD412}.UpdateTest|x64.Deploy.0 = Release|Any CPU
+		{4EDC366E-26BE-4AEB-A487-1745850AD412}.UpdateTest|x86.ActiveCfg = Release|Any CPU
+		{4EDC366E-26BE-4AEB-A487-1745850AD412}.UpdateTest|x86.Build.0 = Release|Any CPU
+		{4EDC366E-26BE-4AEB-A487-1745850AD412}.UpdateTest|x86.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -452,6 +490,7 @@ Global
 		{F5CE73B5-25CD-4D7B-83F4-70B725117428} = {0BE10BE1-D713-4C9E-BC30-BF72CBEA32DD}
 		{E66999C0-42ED-476D-8F6E-F9752612FD71} = {9EAA56A9-2779-4430-91BA-C136014EB2D2}
 		{7DD39827-7E49-4E1E-B357-16CD351A841E} = {9EAA56A9-2779-4430-91BA-C136014EB2D2}
+		{4EDC366E-26BE-4AEB-A487-1745850AD412} = {B9E3AD87-ACB1-4E20-926D-82B0BF13BD1B}
 	EndGlobalSection
 	GlobalSection(MercurialSourceControlSolutionProperties) = preSolution
 		SolutionBindings = <Solution Location In Database>

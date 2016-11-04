@@ -7,14 +7,14 @@ using System.Reactive.Linq;
 using System.Windows.Forms;
 using System.Windows.Threading;
 
-namespace SmartAudioPlayerFx.Notification
+namespace SmartAudioPlayerFx.Messaging
 {
 	sealed class TasktrayIconView : IDisposable
 	{
 		NotifyIcon tray;
 		ContextMenuManager _context_menu;
 
-		public TasktrayIconView(NotificationManager notification, ContextMenuManager context_menu)
+		public TasktrayIconView(NotificationMessage notification, ContextMenuManager context_menu)
 		{
 			_context_menu = context_menu;
 
@@ -26,12 +26,16 @@ namespace SmartAudioPlayerFx.Notification
 			tray.Text = "SmartAudioPlayer Fx";
 			tray.Icon = new Icon(App.GetResourceStream(new Uri("/Resources/SAPFx.ico", UriKind.Relative)).Stream);
 			tray.BalloonTipClicked += (_, __) => BaloonTipClicked?.Invoke();
-			tray.Visible = true;
+			tray.Visible = false;
 
 			// NotificationService購読
 			BaloonTipClicked += () => notification.RaiseNotifyClicked();
-			notification.NotifyMessage.Where(o => string.IsNullOrWhiteSpace(o) == false)
+			notification.ShowNotification
+				.Select(_ => notification.Message)
+				.Where(o => string.IsNullOrWhiteSpace(o) == false)
 				.Subscribe(o => tray.ShowBalloonTip((int)TimeSpan.FromSeconds(10).TotalMilliseconds, "SmartAudioPlayer Fx", o, ToolTipIcon.Info));
+
+			tray.Visible = true;
 		}
 
 		public event Action BaloonTipClicked;
@@ -39,6 +43,10 @@ namespace SmartAudioPlayerFx.Notification
 		public void Dispose()
 		{
 			tray.Dispose();
+		}
+
+		public void Configure()
+		{
 		}
 
 		public void SetMenuItems(MainWindow mw)

@@ -137,7 +137,9 @@
     <Compile Include="MediaDB\RecentsManager.cs" />
     <Compile Include="MediaPlayer\AudioPlayerManager.cs" />
     <Compile Include="MediaPlayer\JukeboxManager.cs" />
-    <Compile Include="Notification\TasktrayIconView.cs" />
+    <Compile Include="Messaging\DialogMessageView.cs" />
+    <Compile Include="Messaging\TasktrayIconView.cs" />
+    <Compile Include="PromptMessage.cs" />
     <Compile Include="Shortcut\ContextMenuManager.cs" />
     <Compile Include="Shortcut\ShortcutKeyManager.cs" />
     <Compile Include="Views\MainWindow.xaml.cs">
