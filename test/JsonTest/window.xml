@@ -1,0 +1,4 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Window WindowPlacement="1043,0,450,24" InactiveOpacity="80" DeactiveOpacity="65" IsVisible="true">
+  <MediaListWindow Width="830" Height="449" IsTitleFromFileName="false" IsAutoCloseWhenInactive="false" IsAutoCloseWhenListSelected="false" TreeWidth="250" />
+</Window>

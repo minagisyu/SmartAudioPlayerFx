@@ -14,39 +14,6 @@ namespace SmartAudioPlayerFx
 {
 	public static class ApplicationExtension
 	{
-		[Obsolete]
-		public static void UIThreadInvoke(this Application app, Action action)
-		{
-			if (action == null) throw new ArgumentNullException("action");
-
-			if (app == null)
-			{
-				action();
-				return;
-			}
-
-			var dispatcher = app.Dispatcher;
-			if (dispatcher.HasShutdownStarted) return;
-			if (Thread.CurrentThread == dispatcher.Thread)
-				action();
-			else
-				dispatcher.Invoke(action);
-		}
-		[Obsolete]
-		public static T UIThreadInvoke<T>(this Application app, Func<T> action)
-		{
-			if (action == null) throw new ArgumentNullException("action");
-			if (app == null)
-			{
-				return action();
-			}
-			var dispatcher = app.Dispatcher;
-			if (dispatcher.HasShutdownStarted) return default(T);
-			return (Thread.CurrentThread == dispatcher.Thread) ?
-				action() :
-				(T)dispatcher.Invoke(action);
-		}
-		[Obsolete]
 		public static void UIThreadBeginInvoke(this Application app, Action action, DispatcherPriority priority = DispatcherPriority.Normal)
 		{
 			if (action == null) throw new ArgumentNullException("action");
@@ -62,7 +29,6 @@ namespace SmartAudioPlayerFx
 		/// ファイルならそのフォルダを開いた後ファイルを選択する
 		/// </summary>
 		/// <param name="path"></param>
-		[Obsolete]
 		public static void OpenToExplorer(this Application app, string path)
 		{
 			if (File.Exists(path))
@@ -72,7 +38,6 @@ namespace SmartAudioPlayerFx
 		}
 
 		// hWndをhWndCenterの中央に配置します
-		[Obsolete]
 		public static void CenterWindow(this Application app, IntPtr hWnd, IntPtr hWndCenter)
 		{
 			if (hWnd == IntPtr.Zero)

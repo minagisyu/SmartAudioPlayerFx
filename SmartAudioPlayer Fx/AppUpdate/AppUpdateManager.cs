@@ -43,7 +43,7 @@ namespace SmartAudioPlayerFx.AppUpdate
 		{
 			// Preferences
 			preference.UpdateSettings
-				.Subscribe(x => LoadUpdatePreferences(x))
+				.Subscribe(x => LoadPreferences(x))
 				.AddTo(_disposables);
 			preference.SerializeRequestAsObservable()
 				.Subscribe(_ => SavePreferences(preference.UpdateSettings.Value))
@@ -70,7 +70,7 @@ namespace SmartAudioPlayerFx.AppUpdate
 			_disposables.Dispose();
 		}
 
-		void LoadUpdatePreferences(XElement element)
+		void LoadPreferences(XElement element)
 		{
 			element
 				.GetAttributeValueEx("UpdateInfoUri", new Uri("http://update.intre.net/sapfx/update.xml"), o => UpdateInfo = o)

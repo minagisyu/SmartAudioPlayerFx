@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Player FocusPath="E:\Music\[USB]" SelectMode="Filename" IsRepeat="false" IsPaused="false" Volume="0.500" Position="00:03:49.0549959" CurrentMedia="E:\Music\[USB]\anime\05 Purest Blue.mp3" ViewMode="Default" ViewFocusPath="E:\Music\[USB]" RecentIntervalDays="60" IsVideoDrawing="true" IsEnableSoundFadeEffect="true">
+  <AcceptExtensions>
+    <Item IsEnable="true" Extension=".aac" />
+    <Item IsEnable="true" Extension=".ac3" />
+    <Item IsEnable="true" Extension=".asf" />
+    <Item IsEnable="true" Extension=".avi" />
+    <Item IsEnable="true" Extension=".divx" />
+    <Item IsEnable="true" Extension=".dts" />
+    <Item IsEnable="true" Extension=".flv" />
+    <Item IsEnable="true" Extension=".m2a" />
+    <Item IsEnable="true" Extension=".m2v" />
+    <Item IsEnable="true" Extension=".m4a" />
+    <Item IsEnable="true" Extension=".m4v" />
+    <Item IsEnable="true" Extension=".mid" />
+    <Item IsEnable="true" Extension=".midi" />
+    <Item IsEnable="true" Extension=".mka" />
+    <Item IsEnable="true" Extension=".mkv" />
+    <Item IsEnable="true" Extension=".mp2" />
+    <Item IsEnable="true" Extension=".mp3" />
+    <Item IsEnable="true" Extension=".mp4" />
+    <Item IsEnable="true" Extension=".mpa" />
+    <Item IsEnable="true" Extension=".mpe" />
+    <Item IsEnable="true" Extension=".mpeg" />
+    <Item IsEnable="true" Extension=".mpg" />
+    <Item IsEnable="true" Extension=".ogg" />
+    <Item IsEnable="true" Extension=".ogm" />
+    <Item IsEnable="true" Extension=".smf" />
+    <Item IsEnable="true" Extension=".wav" />
+    <Item IsEnable="true" Extension=".wma" />
+    <Item IsEnable="true" Extension=".wmv" />
+  </AcceptExtensions>
+  <IgnoreWords />
+  <FolderRecents>
+    <Item Value="E:\Music\[USB]" />
+    <Item Value="E:\Music\SAP用" />
+  </FolderRecents>
+  <ShortcutKeys>
+    <Item Feature="PlayMode_Random" Modifier="None" Key="None" />
+    <Item Feature="PlayMode_FileName" Modifier="None" Key="None" />
+    <Item Feature="PlayMode_Repeat" Modifier="None" Key="None" />
+    <Item Feature="Player_PlayPause" Modifier="Control" Key="F10" />
+    <Item Feature="Player_Skip" Modifier="Control" Key="Scroll" />
+    <Item Feature="Player_Replay" Modifier="None" Key="None" />
+    <Item Feature="Player_Previous" Modifier="None" Key="None" />
+    <Item Feature="Volume_Up" Modifier="Alt" Key="PageUp" />
+    <Item Feature="Volume_Down" Modifier="Alt" Key="Next" />
+    <Item Feature="Window_ShowHide" Modifier="None" Key="None" />
+    <Item Feature="Window_MoveRightDown" Modifier="None" Key="None" />
+    <Item Feature="App_Exit" Modifier="None" Key="None" />
+  </ShortcutKeys>
+</Player>

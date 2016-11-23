@@ -23,6 +23,8 @@ namespace SmartAudioPlayerFx
 		// model
 		public static Container Services { get; } = new Container();
 
+		AppPresenter _presenter;
+
 		protected override void OnStartup(StartupEventArgs e)
 		{
 			var sw = Stopwatch.StartNew();
@@ -38,8 +40,13 @@ namespace SmartAudioPlayerFx
 			HandleUnhandledException();
 
 			// 表示系の購読、Domain<->View間のバインド？ (DialogMessage / NotificationMessage / ShortcutAction)
-			Services.GetInstance<DialogMessageView>().Configure();
-			Services.GetInstance<TasktrayIconView>().Configure();
+			_presenter = new AppPresenter();
+
+			// 古い設定/DBのアップグレード
+			// xml->json, db->re-store?
+			// db = folder-id base.
+			// item = 最初の8バイト+ファイルサイズ4バイト+後ろの8バイトでハッシュとる？うまくいく？
+			//	AppPreference.Upgrade();
 
 			// アップデートチェック
 			// trueが帰ったときはShutdown()呼んだ後なのでretuenする
@@ -52,10 +59,8 @@ namespace SmartAudioPlayerFx
 				return;
 
 			// MainWindow
-			this.MainWindow = new Views.MainWindow();
-			this.MainWindow.Show();
-			App.Current.SessionEnding += (_, __) => MainWindow?.Close(); // LogOff -> Close
-			Services.GetInstance<TasktrayIconView>().SetMenuItems((MainWindow)this.MainWindow); // Set TrayIcon Menus
+			_presenter.MainWindow_Show();
+			App.Current.SessionEnding += (_, __) => _presenter.MainWindow_Close(); // LogOff -> Close
 
 			// Preference
 			ConfigureAutoSave();
@@ -144,7 +149,7 @@ namespace SmartAudioPlayerFx
 			container.RegisterSingleton<XmlPreferencesManager>();
 			container.RegisterSingleton<AudioPlayerManager>();
 			container.RegisterSingleton<NotificationMessage>();
-			container.RegisterSingleton<TasktrayIconView>();//[NotificationManager]
+			container.RegisterSingleton<NotificationView>();//[NotificationManager]
 			container.RegisterSingleton<MediaDBManager>();
 			//=require Preferences+TaskIcon
 			container.RegisterSingleton<AppUpdateManager>();
