@@ -157,7 +157,7 @@
     <None Include="readme.md" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Quala\Quala.Core\Quala.Core.csproj">
+    <ProjectReference Include="..\..\Quala\Quala.Core\Quala.Core.csproj">
       <Project>{a5e66253-ef7e-4d71-8a81-ed8ec9c3bae1}</Project>
       <Name>Quala.Core</Name>
     </ProjectReference>
