@@ -46,6 +46,10 @@
       <HintPath>..\..\packages\DotNetZip.1.10.1\lib\net20\DotNetZip.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="FFmpeg.AutoGen, Version=1.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>External\FFmpeg.AutoGen.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Expression.Effects, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>External\Microsoft.Expression.Effects.dll</HintPath>
@@ -140,12 +144,9 @@
     <Compile Include="MediaPlayer\AudioPlayerManager.cs" />
     <Compile Include="MediaPlayer\JukeboxManager.cs" />
     <Compile Include="MediaProcessor\FFMedia.AudioDecoder.cs" />
-    <Compile Include="MediaProcessor\FFMedia.AudioPacket.cs" />
     <Compile Include="MediaProcessor\FFMedia.cs" />
-    <Compile Include="MediaProcessor\FFMedia.Demux.cs" />
-    <Compile Include="MediaProcessor\FFMedia.Packet.cs" />
+    <Compile Include="MediaProcessor\FFMedia.Demuxer.cs" />
     <Compile Include="MediaProcessor\FFMedia.VideoDecoder.cs" />
-    <Compile Include="MediaProcessor\FFMedia.VideoPacket.cs" />
     <Compile Include="Messaging\NotificationView.cs" />
     <Compile Include="Messaging\PromptMessageView.cs" />
     <Compile Include="Preferences\AppUpdatePreference.cs" />
@@ -156,7 +157,9 @@
     <Compile Include="Shortcut\ContextMenuManager.cs" />
     <Compile Include="Shortcut\ShortcutKeyManager.cs" />
     <Compile Include="Sound\ALDevice.cs" />
-    <Compile Include="Sound\ALDevice.Source.cs" />
+    <Compile Include="Sound\ALDevice.StreamingSource.cs" />
+    <Compile Include="Sound\ALDevice.SourceFormat.cs" />
+    <None Include="Utils.cs.old" />
     <Compile Include="Views\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
     </Compile>
@@ -233,17 +236,46 @@
     <Compile Include="Views\[ViewModels]\MediaTreeItemViewModel.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="External\FFmpeg.AutoGen.dll" />
     <Content Include="External\Microsoft.Expression.Effects.dll" />
     <Content Include="External\Microsoft.Expression.Interactions.dll" />
     <Content Include="External\System.Windows.Interactivity.dll" />
     <Content Include="mp3infp.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="x86\avcodec-57.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="x86\avdevice-57.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="x86\avfilter-6.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="x86\avformat-57.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="x86\avutil-55.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="x86\postproc-54.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="x86\swresample-2.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="x86\swscale-4.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Resource Include="メモ.txt" />
     <Resource Include="SmartAudioPlayer Fx.txt" />
     <None Include="App.config" />
+    <None Include="External\FFmpeg.AutoGen.dll.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="packages.config" />
     <None Include="references.md" />
+    <None Include="sample.md" />
     <None Include="Sound\alffplay.c" />
     <Resource Include="Resources\検索：削除-フォーカス.png" />
     <Resource Include="Resources\検索：削除-デフォルト.png" />
@@ -325,21 +357,25 @@
       <Project>{57e5cbe0-5878-441f-bb37-30fdfe873abd}</Project>
       <Name>sfxcore</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Quala\Quala.Core\Quala.Core.csproj">
+    <ProjectReference Include="..\..\Lib\Quala\Quala.Core\Quala.Core.csproj">
       <Project>{a5e66253-ef7e-4d71-8a81-ed8ec9c3bae1}</Project>
       <Name>Quala.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Quala\Quala.Extensions\Quala.Extensions.csproj">
+    <ProjectReference Include="..\..\Lib\Quala\Quala.Extensions\Quala.Extensions.csproj">
       <Project>{0043f310-bf6d-4092-9ad0-8cebb2189c07}</Project>
       <Name>Quala.Extensions</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Quala\Quala.Win32\Quala.Win32.csproj">
+    <ProjectReference Include="..\..\Lib\Quala\Quala.Win32\Quala.Win32.csproj">
       <Project>{fce2029a-e183-473a-a6e7-7fd03011a9c2}</Project>
       <Name>Quala.Win32</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Quala\Quala.WPF\Quala.WPF.csproj">
+    <ProjectReference Include="..\..\Lib\Quala\Quala.WPF\Quala.WPF.csproj">
       <Project>{05a0fa18-0e59-471e-b4a3-02a1459a08d3}</Project>
       <Name>Quala.WPF</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Lib\taglib-sharp\src\taglib-sharp.csproj">
+      <Project>{6b143a39-c7b2-4743-9917-92262c60e9a6}</Project>
+      <Name>taglib-sharp</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

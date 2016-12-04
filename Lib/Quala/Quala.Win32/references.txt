@@ -1,0 +1,10 @@
+﻿
+Nuget
+
+Framework
+ - System
+ - SYstem.Drawing
+ - System.Windows.Forms
+ - Microsoft.WindowsAPICodePack
+ - Microsoft.WindowsAPICodePack.Shell
+

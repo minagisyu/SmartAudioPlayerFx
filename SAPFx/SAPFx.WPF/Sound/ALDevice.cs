@@ -48,9 +48,9 @@ namespace SmartAudioPlayer.Sound
 			disposed = true;
 		}
 
-		public Source CreateSource(int buffer_num)
+		public StreamingSource CreateStreamingSource(int buffer_num)
 		{
-			var source = new Source(this, buffer_num);
+			var source = new StreamingSource(this, buffer_num);
 			sources.Add(source);
 			return source;
 		}

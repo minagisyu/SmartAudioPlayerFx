@@ -1,8 +1,12 @@
-﻿using System;
+﻿using FFmpeg.AutoGen;
+using static FFmpeg.AutoGen.ffmpeg;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Runtime.InteropServices;
+using System.Reactive.Disposables;
 
 namespace SmartAudioPlayer.MediaProcessor
 {
@@ -10,11 +14,48 @@ namespace SmartAudioPlayer.MediaProcessor
 	{
 		static FFMedia()
 		{
+			// register all formats and codecs
+			av_register_all();
 		}
 
-		public FFMedia()
-		{
+		string filename;
+		AVFormatContext* pFormatCtx = null;
+		volatile bool quit;
+		GCHandle _interrupt_cb_handle;
+		CompositeDisposable demuxers = new CompositeDisposable();
+		bool disposed = false;
 
+		public FFMedia(string filename)
+		{
+			this.filename = filename;
+
+			var interrupt_cb_delegate = new Func<IntPtr, int>(interrupt_cb_func);
+			_interrupt_cb_handle = GCHandle.Alloc(interrupt_cb_delegate, GCHandleType.Pinned);
+
+			pFormatCtx = avformat_alloc_context();
+			pFormatCtx->interrupt_callback = new AVIOInterruptCB();
+			pFormatCtx->interrupt_callback.callback = _interrupt_cb_handle.AddrOfPinnedObject();
+			pFormatCtx->interrupt_callback.opaque = null;
+
+			if(avio_open2(&pFormatCtx->pb, filename, AVIO_FLAG_READ, &pFormatCtx->interrupt_callback, null) != 0)
+			{
+				throw new ApplicationException($"Failed to open: {filename}");
+			}
+
+			fixed (AVFormatContext** @ref = &pFormatCtx)
+			{
+				if (avformat_open_input(@ref, filename, null, null) != 0)
+					throw new ApplicationException($"Failed to open: {filename}");
+			}
+
+			// retrive stream infomation
+			if (avformat_find_stream_info(pFormatCtx, null) < 0)
+			{
+				throw new ApplicationException($"Failed to find stream info: {filename}");
+			}
+
+			// Dump information about file onto standard error
+			av_dump_format(pFormatCtx, 0, filename, 0);
 		}
 
 		#region Dispose
@@ -31,13 +72,33 @@ namespace SmartAudioPlayer.MediaProcessor
 
 		void Dispose(bool disposing)
 		{
-			if(disposing)
+			if (disposed) return;
+
+			if (disposing)
 			{
 				// マネージリソースの破棄
+				demuxers.Dispose();
 			}
 
 			// アンマネージリソースの破棄
+			fixed (AVFormatContext** @ref = &pFormatCtx)
+			{
+				avformat_close_input(@ref);
+			}
+
+			_interrupt_cb_handle.Free();
 		}
 
+		int interrupt_cb_func(IntPtr ctx)
+		{
+			return quit ? 1 : 0;
+		}
+
+		public Demuxer CreateDemuxer()
+		{
+			var demuxer = new Demuxer(this);
+			demuxers.Add(demuxer);
+			return demuxer;
+		}
 	}
 }
