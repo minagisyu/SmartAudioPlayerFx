@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Reactive.Disposables;
 
 namespace SmartAudioPlayer.MediaProcessor
 {
@@ -12,6 +13,8 @@ namespace SmartAudioPlayer.MediaProcessor
 	{
 		public unsafe sealed class Demuxer : IDisposable
 		{
+			bool disposed = false;
+			readonly CompositeDisposable disposable;
 			readonly FFMedia media;
 			readonly int? video_SID, audio_SID;
 			long external_clock_base;
@@ -21,10 +24,24 @@ namespace SmartAudioPlayer.MediaProcessor
 
 			public Demuxer(FFMedia media)
 			{
+				disposable = new CompositeDisposable();
 				this.media = media;
 				GetDefaultSID(out video_SID, out audio_SID);
 
 				external_clock_base = av_gettime_impl();
+			}
+
+			public AudioDecoder CreateAudioDecoder()
+			{
+				var dec = new AudioDecoder(media, audio_SID ?? -1);
+				disposable.Add(dec);
+				return dec;
+			}
+			public VideoDecoder CreateVideoDecoder()
+			{
+				var dec = new VideoDecoder(media, audio_SID ?? -1);
+				disposable.Add(dec);
+				return dec;
 			}
 
 			#region Dispose
@@ -41,12 +58,16 @@ namespace SmartAudioPlayer.MediaProcessor
 
 			void Dispose(bool disposing)
 			{
+				if (disposed) return;
 				if (disposing)
 				{
 					// マネージリソースの破棄
 				}
 
 				// アンマネージリソースの破棄
+				disposable.Dispose();
+
+				disposed = true;
 			}
 
 			void GetDefaultSID(out int? video_SID, out int? audio_SID)
@@ -62,11 +83,6 @@ namespace SmartAudioPlayer.MediaProcessor
 						audio_SID = i;
 				}
 			}
-
-			static long av_gettime_impl()
-				=> DateTime.Now.Ticks / (TimeSpan.TicksPerMillisecond / 1000);
-
-			static AVRational AV_TIME_BASE_Q_impl { get; } = new AVRational() { num = 1, den = AV_TIME_BASE };
 
 			async Task<IEnumerable<int>> PacketParserAsync()
 			{
@@ -140,34 +156,13 @@ namespace SmartAudioPlayer.MediaProcessor
 				}
 			}
 
-			void CreateAVPacket(out AVPacket packet)
-			{
-				fixed (AVPacket* @ref = &packet)
-				{
-					av_init_packet(@ref);
-				}
-			}
-			void FreeAVPacket(ref AVPacket packet)
-			{
-				fixed (AVPacket* @ref = &packet)
-				{
-					av_free_packet(@ref);
-				}
-			}
-			bool ReadFrame(ref AVPacket packet)
-			{
-				fixed (AVPacket* @ref = &packet)
-				{
-					return av_read_frame(media.pFormatCtx, @ref) >= 0;
-				}
-			}
 
 			IEnumerable<AVPacket> PacketParser2Async()
 			{
 				while (!media.quit)
 				{
 					CreateAVPacket(out var packet);
-					if (!ReadFrame(ref packet))
+					if (!FFMedia.ReadFrame(media, ref packet))
 					{
 						// queue flush
 						break;

@@ -8,6 +8,9 @@ namespace SAPFx.WPF.Sound
 	{
 		public static class SourceFormat
 		{
+			// invalid
+			public static int NONE { get; } = AL_NONE;
+
 			// normal
 			public static int MONO_8 { get; } = AL_FORMAT_MONO8;
 			public static int MONO_16 { get; } = AL_FORMAT_MONO16;

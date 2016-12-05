@@ -37,6 +37,9 @@
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject>SAPFx.WPF.TestMain</StartupObject>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Dapper, Version=1.50.2.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Dapper.1.50.2\lib\net451\Dapper.dll</HintPath>
@@ -146,6 +149,7 @@
     <Compile Include="MediaProcessor\FFMedia.AudioDecoder.cs" />
     <Compile Include="MediaProcessor\FFMedia.cs" />
     <Compile Include="MediaProcessor\FFMedia.Demuxer.cs" />
+    <Compile Include="MediaProcessor\FFMedia.DecoderBase.cs" />
     <Compile Include="MediaProcessor\FFMedia.VideoDecoder.cs" />
     <Compile Include="Messaging\NotificationView.cs" />
     <Compile Include="Messaging\PromptMessageView.cs" />
@@ -160,6 +164,7 @@
     <Compile Include="Sound\ALDevice.StreamingSource.cs" />
     <Compile Include="Sound\ALDevice.SourceFormat.cs" />
     <None Include="Utils.cs.old" />
+    <Compile Include="TestMain.cs" />
     <Compile Include="Views\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
     </Compile>
