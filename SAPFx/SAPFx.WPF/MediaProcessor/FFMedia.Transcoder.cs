@@ -9,7 +9,7 @@ namespace SmartAudioPlayer.MediaProcessor
 {
 	partial class FFMedia
 	{
-		public unsafe abstract class DecoderBase : IDisposable
+		public unsafe abstract class Transcoder : IDisposable
 		{
 			bool disposed = false;
 			protected readonly FFMedia media;
@@ -18,7 +18,7 @@ namespace SmartAudioPlayer.MediaProcessor
 			protected AVCodecContext* pCodecCtx = null;
 			protected AVCodec* pCodec = null;
 
-			public DecoderBase(FFMedia media, int sid)
+			public Transcoder(FFMedia media, int sid)
 			{
 				this.media = media;
 				this.sid = sid;
@@ -35,7 +35,7 @@ namespace SmartAudioPlayer.MediaProcessor
 
 			#region Dispose
 
-			~DecoderBase() => Dispose(false);
+			~Transcoder() => Dispose(false);
 
 			public void Dispose()
 			{

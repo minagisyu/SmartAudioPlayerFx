@@ -25,34 +25,36 @@ namespace SmartAudioPlayer.MediaProcessor
 		CompositeDisposable disposables = new CompositeDisposable();
 		bool disposed = false;
 
+		delegate int Interrupt_cb_delegate(IntPtr ctx);
+
 		public FFMedia(string filename)
 		{
 			this.filename = filename;
 
-			var interrupt_cb_delegate = new Func<IntPtr, int>(Interrupt_cb_func);
-			_interrupt_cb_handle = GCHandle.Alloc(interrupt_cb_delegate, GCHandleType.Pinned);
+			var interrupt_cb_delegate = new Interrupt_cb_delegate(Interrupt_cb_func);
+			_interrupt_cb_handle = GCHandle.Alloc(interrupt_cb_delegate);
 
 			pFormatCtx = avformat_alloc_context();
 			pFormatCtx->interrupt_callback = new AVIOInterruptCB()
 			{
-				callback = _interrupt_cb_handle.AddrOfPinnedObject(),
+				callback = Marshal.GetFunctionPointerForDelegate(interrupt_cb_delegate),
 				opaque = null
 			};
 			if (avio_open2(&pFormatCtx->pb, filename, AVIO_FLAG_READ, &pFormatCtx->interrupt_callback, null) != 0)
 			{
-				throw new ApplicationException($"Failed to open: {filename}");
+				throw new FFMediaException($"Failed to open: {filename}");
 			}
 
 			fixed (AVFormatContext** @ref = &pFormatCtx)
 			{
 				if (avformat_open_input(@ref, filename, null, null) != 0)
-					throw new ApplicationException($"Failed to open: {filename}");
+					throw new FFMediaException($"Failed to open: {filename}");
 			}
 
 			// retrive stream infomation
 			if (avformat_find_stream_info(pFormatCtx, null) < 0)
 			{
-				throw new ApplicationException($"Failed to find stream info: {filename}");
+				throw new FFMediaException($"Failed to find stream info: {filename}");
 			}
 
 			// Dump information about file onto standard error
@@ -95,5 +97,12 @@ namespace SmartAudioPlayer.MediaProcessor
 			return quit ? 1 : 0;
 		}
 
+	}
+
+	public class FFMediaException : Exception
+	{
+		public FFMediaException() { }
+		public FFMediaException(string message) : base(message) { }
+		public FFMediaException(string message, Exception inner) : base(message, inner) { }
 	}
 }

@@ -11,14 +11,14 @@ namespace SmartAudioPlayer.MediaProcessor
 {
 	partial class FFMedia
 	{
-		public unsafe sealed class AudioDecoder : DecoderBase
+		public unsafe sealed class AudioTranscoder : Transcoder
 		{
 			const double AUDIO_DIFF_AVG_NB = 20;
 			readonly double diff_avg_coef = Math.Exp(Math.Log(0.01) / AUDIO_DIFF_AVG_NB);
 			readonly double diff_threshold = 2.0 * 0.050; // 50ms
 			readonly int audioFormat;
 
-			public AudioDecoder(FFMedia media, int sid) : base(media, sid)
+			public AudioTranscoder(FFMedia media, int sid) : base(media, sid)
 			{
 				// alGenBuffers(BUFFER_Q_SIZE=8)
 				// alGenSources(1)

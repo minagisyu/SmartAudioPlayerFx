@@ -146,11 +146,15 @@
     <Compile Include="MediaDB\RecentsManager.cs" />
     <Compile Include="MediaPlayer\AudioPlayerManager.cs" />
     <Compile Include="MediaPlayer\JukeboxManager.cs" />
-    <Compile Include="MediaProcessor\FFMedia.AudioDecoder.cs" />
+    <Compile Include="MediaProcessor\FFMedia.[implement].cs" />
+    <Compile Include="MediaProcessor\FFMedia.AudioFrame.cs" />
+    <Compile Include="MediaProcessor\FFMedia.AudioTranscoder.cs" />
     <Compile Include="MediaProcessor\FFMedia.cs" />
-    <Compile Include="MediaProcessor\FFMedia.Demuxer.cs" />
-    <Compile Include="MediaProcessor\FFMedia.DecoderBase.cs" />
-    <Compile Include="MediaProcessor\FFMedia.VideoDecoder.cs" />
+    <Compile Include="MediaProcessor\FFMedia.[packetq].cs" />
+    <Compile Include="MediaProcessor\FFMedia.Transcoder.cs" />
+    <Compile Include="MediaProcessor\FFMedia.VideoFrame.cs" />
+    <Compile Include="MediaProcessor\FFMedia.VideoTranscoder.cs" />
+    <Compile Include="MediaProcessor\FFMediaPlayback.cs" />
     <Compile Include="Messaging\NotificationView.cs" />
     <Compile Include="Messaging\PromptMessageView.cs" />
     <Compile Include="Preferences\AppUpdatePreference.cs" />
@@ -264,6 +268,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="x86\postproc-54.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="x86\soft_oal.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="x86\swresample-2.dll">

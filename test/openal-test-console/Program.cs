@@ -16,7 +16,7 @@ class Program
 		alcMakeContextCurrent(context);
 
 		// drive
-		alGenBuffers(1, out var buffer_id);
+		alGenBuffers(2, out var buffer_id);
 		alGenSources(1, out var source_id);
 
 		var isfloat32 = alIsExtensionPresent("AL_EXT_FLOAT32");
@@ -27,10 +27,15 @@ class Program
 		var data = File.ReadAllBytes("test-02u16.wav");
 		//alBufferData(buffer_id, fmt, data, 24*100000, 44000);
 		alBufferData(buffer_id, AL_FORMAT_STEREO16, data, data.Length, 44000);
+		alBufferData(buffer_id+1, AL_FORMAT_STEREO16, data, data.Length, 44000);
 		if (alGetError() != AL_NO_ERROR)
 		{
 			Console.WriteLine("Error Buffer :(");
 		}
+
+		alGetBufferi(buffer_id, AL_SIZE, out var size_val1);
+		alGetBufferi(buffer_id+1, AL_SIZE, out var size_val2);
+		alGetSourcef(source_id, OpenAL.AL11.AL_BYTE_OFFSET, out var offset_val);
 
 		alGetSourcei(source_id, AL_BUFFERS_PROCESSED, out var val);
 

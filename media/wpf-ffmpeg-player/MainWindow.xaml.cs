@@ -1,6 +1,7 @@
 ﻿using FFmpeg.AutoGen;
 using OpenTK;
 using OpenTK.Audio.OpenAL;
+using SmartAudioPlayer.MediaProcessor;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -127,13 +128,18 @@ namespace wpf_ffmpeg_player
 
 		private unsafe void button_Click(object sender, RoutedEventArgs e)
 		{
-            // FFMedia
-            // FFStream
-            //  -- FFVideoStream
-            //  -- FFAudioStream
-            // WPFVideoRender
-            // ALAudioRender
-            //
+			// FFMedia
+			// FFStream
+			//  -- FFVideoStream
+			//  -- FFAudioStream
+			// WPFVideoRender
+			// ALAudioRender
+			//
+
+			var mpb = new FFMediaPlayback();
+			mpb.PlayAsync();
+			mpb.Dispose();
+
             Task.Run(() =>
 			{
 				// 破棄処理を楽にする...
@@ -250,7 +256,14 @@ namespace wpf_ffmpeg_player
 						av_opt_set_int(swr, "out_sample_rate", dstRate, 0);
 						av_opt_set_sample_fmt(swr, "in_sample_fmt", pAudioCodecCtx->sample_fmt, 0);
 						av_opt_set_sample_fmt(swr, "out_sample_fmt", dstSampleFmt, 0);
-						if (swr_init(swr) < 0)
+					/*	// to 5.1ch
+						dstChLayout = AV_CH_LAYOUT_5POINT1;
+						dstSampleFmt = AVSampleFormat.AV_SAMPLE_FMT_FLT;
+						dstNbChannels = av_get_channel_layout_nb_channels(dstChLayout);
+						av_opt_set_int(swr, "out_channel_layout", (long)dstChLayout, 0);
+						av_opt_set_int(swr, "out_sample_rate", dstRate, 0);
+						av_opt_set_sample_fmt(swr, "out_sample_fmt", dstSampleFmt, 0);
+					*/	if (swr_init(swr) < 0)
 							return;
 
 						closingAction += () =>
@@ -305,6 +318,9 @@ namespace wpf_ffmpeg_player
 
 						Task.Run(() =>
 						{
+							bool isAL_MCFormat = AL.IsExtensionPresent("AL_EXT_MCFORMATS");
+							bool isAL_Float = AL.IsExtensionPresent("AL_EXT_FLOAT");
+
 							byte* audioBuf = stackalloc byte[192000];//AVCODEC_MAX_AUDIO_FRAME_SIZE];
 							int audioBufSize = 0;
 
@@ -332,6 +348,7 @@ namespace wpf_ffmpeg_player
 
 								// デコード、変換したデータを、OpenALのバッファに書き込む。
 								AL.BufferData(buffers[i], ALFormat.Stereo16, (IntPtr)audioBuf, audioBufSize, dstRate);
+							//	AL.BufferData(buffers[i], ALFormat.Multi51Chn32Ext, (IntPtr)audioBuf, audioBufSize, dstRate);
 								if (AL.GetError() != ALError.NoError)
 								{
 									ffmpeg.av_free_packet(&decodingPacket);
@@ -403,6 +420,7 @@ namespace wpf_ffmpeg_player
 
 								// デキューしたバッファに、新しい音楽データを書き込む。
 								AL.BufferData(buffer[0], ALFormat.Stereo16, (IntPtr)audioBuf, audioBufSize, dstRate);
+							//	AL.BufferData(buffer[0], ALFormat.Multi51Chn32Ext, (IntPtr)audioBuf, audioBufSize, dstRate);
 								if (AL.GetError() != ALError.NoError)
 								{
 
