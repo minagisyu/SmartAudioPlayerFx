@@ -27,8 +27,12 @@ namespace SmartAudioPlayer.MediaProcessor
 
 		delegate int Interrupt_cb_delegate(IntPtr ctx);
 
+		partial void Init_implement();
+
 		public FFMedia(string filename)
 		{
+			Init_implement();
+
 			this.filename = filename;
 
 			var interrupt_cb_delegate = new Interrupt_cb_delegate(Interrupt_cb_func);
@@ -99,10 +103,4 @@ namespace SmartAudioPlayer.MediaProcessor
 
 	}
 
-	public class FFMediaException : Exception
-	{
-		public FFMediaException() { }
-		public FFMediaException(string message) : base(message) { }
-		public FFMediaException(string message, Exception inner) : base(message, inner) { }
-	}
 }

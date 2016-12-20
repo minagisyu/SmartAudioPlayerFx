@@ -95,6 +95,7 @@
     <Compile Include="MediaProcessor\FFMedia.VideoTranscoder.cs" />
     <Compile Include="MediaProcessor\FFMedia.[implement].cs" />
     <Compile Include="MediaProcessor\FFMedia.[packetq].cs" />
+    <Compile Include="MediaProcessor\FFMediaException.cs" />
     <Compile Include="MediaProcessor\FFMediaPlayback.cs" />
     <Compile Include="Sound\ALDevice.cs" />
     <Compile Include="Sound\ALDevice.SourceFormat.cs" />

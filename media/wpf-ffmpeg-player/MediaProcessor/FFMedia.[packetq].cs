@@ -6,11 +6,69 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Reactive.Disposables;
+using System.Collections.Concurrent;
 
 namespace SmartAudioPlayer.MediaProcessor
 {
-	unsafe partial class FFMedia
+	partial class FFMedia
 	{
+		public sealed unsafe class PacketQueue : IDisposable
+		{
+			AVPacket reading_packet;
+			ConcurrentDictionary<int, ConcurrentQueue<AVPacket>> packetq; // <sid, queue>
+
+			public PacketQueue()
+			{
+				fixed (AVPacket* @ref = &reading_packet)
+				{
+					av_init_packet(@ref);
+				}
+				packetq = new ConcurrentDictionary<int, ConcurrentQueue<AVPacket>>();
+			}
+
+			public void Dispose()
+			{
+			}
+
+			public void KeepSID(int sid)
+				=> packetq.GetOrAdd(sid, (_) => new ConcurrentQueue<AVPacket>());
+
+			public void IgnoreSID(int sid)
+				=> packetq.TryRemove(sid, out var _);
+
+			public void TakeFrame(int sid)
+			{
+				if (packetq.TryGetValue(sid, out var queue) == false) return;
+
+				//
+				int read_result = 0;
+				fixed (AVPacket* @ref = &reading_packet)
+				{
+					read_result = av_read_frame(pFormatCtx, @ref);
+				}
+
+				if (read_result < 0)
+				{
+					// fail or EOF.
+					// flush_packet...
+				}
+
+
+			}
+		}
+
+
+
+
+
+
+
+
+
+
+
+
+
 		unsafe struct PacketQueue
 		{
 			public AVPacketList* pFirstPkt;
