@@ -35,6 +35,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject>SAPFx.WPF.TestMain</StartupObject>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="FFmpeg.AutoGen">
       <HintPath>..\openal-ffmpeg\ffmpeg\FFmpeg.AutoGen.dll</HintPath>
@@ -94,12 +97,13 @@
     <Compile Include="MediaProcessor\FFMedia.VideoFrame.cs" />
     <Compile Include="MediaProcessor\FFMedia.VideoTranscoder.cs" />
     <Compile Include="MediaProcessor\FFMedia.[implement].cs" />
-    <Compile Include="MediaProcessor\FFMedia.[packetq].cs" />
+    <Compile Include="MediaProcessor\FFMedia.PacketReader.cs" />
     <Compile Include="MediaProcessor\FFMediaException.cs" />
     <Compile Include="MediaProcessor\FFMediaPlayback.cs" />
     <Compile Include="Sound\ALDevice.cs" />
     <Compile Include="Sound\ALDevice.SourceFormat.cs" />
     <Compile Include="Sound\ALDevice.StreamingSource.cs" />
+    <Compile Include="TestMain.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

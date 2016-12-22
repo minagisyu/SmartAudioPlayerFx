@@ -31,6 +31,7 @@ namespace SmartAudioPlayer.MediaProcessor
 						throw new FFMediaException($"can't find beat stream. (MediaType:{mediaType})");
 				}
 
+				media.reader.KeepSID(sid);
 				stream = media.pFormatCtx->streams[sid];
 				pCodecCtx = stream->codec;
 				pCodecCtx->codec = pCodec;

@@ -168,7 +168,6 @@
     <Compile Include="Sound\ALDevice.StreamingSource.cs" />
     <Compile Include="Sound\ALDevice.SourceFormat.cs" />
     <None Include="Utils.cs.old" />
-    <Compile Include="TestMain.cs" />
     <Compile Include="Views\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
     </Compile>

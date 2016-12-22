@@ -12,6 +12,10 @@ namespace SmartAudioPlayer.MediaProcessor
 		FFMedia.VideoTranscoder vtrans;
 		FFMedia.AudioTranscoder atrans;
 
+		public FFMediaPlayback()
+		{
+			FFMedia.LibraryInitialize();
+		}
 
 		public void PlayAsync()
 		{
@@ -22,6 +26,11 @@ namespace SmartAudioPlayer.MediaProcessor
 			media = new FFMedia(file);
 			vtrans = new FFMedia.VideoTranscoder(media);
 			atrans = new FFMedia.AudioTranscoder(media);
+
+			//	vtrans.TakeFrame();
+
+			var aFrame = new FFMedia.AudioFrame();
+			atrans.TakeFrame(ref aFrame);
 		}
 
 		public void Dispose()

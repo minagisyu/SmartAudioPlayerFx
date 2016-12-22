@@ -18,21 +18,19 @@ namespace SmartAudioPlayer.MediaProcessor
 			av_register_all();
 		}
 
+		public static void LibraryInitialize() { }
+
 		string filename;
 		AVFormatContext* pFormatCtx = null;
 		volatile bool quit;
 		GCHandle _interrupt_cb_handle;
-		CompositeDisposable disposables = new CompositeDisposable();
 		bool disposed = false;
+		readonly PacketReader reader;
 
 		delegate int Interrupt_cb_delegate(IntPtr ctx);
 
-		partial void Init_implement();
-
 		public FFMedia(string filename)
 		{
-			Init_implement();
-
 			this.filename = filename;
 
 			var interrupt_cb_delegate = new Interrupt_cb_delegate(Interrupt_cb_func);
@@ -63,6 +61,8 @@ namespace SmartAudioPlayer.MediaProcessor
 
 			// Dump information about file onto standard error
 			av_dump_format(pFormatCtx, 0, filename, 0);
+
+			reader = new PacketReader(this);
 		}
 
 		#region Dispose
@@ -84,7 +84,7 @@ namespace SmartAudioPlayer.MediaProcessor
 			if (disposing)
 			{
 				// マネージリソースの破棄
-				disposables.Dispose();
+				reader.Dispose();
 			}
 
 			// アンマネージリソースの破棄
@@ -94,10 +94,13 @@ namespace SmartAudioPlayer.MediaProcessor
 			}
 
 			_interrupt_cb_handle.Free();
+
+			disposed = true;
 		}
 
 		int Interrupt_cb_func(IntPtr ctx)
 		{
+			// ブロッキング操作中に発生する？
 			return quit ? 1 : 0;
 		}
 
