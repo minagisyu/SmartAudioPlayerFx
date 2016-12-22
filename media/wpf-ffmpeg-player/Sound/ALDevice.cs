@@ -13,7 +13,7 @@ namespace SmartAudioPlayer.Sound
 
 		public ALDevice()
 		{
-			device = alcOpenDevice("OpenAL Soft");
+			device = alcOpenDevice(null/*"OpenAL Soft"*/);
 			context = alcCreateContext(device, null);
 			alcMakeContextCurrent(context);
 		}

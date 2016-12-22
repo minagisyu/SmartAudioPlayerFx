@@ -2,7 +2,7 @@
 using static OpenAL.AL10;
 using static OpenAL.ALEXT;
 
-namespace SAPFx.WPF.Sound
+namespace SmartAudioPlayer.Sound
 {
 	partial class ALDevice
 	{

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using static OpenAL.AL10;
 using static OpenAL.ALEXT;
@@ -31,9 +32,31 @@ namespace SmartAudioPlayer.Sound
 					Console.WriteLine("Error generating :(");
 					return;
 				}
+				for (var i = 0; i < buffer_num; i++)
+				{
+					alBufferData(buffers[i], SourceFormat.STEREO_16, IntPtr.Zero, 0, 48000);
+					if (alGetError() != AL_NO_ERROR)
+					{
+						// Console.WriteLine("Error Buffer :(");
+					}
+
+					alSourceQueueBuffers(source_id, 1, ref buffers[i]);
+					if (alGetError() != AL_NO_ERROR)
+					{
+
+						// Console.WriteLine("Error buffering :(");
+					}
+				}
+
+				alSourcePlay(source_id);
+				if (alGetError() != AL_NO_ERROR)
+				{
+
+					// Console.WriteLine("Error buffering :(");
+				}
 			}
 
-			public async void WaitBuffersProcessedAsync()
+			public async Task WaitBuffersProcessedAsync()
 			{
 				// キューがあくのを待機する
 				while (disposed == false)
@@ -48,7 +71,7 @@ namespace SmartAudioPlayer.Sound
 				}
 			}
 
-			public bool WriteData(int source_format, IntPtr data, int size, int freq)
+			public async Task<bool> WriteDataAsync(int source_format, IntPtr data, int size, int freq)
 			{
 				// TODO:
 				// キューがない状態で呼び出されたとき、きちんと空きキューが取得できるか？
@@ -57,7 +80,15 @@ namespace SmartAudioPlayer.Sound
 				// 空いてるキューを取り除き、データ書き込みキューに入れる
 				// キューに空きがない場合は失敗する
 				var buffer_id = default(uint);
-				alSourceUnqueueBuffers(source_id, 1, ref buffer_id);
+				while (true)
+				{
+					alSourceUnqueueBuffers(source_id, 1, ref buffer_id);
+					if (alGetError() != AL_NO_ERROR) // AL_INVALID_VALUE?
+					{
+						await WaitBuffersProcessedAsync();
+					}
+					break;
+				}
 
 				alBufferData(buffer_id, source_format, data, size, freq);
 				if (alGetError() != AL_NO_ERROR)

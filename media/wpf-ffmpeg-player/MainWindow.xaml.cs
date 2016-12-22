@@ -136,10 +136,6 @@ namespace wpf_ffmpeg_player
 			// ALAudioRender
 			//
 
-			var mpb = new FFMediaPlayback();
-			mpb.PlayAsync();
-			mpb.Dispose();
-
             Task.Run(() =>
 			{
 				// 破棄処理を楽にする...

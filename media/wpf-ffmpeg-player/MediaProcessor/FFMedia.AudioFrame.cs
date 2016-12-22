@@ -12,10 +12,11 @@ namespace SmartAudioPlayer.MediaProcessor
 	{
 		public sealed class AudioFrame
 		{
-			int sample_rate;
-			int channel;
-			AVSampleFormat format;
-			IntPtr data;
+			public int sample_rate;
+			public int channel;
+			public AVSampleFormat format;
+			public IntPtr data;
+			public int data_size;
 		}
 	}
 }

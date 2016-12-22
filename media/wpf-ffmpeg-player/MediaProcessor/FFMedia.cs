@@ -37,7 +37,7 @@ namespace SmartAudioPlayer.MediaProcessor
 			_interrupt_cb_handle = GCHandle.Alloc(interrupt_cb_delegate);
 
 			pFormatCtx = avformat_alloc_context();
-			pFormatCtx->interrupt_callback = new AVIOInterruptCB()
+		/*	pFormatCtx->interrupt_callback = new AVIOInterruptCB()
 			{
 				callback = Marshal.GetFunctionPointerForDelegate(interrupt_cb_delegate),
 				opaque = null
@@ -46,7 +46,7 @@ namespace SmartAudioPlayer.MediaProcessor
 			{
 				throw new FFMediaException($"Failed to open: {filename}");
 			}
-
+		*/
 			fixed (AVFormatContext** @ref = &pFormatCtx)
 			{
 				if (avformat_open_input(@ref, filename, null, null) != 0)

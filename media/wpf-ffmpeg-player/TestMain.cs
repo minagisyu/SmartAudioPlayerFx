@@ -17,7 +17,7 @@ namespace SAPFx.WPF
 			//	file = @"V:\bb-test\ブラック・ブレット ED (BS11 1280x1080i Hi10P).mp4";
 
 			var pb = new FFMediaPlayback();
-			pb.PlayAsync();
+			pb.PlayAsync().Wait();
 
 		}
 	}

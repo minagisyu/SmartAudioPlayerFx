@@ -16,7 +16,7 @@
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>x64</PlatformTarget>
+    <PlatformTarget>x86</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -39,9 +39,6 @@
     <StartupObject>SAPFx.WPF.TestMain</StartupObject>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="FFmpeg.AutoGen">
-      <HintPath>..\openal-ffmpeg\ffmpeg\FFmpeg.AutoGen.dll</HintPath>
-    </Reference>
     <Reference Include="OpenTK, Version=2.0.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
       <HintPath>..\..\packages\OpenTK.2.0.0\lib\net20\OpenTK.dll</HintPath>
       <Private>True</Private>
@@ -153,8 +150,21 @@
     <Content Include="soft_oal.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="x86\avcodec-57.dll" />
+    <Content Include="x86\avdevice-57.dll" />
+    <Content Include="x86\avfilter-6.dll" />
+    <Content Include="x86\avformat-57.dll" />
+    <Content Include="x86\avutil-55.dll" />
+    <Content Include="x86\postproc-54.dll" />
+    <Content Include="x86\soft_oal.dll" />
+    <Content Include="x86\swresample-2.dll" />
+    <Content Include="x86\swscale-4.dll" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Lib\FFmpeg.AutoGen-3.0\FFmpeg.AutoGen\FFmpeg.AutoGen.csproj">
+      <Project>{a536b02a-b0b1-4753-8328-17369ef09976}</Project>
+      <Name>FFmpeg.AutoGen</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Lib\OpenAL-CS\OpenAL-CS.csproj">
       <Project>{4ff0e874-adb4-4ae5-b059-dd6116c4a370}</Project>
       <Name>OpenAL-CS</Name>
