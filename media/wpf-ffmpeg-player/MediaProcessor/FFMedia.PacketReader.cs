@@ -16,7 +16,7 @@ namespace SmartAudioPlayer.MediaProcessor
 		{
 			readonly FFMedia media;
 			AVPacket reading_packet;
-			readonly ConcurrentDictionary<int, ConcurrentQueue<IntPtr>> packetq; // <sid, queue<(AVPacket)>>
+			readonly ConcurrentDictionary<int, ConcurrentQueue<AVPacket>> packetq; // <sid, queue<(AVPacket)>>
 			bool disposed = false;
 
 			public PacketReader(FFMedia media)
@@ -26,7 +26,7 @@ namespace SmartAudioPlayer.MediaProcessor
 				{
 					av_init_packet(@ref);
 				}
-				packetq = new ConcurrentDictionary<int, ConcurrentQueue<IntPtr>>();
+				packetq = new ConcurrentDictionary<int, ConcurrentQueue<AVPacket>>();
 			}
 
 			#region Dispose
@@ -57,7 +57,7 @@ namespace SmartAudioPlayer.MediaProcessor
 			}
 
 			public void KeepSID(int sid)
-				=> packetq.GetOrAdd(sid, (_) => new ConcurrentQueue<IntPtr>());
+				=> packetq.GetOrAdd(sid, (_) => new ConcurrentQueue<AVPacket>());
 
 			public void IgnoreSID(int sid)
 			{
@@ -65,11 +65,11 @@ namespace SmartAudioPlayer.MediaProcessor
 
 				while(queue.TryDequeue(out var packet))
 				{
-					av_free_packet((AVPacket*)packet);
+					av_free_packet(&packet);
 				}
 			}
 
-			public bool TakeFrame(int sid, out AVPacket* result)
+			public bool TakeFrame(int sid, out AVPacket result)
 			{
 				// ・av_read_frameして返す
 				// ・不要なSIDはav_free_packetする
@@ -83,7 +83,7 @@ namespace SmartAudioPlayer.MediaProcessor
 				{
 					if (queue.TryDequeue(out var packet))
 					{
-						result = (AVPacket*)packet;
+						result = packet;
 						return true;
 					}
 				}
@@ -93,18 +93,19 @@ namespace SmartAudioPlayer.MediaProcessor
 				{
 					while (av_read_frame(media.pFormatCtx, @ref) >= 0)
 					{
+						var is_sid_keep2 = packetq.TryGetValue(reading_packet.stream_index, out var queue2);
 						// 目的のSIDパケットなら複製して返す
 						if (reading_packet.stream_index == sid)
 						{
 							av_dup_packet(@ref);
-							result = @ref;
+							result = reading_packet;
 							return true;
 						}
 						// キープするSIDならキューに追加、次のフレームを読み込む
-						else if (is_sid_keep)
+						else if (is_sid_keep2)
 						{
 							av_dup_packet(@ref);
-							queue.Enqueue((IntPtr)@ref);
+							queue2.Enqueue(reading_packet);
 						}
 						// 不要なので解放して次のパケットを読み込む
 						else
@@ -115,7 +116,7 @@ namespace SmartAudioPlayer.MediaProcessor
 				}
 
 				// 読み込み失敗 or EOFでwhileを抜けてくるはず...
-				result = null;
+				result = default(AVPacket);
 				return false;
 			}
 		}

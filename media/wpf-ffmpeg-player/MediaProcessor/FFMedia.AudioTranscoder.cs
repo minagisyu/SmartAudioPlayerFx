@@ -79,7 +79,7 @@ namespace SmartAudioPlayer.MediaProcessor
 				if (media.reader.TakeFrame(sid, out var reading_packet) == false) return false;
 
 				byte* audioBuf = stackalloc byte[192000];
-				var decoded_size = decode(&audioBuf[0], 192000, reading_packet);
+				var decoded_size = decode(&audioBuf[0], 192000, &reading_packet);
 
 				frame.sample_rate = dstRate;
 				frame.channel = dstNbChannels;

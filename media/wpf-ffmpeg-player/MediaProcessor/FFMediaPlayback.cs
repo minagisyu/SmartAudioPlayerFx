@@ -38,9 +38,9 @@ namespace SmartAudioPlayer.MediaProcessor
 			var aFrame = new FFMedia.AudioFrame();
 			using (var writer = File.OpenWrite("decout.pcm"))
 			{
+					byte[] d = new byte[192000];
 				while (atrans.TakeFrame(ref aFrame))
 				{
-					byte[] d = new byte[192000];
 					System.Runtime.InteropServices.Marshal.Copy(aFrame.data, d, 0, aFrame.data_size);
 					writer.Write(d, 0, aFrame.data_size);
 					await alStream.WriteDataAsync(ALDevice.SourceFormat.STEREO_16, aFrame.data, aFrame.data_size, aFrame.sample_rate);

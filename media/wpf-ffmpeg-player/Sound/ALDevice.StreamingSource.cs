@@ -62,12 +62,17 @@ namespace SmartAudioPlayer.Sound
 				while (disposed == false)
 				{
 					alGetSourcei(source_id, AL_BUFFERS_PROCESSED, out var val);
-					if (val <= 0)
+					if (val > 0)
 					{
 						// 少しスリープさせてバッファが空くのを待つ
 						await Task.Delay(1);
-						continue;
+						break;
 					}
+
+					// もし再生が止まっていたら、再生する。
+					alGetSourcei(source_id, AL_SOURCE_STATE, out val);
+					if (val != AL_PLAYING)
+						alSourcePlay(source_id);
 				}
 			}
 
@@ -76,6 +81,7 @@ namespace SmartAudioPlayer.Sound
 				// TODO:
 				// キューがない状態で呼び出されたとき、きちんと空きキューが取得できるか？
 				//
+				await WaitBuffersProcessedAsync();
 
 				// 空いてるキューを取り除き、データ書き込みキューに入れる
 				// キューに空きがない場合は失敗する
@@ -85,7 +91,6 @@ namespace SmartAudioPlayer.Sound
 					alSourceUnqueueBuffers(source_id, 1, ref buffer_id);
 					if (alGetError() != AL_NO_ERROR) // AL_INVALID_VALUE?
 					{
-						await WaitBuffersProcessedAsync();
 					}
 					break;
 				}
@@ -104,11 +109,6 @@ namespace SmartAudioPlayer.Sound
 					// Console.WriteLine("Error buffering :(");
 					return false;
 				}
-
-				// もし再生が止まっていたら、再生する。
-				alGetSourcei(source_id, AL_SOURCE_STATE, out var val);
-				if (val != AL_PLAYING)
-					alSourcePlay(source_id);
 
 				return true;
 			}
