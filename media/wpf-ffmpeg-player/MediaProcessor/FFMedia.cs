@@ -14,39 +14,22 @@ namespace SmartAudioPlayer.MediaProcessor
 	{
 		static FFMedia()
 		{
-			// register all formats and codecs
 			av_register_all();
+			av_log_set_level(AV_LOG_QUIET);
 		}
 
-		public static void LibraryInitialize() { }
+		public static void LibraryInitialize() { /* static constractor caller */}
 
 		string filename;
 		AVFormatContext* pFormatCtx = null;
-		volatile bool quit;
-		GCHandle _interrupt_cb_handle;
 		bool disposed = false;
+		//
 		readonly PacketReader reader;
-
-		delegate int Interrupt_cb_delegate(IntPtr ctx);
 
 		public FFMedia(string filename)
 		{
 			this.filename = filename;
 
-			var interrupt_cb_delegate = new Interrupt_cb_delegate(Interrupt_cb_func);
-			_interrupt_cb_handle = GCHandle.Alloc(interrupt_cb_delegate);
-
-			pFormatCtx = avformat_alloc_context();
-		/*	pFormatCtx->interrupt_callback = new AVIOInterruptCB()
-			{
-				callback = Marshal.GetFunctionPointerForDelegate(interrupt_cb_delegate),
-				opaque = null
-			};
-			if (avio_open2(&pFormatCtx->pb, filename, AVIO_FLAG_READ, &pFormatCtx->interrupt_callback, null) != 0)
-			{
-				throw new FFMediaException($"Failed to open: {filename}");
-			}
-		*/
 			fixed (AVFormatContext** @ref = &pFormatCtx)
 			{
 				if (avformat_open_input(@ref, filename, null, null) != 0)
@@ -58,9 +41,6 @@ namespace SmartAudioPlayer.MediaProcessor
 			{
 				throw new FFMediaException($"Failed to find stream info: {filename}");
 			}
-
-			// Dump information about file onto standard error
-			av_dump_format(pFormatCtx, 0, filename, 0);
 
 			reader = new PacketReader(this);
 		}
@@ -93,15 +73,7 @@ namespace SmartAudioPlayer.MediaProcessor
 				avformat_close_input(@ref);
 			}
 
-			_interrupt_cb_handle.Free();
-
 			disposed = true;
-		}
-
-		int Interrupt_cb_func(IntPtr ctx)
-		{
-			// ブロッキング操作中に発生する？
-			return quit ? 1 : 0;
 		}
 
 	}

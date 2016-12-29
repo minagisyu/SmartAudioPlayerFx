@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Runtime.InteropServices;
 
 namespace SmartAudioPlayer.MediaProcessor
 {
@@ -22,10 +23,13 @@ namespace SmartAudioPlayer.MediaProcessor
 			int dstRate = 0;
 			int dstNbChannels = 0;
 			int dstChLayout = AV_CH_LAYOUT_STEREO;
+			IntPtr audioBuf;
 
 
 			public AudioTranscoder(FFMedia media) : base(media, AVMediaType.AVMEDIA_TYPE_AUDIO)
 			{
+				audioBuf = Marshal.AllocCoTaskMem(192000);
+
 				// Set up SWR context once you've got codec information
 				dstRate = pCodecCtx->sample_rate;
 
@@ -49,10 +53,10 @@ namespace SmartAudioPlayer.MediaProcessor
 				/*	// to 5.1ch?
 					dstChLayout = AV_CH_LAYOUT_5POINT1;
 					dstSampleFmt = AVSampleFormat.AV_SAMPLE_FMT_FLT;
-					dstNbChannels = av_get_channel_layout_nb_channels(dstChLayout);
-					av_opt_set_int(swr, "out_channel_layout", (long)dstChLayout, 0);
-					av_opt_set_int(swr, "out_sample_rate", dstRate, 0);
-					av_opt_set_sample_fmt(swr, "out_sample_fmt", dstSampleFmt, 0);
+					dstNbChannels = av_get_channel_layout_nb_channels((ulong)dstChLayout);
+					av_opt_set_int(pSwrContext, "out_channel_layout", (long)dstChLayout, 0);
+					av_opt_set_int(pSwrContext, "out_sample_rate", dstRate, 0);
+					av_opt_set_sample_fmt(pSwrContext, "out_sample_fmt", dstSampleFmt, 0);
 				*/
 				if (swr_init(pSwrContext) < 0)
 					throw new FFMediaException("failed SWR initialize.");
@@ -68,6 +72,11 @@ namespace SmartAudioPlayer.MediaProcessor
 				}
 
 				// アンマネージリソースの破棄
+				if (audioBuf != IntPtr.Zero)
+				{
+					Marshal.FreeCoTaskMem(audioBuf);
+					audioBuf = IntPtr.Zero;
+				}
 				fixed (SwrContext** @ref = &pSwrContext)
 				{
 					swr_free(@ref);
@@ -76,15 +85,28 @@ namespace SmartAudioPlayer.MediaProcessor
 
 			public bool TakeFrame(ref AudioFrame frame)
 			{
-				if (media.reader.TakeFrame(sid, out var reading_packet) == false) return false;
+				// TakeAudioFrame() == falseはストリーム終了
+				if (media.reader.TakeAudioFrame(out var reading_packet) == false)
+					return false;
 
-				byte* audioBuf = stackalloc byte[192000];
-				var decoded_size = decode(&audioBuf[0], 192000, &reading_packet);
+				// reading_packet == nullはデコードできないがストリーム終了ではない
+				if (reading_packet.HasValue == false)
+				{
+					frame.sample_rate = 0;
+					frame.channel = 0;
+					frame.format = AVSampleFormat.AV_SAMPLE_FMT_NONE;
+					frame.data = IntPtr.Zero;
+					frame.data_size = 0;
+					return true;
+				}
+
+				AVPacket packet = reading_packet.Value;
+				var decoded_size = decode((byte*)audioBuf, 192000, &packet);
 
 				frame.sample_rate = dstRate;
 				frame.channel = dstNbChannels;
 				frame.format = dstSampleFmt;
-				frame.data = (IntPtr)(&audioBuf[0]);
+				frame.data = audioBuf;
 				frame.data_size = decoded_size;
 				return true;
 			}

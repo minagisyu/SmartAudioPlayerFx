@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Reactive.Disposables;
 using System.Collections.Concurrent;
+using System.Threading;
 
 namespace SmartAudioPlayer.MediaProcessor
 {
@@ -15,18 +16,31 @@ namespace SmartAudioPlayer.MediaProcessor
 		public sealed unsafe class PacketReader : IDisposable
 		{
 			readonly FFMedia media;
-			AVPacket reading_packet;
-			readonly ConcurrentDictionary<int, ConcurrentQueue<AVPacket>> packetq; // <sid, queue<(AVPacket)>>
 			bool disposed = false;
+
+			const int MAX_VIDEOQ_SIZE = (5 * 256 * 1024);
+			int video_sid = -1;
+			volatile int video_packetq_size = 0;
+			ConcurrentQueue<AVPacket> video_queue = new ConcurrentQueue<AVPacket>();
+			const int MAX_AUDIOQ_SIZE = (5 * 16 * 1024);
+			int audio_sid = -1;
+			volatile int audio_packetq_size = 0;
+			ConcurrentQueue<AVPacket> audio_queue = new ConcurrentQueue<AVPacket>();
+
+			readonly CancellationTokenSource BufferFillTask_CTS = new CancellationTokenSource();
+			readonly Task BufferFillTask;
 
 			public PacketReader(FFMedia media)
 			{
 				this.media = media;
-				fixed (AVPacket* @ref = &reading_packet)
+				BufferFillTask = Task.Factory.StartNew(
+					BufferFiller, BufferFillTask_CTS.Token,
+					TaskCreationOptions.LongRunning, TaskScheduler.Default);
+				Task.Factory.StartNew(() =>
 				{
-					av_init_packet(@ref);
-				}
-				packetq = new ConcurrentDictionary<int, ConcurrentQueue<AVPacket>>();
+					Task.Delay(1000 * 2).Wait();
+					BufferFillTask_CTS.Cancel();
+				});
 			}
 
 			#region Dispose
@@ -48,165 +62,141 @@ namespace SmartAudioPlayer.MediaProcessor
 				if (disposing)
 				{
 					// マネージリソースの破棄
+					try
+					{
+						BufferFillTask_CTS.Cancel();
+						BufferFillTask.Wait();
+					}
+					catch (AggregateException) { }
 				}
 
 				// アンマネージリソースの破棄
-				packetq.Keys.ToList().ForEach(sid => IgnoreSID(sid));
+				AVPacket packet;
+				while (video_queue.TryDequeue(out packet))
+				{
+					av_free_packet(&packet);
+				}
+				while (audio_queue.TryDequeue(out packet))
+				{
+					av_free_packet(&packet);
+				}
 
 				disposed = true;
 			}
 
-			public void KeepSID(int sid)
-				=> packetq.GetOrAdd(sid, (_) => new ConcurrentQueue<AVPacket>());
-
-			public void IgnoreSID(int sid)
+			void SelectSIDInternal(AVMediaType mediaType, int sid)
 			{
-				if (packetq.TryRemove(sid, out var queue) == false) return;
+				// SIDが-1以下なら無効
+				if (sid < 0)
+					throw new ArgumentException("Invalid SID", nameof(sid));
 
-				while(queue.TryDequeue(out var packet))
+				// SIDをセット、既存のキューを破棄
+				ConcurrentQueue<AVPacket> queue =
+					(mediaType == AVMediaType.AVMEDIA_TYPE_VIDEO) ? video_queue :
+					(mediaType == AVMediaType.AVMEDIA_TYPE_AUDIO) ? audio_queue :
+					null;
+				while (queue?.TryDequeue(out var packet) ?? false)
 				{
 					av_free_packet(&packet);
 				}
+
+				if(mediaType == AVMediaType.AVMEDIA_TYPE_VIDEO)
+					video_sid = sid;
+				else if(mediaType == AVMediaType.AVMEDIA_TYPE_AUDIO)
+					audio_sid = sid;
 			}
+			public void SelectVideoSID(int sid)
+				=> SelectSIDInternal(AVMediaType.AVMEDIA_TYPE_VIDEO, sid);
+			public void SelectAudioSID(int sid)
+				=> SelectSIDInternal(AVMediaType.AVMEDIA_TYPE_AUDIO, sid);
 
-			public bool TakeFrame(int sid, out AVPacket result)
+			void BufferFiller()
 			{
-				// ・av_read_frameして返す
-				// ・不要なSIDはav_free_packetする
-				// ・av_read_frameで欲しいSIDが来ないが、必要なSIDならキューに保存する
-				// ・SIDのキューがある場合はそちらを先に返し、av_read_frameは呼ばない
-
-
-				// KeepSIDされてて、キューがあるならそれを返す
-				var is_sid_keep = packetq.TryGetValue(sid, out var queue);
-				if (is_sid_keep)
+				while(true)
 				{
-					if (queue.TryDequeue(out var packet))
+					// キャンセルされてる？
+					if (BufferFillTask_CTS.Token.IsCancellationRequested)
 					{
-						result = packet;
-						return true;
+						// フラッシュ処理
+						return;
+					}
+
+					// SIDが設定されていないなら読み込まない
+					if (video_sid < 0 && audio_sid < 0)
+					{
+						Task.Delay(150).Wait();
+						continue;
+					}
+
+					// バッファに空きがないなら読み込まない
+					if (video_packetq_size >= MAX_VIDEOQ_SIZE ||
+						audio_packetq_size >= MAX_AUDIOQ_SIZE)
+					{
+						Task.Delay(150).Wait();
+						continue;
+					}
+
+					// フレームを一つ読み込む
+					AVPacket reading_packet;
+					av_init_packet(&reading_packet);
+					if (av_read_frame(media.pFormatCtx, &reading_packet) < 0)
+					{
+						// 失敗、フラッシュ処理をする...
+						return;
+					}
+
+					// キープするSIDならキューに追加、次のフレームを読み込む
+					if (reading_packet.stream_index == video_sid)
+					{
+						av_dup_packet(&reading_packet);
+						video_queue.Enqueue(reading_packet);
+						video_packetq_size += reading_packet.size;
+					}
+					else if (reading_packet.stream_index == audio_sid)
+					{
+						av_dup_packet(&reading_packet);
+						audio_queue.Enqueue(reading_packet);
+						audio_packetq_size += reading_packet.size;
+					}
+					else
+					{
+						// 不要なので解放
+						av_free_packet(&reading_packet);
 					}
 				}
+			}
 
-				// フレームをひとつ読み込む
-				fixed (AVPacket* @ref = &reading_packet)
+			bool TakeFrameInternal(AVMediaType mediaType, out AVPacket? result)
+			{
+				ConcurrentQueue<AVPacket> queue =
+					(mediaType == AVMediaType.AVMEDIA_TYPE_VIDEO) ? video_queue :
+					(mediaType == AVMediaType.AVMEDIA_TYPE_AUDIO) ? audio_queue :
+					null;
+
+				// キューがあるならそれを返す
+				if (queue != null && queue.TryDequeue(out var packet))
 				{
-					while (av_read_frame(media.pFormatCtx, @ref) >= 0)
-					{
-						var is_sid_keep2 = packetq.TryGetValue(reading_packet.stream_index, out var queue2);
-						// 目的のSIDパケットなら複製して返す
-						if (reading_packet.stream_index == sid)
-						{
-							av_dup_packet(@ref);
-							result = reading_packet;
-							return true;
-						}
-						// キープするSIDならキューに追加、次のフレームを読み込む
-						else if (is_sid_keep2)
-						{
-							av_dup_packet(@ref);
-							queue2.Enqueue(reading_packet);
-						}
-						// 不要なので解放して次のパケットを読み込む
-						else
-						{
-							ffmpeg.av_free_packet(@ref);
-						}
-					}
+					result = packet;
+					if (mediaType == AVMediaType.AVMEDIA_TYPE_VIDEO)
+						video_packetq_size -= packet.size;
+					else if (mediaType == AVMediaType.AVMEDIA_TYPE_AUDIO)
+						audio_packetq_size -= packet.size;
+
+					return true;
 				}
 
-				// 読み込み失敗 or EOFでwhileを抜けてくるはず...
-				result = default(AVPacket);
-				return false;
+				// BufferFillerがまだ動いてるならtrueを返す？
+				result = null;
+				if (BufferFillTask.IsCompleted == false)
+					return true;
+				else
+					return false;
 			}
-		}
-
-
-
-
-
-
-
-
-
-
-
-
-
-		unsafe struct PacketQueue
-		{
-			public AVPacketList* pFirstPkt;
-			public AVPacketList* pLastPkt;
-			public int numOfPackets;
+			public bool TakeVideoFrame(out AVPacket? result)
+				=> TakeFrameInternal(AVMediaType.AVMEDIA_TYPE_VIDEO, out result);
+			public bool TakeAudioFrame(out AVPacket? result)
+				=> TakeFrameInternal(AVMediaType.AVMEDIA_TYPE_AUDIO, out result);
 
 		}
-		static unsafe void initPacketQueue(PacketQueue* q)
-		{
-			memset((byte*)q, 0, sizeof(PacketQueue));
-		}
-
-		static unsafe int pushPacketToPacketQueue(PacketQueue* pPktQ, AVPacket* pPkt)
-		{
-			AVPacketList* pPktList;
-
-			if (ffmpeg.av_dup_packet(pPkt) > 0)
-			{
-				return -1;
-			}
-
-			pPktList = (AVPacketList*)ffmpeg.av_malloc((ulong)sizeof(AVPacketList));
-			if (pPktList == null)
-			{
-				return -1;
-			}
-
-			pPktList->pkt = *pPkt;
-			pPktList->next = null;
-
-			// 
-			if (pPktQ->pLastPkt == null)
-			{
-				pPktQ->pFirstPkt = pPktList;
-			}
-			else
-			{
-				pPktQ->pLastPkt->next = pPktList;
-			}
-
-
-
-			pPktQ->pLastPkt = pPktList;
-
-			// 
-			pPktQ->numOfPackets++;
-			return 0;
-		}
-
-		static unsafe int popPacketFromPacketQueue(PacketQueue* pPQ, AVPacket* pPkt)
-		{
-			AVPacketList* pPktList;
-
-			//
-			pPktList = pPQ->pFirstPkt;
-
-			if (pPktList != null)
-			{
-				pPQ->pFirstPkt = pPktList->next;
-				if (pPQ->pFirstPkt == null)
-				{
-					pPQ->pLastPkt = null;
-				}
-				pPQ->numOfPackets--;
-
-				*pPkt = pPktList->pkt;
-
-				ffmpeg.av_free(pPktList);
-
-				return 0;
-			}
-
-			return -1;
-		}
-
 	}
 }

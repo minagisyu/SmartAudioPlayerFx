@@ -36,14 +36,15 @@ namespace SmartAudioPlayer.MediaProcessor
 			//	vtrans.TakeFrame();
 
 			var aFrame = new FFMedia.AudioFrame();
-			using (var writer = File.OpenWrite("decout.pcm"))
+			while (atrans.TakeFrame(ref aFrame))
 			{
-					byte[] d = new byte[192000];
-				while (atrans.TakeFrame(ref aFrame))
+				if (aFrame.data_size > 0)
 				{
-					System.Runtime.InteropServices.Marshal.Copy(aFrame.data, d, 0, aFrame.data_size);
-					writer.Write(d, 0, aFrame.data_size);
 					await alStream.WriteDataAsync(ALDevice.SourceFormat.STEREO_16, aFrame.data, aFrame.data_size, aFrame.sample_rate);
+				}
+				else
+				{
+					await Task.Delay(100);
 				}
 			}
 		}
