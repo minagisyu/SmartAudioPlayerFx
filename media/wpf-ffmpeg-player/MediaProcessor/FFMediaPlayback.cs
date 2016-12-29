@@ -20,7 +20,7 @@ namespace SmartAudioPlayer.MediaProcessor
 		{
 			FFMedia.LibraryInitialize();
 			alDev = new ALDevice();
-			alStream = alDev.CreateStreamingSource(3);
+			alStream = alDev.CreateStreamingSource(8);
 		}
 
 		public async Task PlayAsync(bool enableVideo = false)

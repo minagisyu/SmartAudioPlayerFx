@@ -39,7 +39,7 @@ namespace SmartAudioPlayer.MediaProcessor
 				Task.Factory.StartNew(() =>
 				{
 					Task.Delay(1000 * 2).Wait();
-					BufferFillTask_CTS.Cancel();
+				//	BufferFillTask_CTS.Cancel();
 				});
 			}
 
