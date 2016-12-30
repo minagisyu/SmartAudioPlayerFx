@@ -1,9 +1,5 @@
-﻿using SmartAudioPlayer.Sound;
+﻿using SmartAudioPlayer.MediaProcessor.Audio;
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace SmartAudioPlayer.MediaProcessor
@@ -23,12 +19,8 @@ namespace SmartAudioPlayer.MediaProcessor
 			alStream = alDev.CreateStreamingSource(8);
 		}
 
-		public async Task PlayAsync(bool enableVideo = false)
+		public async Task PlayAsync(string file, bool enableVideo = false)
 		{
-			string file = @"V:\__Video(old)\1995-2010\_etc\AT-X ロゴ (AT-X 640x480_x264 [2009Q3]).mp4";
-			file = @"V:\bb-test\ブラック・ブレット ED (BS11 1280x720p Hi10P).mp4";
-			//	file = @"V:\bb-test\ブラック・ブレット ED (BS11 1280x1080i Hi10P).mp4";
-
 			media = new FFMedia(file);
 			vtrans = enableVideo ? new FFMedia.VideoTranscoder(media) : null;
 			atrans = new FFMedia.AudioTranscoder(media);
@@ -57,7 +49,6 @@ namespace SmartAudioPlayer.MediaProcessor
 			atrans.Dispose();
 			media.Dispose();
 		}
-
 
 	}
 }

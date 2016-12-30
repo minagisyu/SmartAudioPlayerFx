@@ -7,7 +7,7 @@
     <ProjectGuid>{CBF38DC2-8DEF-4357-B078-3A00A2DBB07D}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>wpf_ffmpeg_player</RootNamespace>
+    <RootNamespace>SmartAudioPlayer</RootNamespace>
     <AssemblyName>wpf-ffmpeg-player</AssemblyName>
     <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -87,6 +87,9 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="MediaProcessor\Audio\ALDevice.cs" />
+    <Compile Include="MediaProcessor\Audio\ALDevice.SourceFormat.cs" />
+    <Compile Include="MediaProcessor\Audio\ALDevice.StreamingSource.cs" />
     <Compile Include="MediaProcessor\FFMedia.AudioFrame.cs" />
     <Compile Include="MediaProcessor\FFMedia.AudioTranscoder.cs" />
     <Compile Include="MediaProcessor\FFMedia.cs" />
@@ -97,9 +100,6 @@
     <Compile Include="MediaProcessor\FFMedia.PacketReader.cs" />
     <Compile Include="MediaProcessor\FFMediaException.cs" />
     <Compile Include="MediaProcessor\FFMediaPlayback.cs" />
-    <Compile Include="Sound\ALDevice.cs" />
-    <Compile Include="Sound\ALDevice.SourceFormat.cs" />
-    <Compile Include="Sound\ALDevice.StreamingSource.cs" />
     <Compile Include="TestMain.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -144,9 +144,7 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Sound\alffplay.c" />
-  </ItemGroup>
-  <ItemGroup>
+    <Content Include="MediaProcessor\alffplay.c" />
     <Content Include="soft_oal.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -169,6 +167,9 @@
       <Project>{4ff0e874-adb4-4ae5-b059-dd6116c4a370}</Project>
       <Name>OpenAL-CS</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="MediaProcessor\Video.WPF\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

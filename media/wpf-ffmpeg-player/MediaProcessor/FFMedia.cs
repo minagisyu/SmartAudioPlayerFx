@@ -1,12 +1,6 @@
 ﻿using FFmpeg.AutoGen;
 using static FFmpeg.AutoGen.ffmpeg;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Runtime.InteropServices;
-using System.Reactive.Disposables;
 
 namespace SmartAudioPlayer.MediaProcessor
 {
@@ -17,10 +11,9 @@ namespace SmartAudioPlayer.MediaProcessor
 			av_register_all();
 			av_log_set_level(AV_LOG_QUIET);
 		}
-
 		public static void LibraryInitialize() { /* static constractor caller */}
 
-		string filename;
+		readonly string filename;
 		AVFormatContext* pFormatCtx = null;
 		bool disposed = false;
 		//
@@ -77,5 +70,4 @@ namespace SmartAudioPlayer.MediaProcessor
 		}
 
 	}
-
 }

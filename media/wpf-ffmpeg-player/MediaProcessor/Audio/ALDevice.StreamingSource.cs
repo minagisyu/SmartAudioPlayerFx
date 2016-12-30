@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Threading;
 using System.Threading.Tasks;
 using static OpenAL.AL10;
-using static OpenAL.ALEXT;
 
-namespace SmartAudioPlayer.Sound
+namespace SmartAudioPlayer.MediaProcessor.Audio
 {
 	partial class ALDevice
 	{
@@ -54,6 +52,34 @@ namespace SmartAudioPlayer.Sound
 
 					// Console.WriteLine("Error buffering :(");
 				}
+			}
+
+			#region Dispose
+
+			~StreamingSource() => Dispose(false);
+
+			public void Dispose()
+			{
+				Dispose(true);
+				GC.SuppressFinalize(this);
+			}
+
+			#endregion
+
+			void Dispose(bool disposing)
+			{
+				if (disposed) return;
+
+				if (disposing)
+				{
+					// マネージリソースの破棄
+				}
+
+				// アンマネージリソースの破棄
+				alDeleteSources(1, ref source_id);
+				alDeleteBuffers(buffer_num, buffers);
+
+				disposed = true;
 			}
 
 			public async Task WaitBuffersProcessedAsync()
@@ -111,69 +137,6 @@ namespace SmartAudioPlayer.Sound
 				}
 
 				return true;
-			}
-
-
-			unsafe void proc()
-			{
-				byte* audioBuf = stackalloc byte[192000];//AVCODEC_MAX_AUDIO_FRAME_SIZE];
-				int audioBufSize = 0;
-
-				// NUM_BUFFERSの数だけ、あらかじめバッファを準備する。
-				int i;
-				for (i = 0; i < buffer_num; i++)
-				{
-
-					// デコード、変換したデータを、OpenALのバッファに書き込む。
-					alBufferData(buffers[i], AL_FORMAT_STEREO16, (IntPtr)audioBuf, audioBufSize, 48000);
-					if (alGetError() != AL_NO_ERROR)
-					{
-						Console.WriteLine("Error Buffer :(");
-						continue;
-					}
-				}
-
-				alSourceQueueBuffers(source_id, buffer_num, buffers);
-				alSourcePlay(source_id);
-				bool playing = false;
-				if (alGetError() != AL_NO_ERROR)
-				{
-					Console.WriteLine("Error starting.");
-					return;
-				}
-				else
-				{
-					Console.WriteLine("Playing..");
-					playing = true;
-				}
-			}
-
-			#region Dispose
-
-			~StreamingSource() => Dispose(false);
-
-			public void Dispose()
-			{
-				Dispose(true);
-				GC.SuppressFinalize(this);
-			}
-
-			#endregion
-
-			void Dispose(bool disposing)
-			{
-				if (disposed) return;
-
-				if (disposing)
-				{
-					// マネージリソースの破棄
-				}
-
-				// アンマネージリソースの破棄
-				alDeleteSources(1, ref source_id);
-				alDeleteBuffers(buffer_num, buffers);
-
-				disposed = true;
 			}
 
 		}

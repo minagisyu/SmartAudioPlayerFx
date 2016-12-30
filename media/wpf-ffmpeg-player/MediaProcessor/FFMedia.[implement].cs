@@ -1,12 +1,6 @@
 ﻿using FFmpeg.AutoGen;
 using static FFmpeg.AutoGen.ffmpeg;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Runtime.InteropServices;
-using System.Reactive.Disposables;
 
 namespace SmartAudioPlayer.MediaProcessor
 {
@@ -15,7 +9,7 @@ namespace SmartAudioPlayer.MediaProcessor
 		static long av_gettime_impl()
 			=> DateTime.Now.Ticks / (TimeSpan.TicksPerMillisecond / 1000);
 
-		static AVRational AV_TIME_BASE_Q_impl { get; } = new AVRational() { num = 1, den = AV_TIME_BASE };
+		static readonly AVRational AV_TIME_BASE_Q_impl = new AVRational() { num = 1, den = AV_TIME_BASE };
 
 		static void CreateAVPacket(out AVPacket packet)
 		{
@@ -41,9 +35,7 @@ namespace SmartAudioPlayer.MediaProcessor
 		}
 
 		static double av_q2d_impl(AVRational a)
-		{
-			return a.num / (double)a.den;
-		}
+			=> a.num / (double)a.den;
 
 		static void memset(byte* tgt, byte val, int bytesize)
 		{

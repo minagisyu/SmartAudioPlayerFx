@@ -1,11 +1,7 @@
 ﻿using FFmpeg.AutoGen;
 using static FFmpeg.AutoGen.ffmpeg;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using System.Reactive.Disposables;
 using System.Collections.Concurrent;
 using System.Threading;
 
@@ -18,15 +14,19 @@ namespace SmartAudioPlayer.MediaProcessor
 			readonly FFMedia media;
 			bool disposed = false;
 
+			// Video
 			const int MAX_VIDEOQ_SIZE = (5 * 256 * 1024);
-			int video_sid = -1;
+			volatile int video_sid = -1;
 			volatile int video_packetq_size = 0;
 			ConcurrentQueue<AVPacket> video_queue = new ConcurrentQueue<AVPacket>();
+
+			// Audio
 			const int MAX_AUDIOQ_SIZE = (5 * 16 * 1024);
-			int audio_sid = -1;
+			volatile int audio_sid = -1;
 			volatile int audio_packetq_size = 0;
 			ConcurrentQueue<AVPacket> audio_queue = new ConcurrentQueue<AVPacket>();
 
+			// BufferFiller
 			readonly CancellationTokenSource BufferFillTask_CTS = new CancellationTokenSource();
 			readonly Task BufferFillTask;
 
@@ -36,11 +36,6 @@ namespace SmartAudioPlayer.MediaProcessor
 				BufferFillTask = Task.Factory.StartNew(
 					BufferFiller, BufferFillTask_CTS.Token,
 					TaskCreationOptions.LongRunning, TaskScheduler.Default);
-				Task.Factory.StartNew(() =>
-				{
-					Task.Delay(1000 * 2).Wait();
-				//	BufferFillTask_CTS.Cancel();
-				});
 			}
 
 			#region Dispose
@@ -100,9 +95,9 @@ namespace SmartAudioPlayer.MediaProcessor
 					av_free_packet(&packet);
 				}
 
-				if(mediaType == AVMediaType.AVMEDIA_TYPE_VIDEO)
+				if (mediaType == AVMediaType.AVMEDIA_TYPE_VIDEO)
 					video_sid = sid;
-				else if(mediaType == AVMediaType.AVMEDIA_TYPE_AUDIO)
+				else if (mediaType == AVMediaType.AVMEDIA_TYPE_AUDIO)
 					audio_sid = sid;
 			}
 			public void SelectVideoSID(int sid)
@@ -112,7 +107,7 @@ namespace SmartAudioPlayer.MediaProcessor
 
 			void BufferFiller()
 			{
-				while(true)
+				while (true)
 				{
 					// キャンセルされてる？
 					if (BufferFillTask_CTS.Token.IsCancellationRequested)
@@ -124,7 +119,7 @@ namespace SmartAudioPlayer.MediaProcessor
 					// SIDが設定されていないなら読み込まない
 					if (video_sid < 0 && audio_sid < 0)
 					{
-						Task.Delay(150).Wait();
+						Task.Delay(50).Wait();
 						continue;
 					}
 
@@ -132,7 +127,7 @@ namespace SmartAudioPlayer.MediaProcessor
 					if (video_packetq_size >= MAX_VIDEOQ_SIZE ||
 						audio_packetq_size >= MAX_AUDIOQ_SIZE)
 					{
-						Task.Delay(150).Wait();
+						Task.Delay(50).Wait();
 						continue;
 					}
 
@@ -150,13 +145,19 @@ namespace SmartAudioPlayer.MediaProcessor
 					{
 						av_dup_packet(&reading_packet);
 						video_queue.Enqueue(reading_packet);
-						video_packetq_size += reading_packet.size;
+						lock (video_queue)
+						{
+							video_packetq_size += reading_packet.size;
+						}
 					}
 					else if (reading_packet.stream_index == audio_sid)
 					{
 						av_dup_packet(&reading_packet);
 						audio_queue.Enqueue(reading_packet);
-						audio_packetq_size += reading_packet.size;
+						lock (audio_queue)
+						{
+							audio_packetq_size += reading_packet.size;
+						}
 					}
 					else
 					{
@@ -176,12 +177,14 @@ namespace SmartAudioPlayer.MediaProcessor
 				// キューがあるならそれを返す
 				if (queue != null && queue.TryDequeue(out var packet))
 				{
-					result = packet;
-					if (mediaType == AVMediaType.AVMEDIA_TYPE_VIDEO)
-						video_packetq_size -= packet.size;
-					else if (mediaType == AVMediaType.AVMEDIA_TYPE_AUDIO)
-						audio_packetq_size -= packet.size;
-
+					lock (queue)
+					{
+						result = packet;
+						if (mediaType == AVMediaType.AVMEDIA_TYPE_VIDEO)
+							video_packetq_size -= packet.size;
+						else if (mediaType == AVMediaType.AVMEDIA_TYPE_AUDIO)
+							audio_packetq_size -= packet.size;
+					}
 					return true;
 				}
 

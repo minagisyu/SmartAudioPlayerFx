@@ -2,7 +2,7 @@
 using static OpenAL.AL10;
 using static OpenAL.ALEXT;
 
-namespace SmartAudioPlayer.Sound
+namespace SmartAudioPlayer.MediaProcessor.Audio
 {
 	partial class ALDevice
 	{
@@ -22,18 +22,18 @@ namespace SmartAudioPlayer.Sound
 			public static int STEREO_32 { get; } = AL_FORMAT_STEREO_FLOAT32;
 
 			// AL_EXT_MCFORMATS
-			public static int MULTI_51CH_N8 { get; private set; }
-			public static int MULTI_51CH_N16 { get; private set; }
-			public static int MULTI_71CH_N8 { get; private set; }
-			public static int MULTI_71CH_N16 { get; private set; }
+			public static int MULTI_51CH_N8 { get; }
+			public static int MULTI_51CH_N16 { get; }
+			public static int MULTI_71CH_N8 { get; }
+			public static int MULTI_71CH_N16 { get; }
 
 			// AL_EXT_MCFORMATS + AL_EXT_FLOAT32
-			public static int MULTI_51CH_N32 { get; private set; }
-			public static int MULTI_71CH_N32 { get; private set; }
+			public static int MULTI_51CH_N32 { get; }
+			public static int MULTI_71CH_N32 { get; }
 
 			// Status
-			public static bool IsAllow_FLOAT32 { get; private set; }
-			public static bool IsAllow_MCFORMATS { get; private set; }
+			public static bool IsAllow_FLOAT32 { get; }
+			public static bool IsAllow_MCFORMATS { get; }
 
 			static SourceFormat()
 			{

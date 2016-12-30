@@ -2,7 +2,7 @@
 using System.Reactive.Disposables;
 using static OpenAL.ALC10;
 
-namespace SmartAudioPlayer.Sound
+namespace SmartAudioPlayer.MediaProcessor.Audio
 {
 	public unsafe sealed partial class ALDevice : IDisposable
 	{
