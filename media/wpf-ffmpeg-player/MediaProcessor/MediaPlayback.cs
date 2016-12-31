@@ -9,16 +9,14 @@ namespace SmartAudioPlayer.MediaProcessor
 		FFMedia media;
 		FFMedia.VideoTranscoder vtrans;
 		FFMedia.AudioTranscoder atrans;
-		ALDevice.StreamingSource alStream;
+		ALStreamingSource alStream;
 
 		public async Task PlayAsync(string file, bool enableVideo = false)
 		{
-			ALDevice.Initialize();
-
 			media = new FFMedia(file);
 			vtrans = enableVideo ? new FFMedia.VideoTranscoder(media) : null;
 			atrans = new FFMedia.AudioTranscoder(media);
-			alStream = new ALDevice.StreamingSource(8);
+			alStream = new ALStreamingSource(80);
 
 		//	media.reader.Seek(30.0);
 			media.reader.StartFill();
@@ -30,15 +28,13 @@ namespace SmartAudioPlayer.MediaProcessor
 			{
 				if (aFrame.data_size > 0)
 				{
-					await alStream.WriteDataAsync(ALDevice.SourceFormat.STEREO_16, aFrame.data, aFrame.data_size, aFrame.sample_rate);
+					await alStream.WriteDataAsync(atrans.dstALFormat, aFrame.data, aFrame.data_size, aFrame.sample_rate);
 				}
 				else
 				{
 					await Task.Delay(100);
 				}
 			}
-
-			ALDevice.Dispose();
 		}
 
 		public void Dispose()

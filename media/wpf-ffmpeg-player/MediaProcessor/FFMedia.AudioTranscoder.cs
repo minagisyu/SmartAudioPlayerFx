@@ -2,6 +2,9 @@
 using static FFmpeg.AutoGen.ffmpeg;
 using System;
 using System.Runtime.InteropServices;
+using static OpenAL.AL10;
+using static OpenAL.ALC10;
+using SmartAudioPlayer.MediaProcessor.Audio;
 
 namespace SmartAudioPlayer.MediaProcessor
 {
@@ -9,6 +12,7 @@ namespace SmartAudioPlayer.MediaProcessor
 	{
 		public unsafe sealed class AudioTranscoder : Transcoder
 		{
+			const int AUDIO_BUFFER_TIME = 100; // in milliseconds, pre-buffer
 			const double AUDIO_DIFF_AVG_NB = 20;
 			readonly double diff_avg_coef = Math.Exp(Math.Log(0.01) / AUDIO_DIFF_AVG_NB);
 			readonly double diff_threshold = 2.0 * 0.050; // 50ms
@@ -16,15 +20,20 @@ namespace SmartAudioPlayer.MediaProcessor
 
 			SwrContext* pSwrContext = null;
 			AVSampleFormat dstSampleFmt = AVSampleFormat.AV_SAMPLE_FMT_S16;
+			int frame_size = 0;
 			int dstRate = 0;
 			int dstNbChannels = 0;
 			int dstChLayout = AV_CH_LAYOUT_STEREO;
 			IntPtr audioBuf;
+			ALStreamingSource alStream;
+			int buffer_len;
+			public int dstALFormat = AL_NONE;
 
 
 			public AudioTranscoder(FFMedia media) : base(media, AVMediaType.AVMEDIA_TYPE_AUDIO)
 			{
-				audioBuf = Marshal.AllocCoTaskMem(192000);
+				audioBuf = Marshal.AllocCoTaskMem(512000);
+				alStream = new ALStreamingSource(8);
 
 				// Set up SWR context once you've got codec information
 				dstRate = pCodecCtx->sample_rate;
@@ -36,24 +45,8 @@ namespace SmartAudioPlayer.MediaProcessor
 				if (pSwrContext == null)
 					throw new FFMediaException("failed alloc SwrContext.");
 
-				// チャンネルレイアウトがわからない場合は、チャンネル数から取得する。
-				if (pCodecCtx->channel_layout == 0)
-					pCodecCtx->channel_layout = (ulong)av_get_default_channel_layout(pCodecCtx->channels);
-				//
-				av_opt_set_int(pSwrContext, "in_channel_layout", (long)pCodecCtx->channel_layout, 0);
-				av_opt_set_int(pSwrContext, "out_channel_layout", (long)dstChLayout, 0);
-				av_opt_set_int(pSwrContext, "in_sample_rate", pCodecCtx->sample_rate, 0);
-				av_opt_set_int(pSwrContext, "out_sample_rate", dstRate, 0);
-				av_opt_set_sample_fmt(pSwrContext, "in_sample_fmt", pCodecCtx->sample_fmt, 0);
-				av_opt_set_sample_fmt(pSwrContext, "out_sample_fmt", dstSampleFmt, 0);
-				/*	// to 5.1ch?
-					dstChLayout = AV_CH_LAYOUT_5POINT1;
-					dstSampleFmt = AVSampleFormat.AV_SAMPLE_FMT_FLT;
-					dstNbChannels = av_get_channel_layout_nb_channels((ulong)dstChLayout);
-					av_opt_set_int(pSwrContext, "out_channel_layout", (long)dstChLayout, 0);
-					av_opt_set_int(pSwrContext, "out_sample_rate", dstRate, 0);
-					av_opt_set_sample_fmt(pSwrContext, "out_sample_fmt", dstSampleFmt, 0);
-				*/
+				dstALFormat = SetBestALFormat();
+
 				if (swr_init(pSwrContext) < 0)
 					throw new FFMediaException("failed SWR initialize.");
 			}
@@ -65,6 +58,7 @@ namespace SmartAudioPlayer.MediaProcessor
 				if (disposing)
 				{
 					// マネージリソースの破棄
+					alStream.Dispose();
 				}
 
 				// アンマネージリソースの破棄
@@ -97,7 +91,7 @@ namespace SmartAudioPlayer.MediaProcessor
 				}
 
 				AVPacket packet = reading_packet.Value;
-				var decoded_size = decode((byte*)audioBuf, 192000, &packet);
+				var decoded_size = decode((byte*)audioBuf, 512000, &packet);
 
 				frame.sample_rate = dstRate;
 				frame.channel = dstNbChannels;
@@ -193,6 +187,140 @@ namespace SmartAudioPlayer.MediaProcessor
 				return (int)dataSize;
 			}
 
+
+			int SetBestALFormat()
+			{
+				int format = AL_NONE;
+
+				if (pCodecCtx->channel_layout == 0)
+					pCodecCtx->channel_layout = (ulong)av_get_default_channel_layout(pCodecCtx->channels);
+
+				if (pCodecCtx->sample_fmt == AVSampleFormat.AV_SAMPLE_FMT_U8 ||
+					pCodecCtx->sample_fmt == AVSampleFormat.AV_SAMPLE_FMT_U8P)
+				{
+					dstSampleFmt = AVSampleFormat.AV_SAMPLE_FMT_U8;
+					frame_size = 1;
+					if (pCodecCtx->channel_layout == AV_CH_LAYOUT_7POINT1 &&
+						alStream.SourceFormat.IsAllow_MCFORMATS &&
+						alStream.SourceFormat.MULTI_71CH_N8 > 0)
+					{
+						dstChLayout = AV_CH_LAYOUT_7POINT1;
+						dstNbChannels = 8;
+						frame_size *= 8;
+						format = alStream.SourceFormat.MULTI_71CH_N8;
+					}
+					if (pCodecCtx->channel_layout == AV_CH_LAYOUT_5POINT1 &&
+						alStream.SourceFormat.IsAllow_MCFORMATS &&
+						alStream.SourceFormat.MULTI_51CH_N8 > 0)
+					{
+						dstChLayout = AV_CH_LAYOUT_5POINT1;
+						dstNbChannels = 6;
+						frame_size *= 6;
+						format = alStream.SourceFormat.MULTI_51CH_N8;
+					}
+					if (pCodecCtx->channel_layout == AV_CH_LAYOUT_MONO)
+					{
+						dstChLayout = AV_CH_LAYOUT_MONO;
+						dstNbChannels = 1;
+						frame_size *= 1;
+						format = alStream.SourceFormat.MONO_8;
+					}
+					if (pCodecCtx->channel_layout == AV_CH_LAYOUT_STEREO)
+					{
+						dstChLayout = AV_CH_LAYOUT_STEREO;
+						dstNbChannels = 2;
+						frame_size *= 2;
+						format = alStream.SourceFormat.STEREO_8;
+					}
+				}
+				if ((pCodecCtx->sample_fmt == AVSampleFormat.AV_SAMPLE_FMT_FLT ||
+					pCodecCtx->sample_fmt == AVSampleFormat.AV_SAMPLE_FMT_FLTP) &&
+					alStream.SourceFormat.IsAllow_FLOAT32)
+				{
+					dstSampleFmt = AVSampleFormat.AV_SAMPLE_FMT_FLT;
+					frame_size = 4;
+					if (pCodecCtx->channel_layout == AV_CH_LAYOUT_7POINT1 &&
+						alStream.SourceFormat.IsAllow_MCFORMATS &&
+						alStream.SourceFormat.MULTI_71CH_N32 > 0)
+					{
+						dstChLayout = AV_CH_LAYOUT_7POINT1;
+						dstNbChannels = 8;
+						frame_size *= 8;
+						format = alStream.SourceFormat.MULTI_71CH_N32;
+					}
+					if (pCodecCtx->channel_layout == AV_CH_LAYOUT_5POINT1 &&
+						alStream.SourceFormat.IsAllow_MCFORMATS &&
+						alStream.SourceFormat.MULTI_51CH_N32 > 0)
+					{
+						dstChLayout = AV_CH_LAYOUT_5POINT1;
+						dstNbChannels = 6;
+						frame_size *= 6;
+						format = alStream.SourceFormat.MULTI_51CH_N32;
+					}
+					if (pCodecCtx->channel_layout == AV_CH_LAYOUT_MONO)
+					{
+						dstChLayout = AV_CH_LAYOUT_MONO;
+						dstNbChannels = 1;
+						frame_size *= 1;
+						format = alStream.SourceFormat.MONO_32;
+					}
+					if (pCodecCtx->channel_layout == AV_CH_LAYOUT_STEREO)
+					{
+						dstChLayout = AV_CH_LAYOUT_STEREO;
+						dstNbChannels = 2;
+						frame_size *= 2;
+						format = alStream.SourceFormat.STEREO_32;
+					}
+				}
+				if (format == AL_NONE)
+				{
+					dstSampleFmt = AVSampleFormat.AV_SAMPLE_FMT_S16;
+					frame_size = 2;
+					if (pCodecCtx->channel_layout == AV_CH_LAYOUT_7POINT1 &&
+						alStream.SourceFormat.IsAllow_MCFORMATS &&
+						alStream.SourceFormat.MULTI_71CH_N16 > 0)
+					{
+						dstChLayout = AV_CH_LAYOUT_7POINT1;
+						dstNbChannels = 8;
+						frame_size *= 8;
+						format = alStream.SourceFormat.MULTI_71CH_N16;
+					}
+					if (pCodecCtx->channel_layout == AV_CH_LAYOUT_5POINT1 &&
+						alStream.SourceFormat.IsAllow_MCFORMATS &&
+						alStream.SourceFormat.MULTI_51CH_N16 > 0)
+					{
+						dstChLayout = AV_CH_LAYOUT_5POINT1;
+						dstNbChannels = 6;
+						frame_size *= 6;
+						format = alStream.SourceFormat.MULTI_51CH_N16;
+					}
+					if (pCodecCtx->channel_layout == AV_CH_LAYOUT_MONO)
+					{
+						dstChLayout = AV_CH_LAYOUT_MONO;
+						dstNbChannels = 1;
+						frame_size *= 1;
+						format = alStream.SourceFormat.MONO_16;
+					}
+					if (format == AL_NONE)
+					{
+						dstChLayout = AV_CH_LAYOUT_STEREO;
+						dstNbChannels = 2;
+						frame_size *= 2;
+						format = alStream.SourceFormat.STEREO_16;
+					}
+				}
+
+				buffer_len = AUDIO_BUFFER_TIME * pCodecCtx->sample_rate / 1000 * frame_size;
+
+				av_opt_set_int(pSwrContext, "in_channel_layout", (long)pCodecCtx->channel_layout, 0);
+				av_opt_set_int(pSwrContext, "out_channel_layout", dstChLayout, 0);
+				av_opt_set_int(pSwrContext, "in_sample_rate", pCodecCtx->sample_rate, 0);
+				av_opt_set_int(pSwrContext, "out_sample_rate", dstRate, 0);
+				av_opt_set_sample_fmt(pSwrContext, "in_sample_fmt", pCodecCtx->sample_fmt, 0);
+				av_opt_set_sample_fmt(pSwrContext, "out_sample_fmt", dstSampleFmt, 0);
+
+				return format;
+			}
 
 		}
 	}

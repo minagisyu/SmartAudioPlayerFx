@@ -87,9 +87,9 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="MediaProcessor\Audio\ALDevice.cs" />
-    <Compile Include="MediaProcessor\Audio\ALDevice.SourceFormat.cs" />
-    <Compile Include="MediaProcessor\Audio\ALDevice.StreamingSource.cs" />
+    <Compile Include="MediaProcessor\Audio\ALSourceFormat.cs" />
+    <Compile Include="MediaProcessor\Audio\ALSource.cs" />
+    <Compile Include="MediaProcessor\Audio\ALStreamingSource.cs" />
     <Compile Include="MediaProcessor\FFMedia.AudioFrame.cs" />
     <Compile Include="MediaProcessor\FFMedia.AudioTranscoder.cs" />
     <Compile Include="MediaProcessor\FFMedia.cs" />
