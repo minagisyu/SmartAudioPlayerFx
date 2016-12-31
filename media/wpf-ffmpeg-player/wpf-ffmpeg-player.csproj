@@ -99,7 +99,7 @@
     <Compile Include="MediaProcessor\FFMedia.[implement].cs" />
     <Compile Include="MediaProcessor\FFMedia.PacketReader.cs" />
     <Compile Include="MediaProcessor\FFMediaException.cs" />
-    <Compile Include="MediaProcessor\FFMediaPlayback.cs" />
+    <Compile Include="MediaProcessor\MediaPlayback.cs" />
     <Compile Include="TestMain.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>

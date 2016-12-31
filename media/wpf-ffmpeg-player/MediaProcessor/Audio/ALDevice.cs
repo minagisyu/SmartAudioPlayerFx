@@ -1,58 +1,40 @@
 ﻿using System;
-using System.Reactive.Disposables;
 using static OpenAL.ALC10;
 
 namespace SmartAudioPlayer.MediaProcessor.Audio
 {
-	public unsafe sealed partial class ALDevice : IDisposable
+	public unsafe static partial class ALDevice
 	{
 		// Device, Context, Listener
-		IntPtr device, context;
-		CompositeDisposable sources = new CompositeDisposable();
-		bool disposed = false;
+		static IntPtr device, context;
 
-		public ALDevice()
+		public static void Initialize()
 		{
-			device = alcOpenDevice(null/*"OpenAL Soft"*/);
-			context = alcCreateContext(device, null);
-			alcMakeContextCurrent(context);
-		}
-
-		#region Dispose
-
-		~ALDevice() => Dispose(false);
-
-		public void Dispose()
-		{
-			Dispose(true);
-			GC.SuppressFinalize(this);
-		}
-
-		#endregion
-
-		void Dispose(bool disposing)
-		{
-			if (disposed) return;
-
-			if (disposing)
+			if (device == IntPtr.Zero)
 			{
-				// マネージリソースの破棄
-				sources.Dispose();
+				device = alcOpenDevice("OpenAL Soft");
 			}
-
-			// アンマネージリソースの破棄
-			alcMakeContextCurrent(IntPtr.Zero);
-			alcDestroyContext(context);
-			alcCloseDevice(device);
-
-			disposed = true;
+			if (context == IntPtr.Zero)
+			{
+				context = alcCreateContext(device, null);
+				alcMakeContextCurrent(context);
+			}
 		}
 
-		public StreamingSource CreateStreamingSource(int buffer_num)
+		public static void Dispose()
 		{
-			var source = new StreamingSource(this, buffer_num);
-			sources.Add(source);
-			return source;
+			// アンマネージリソースの破棄
+			if (context != IntPtr.Zero)
+			{
+				alcMakeContextCurrent(IntPtr.Zero);
+				alcDestroyContext(context);
+				context = IntPtr.Zero;
+			}
+			if (device != IntPtr.Zero)
+			{
+				alcCloseDevice(device);
+				device = IntPtr.Zero;
+			}
 		}
 	}
 }

@@ -17,7 +17,7 @@ namespace SmartAudioPlayer.MediaProcessor
 		AVFormatContext* pFormatCtx = null;
 		bool disposed = false;
 		//
-		readonly PacketReader reader;
+		public readonly PacketReader reader;
 
 		public FFMedia(string filename)
 		{
@@ -31,9 +31,7 @@ namespace SmartAudioPlayer.MediaProcessor
 
 			// retrive stream infomation
 			if (avformat_find_stream_info(pFormatCtx, null) < 0)
-			{
 				throw new FFMediaException($"Failed to find stream info: {filename}");
-			}
 
 			reader = new PacketReader(this);
 		}
@@ -68,6 +66,9 @@ namespace SmartAudioPlayer.MediaProcessor
 
 			disposed = true;
 		}
+
+
+
 
 	}
 }

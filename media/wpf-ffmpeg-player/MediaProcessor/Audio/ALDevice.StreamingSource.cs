@@ -9,22 +9,26 @@ namespace SmartAudioPlayer.MediaProcessor.Audio
 		public sealed class StreamingSource : IDisposable
 		{
 			// Source, Buffer (for Streaming Playing)
-			readonly ALDevice device;
 			readonly int buffer_num;
 			bool disposed = false;
 
 			uint source_id;
 			uint[] buffers;
 
-			public StreamingSource(ALDevice device, int buffer_num)
+			public StreamingSource(int buffer_num)
 			{
-				this.device = device;
+				if (ALDevice.device == IntPtr.Zero)
+					throw new InvalidOperationException("ALDevice not initialized");
+
 				this.buffer_num = buffer_num;
 
 				buffers = new uint[buffer_num];
 				alGenBuffers(buffer_num, buffers);
-
 				alGenSources(1, out source_id);
+
+				alSourcei(source_id, AL_SOURCE_RELATIVE, AL_TRUE);
+				alSourcei(source_id, AL_ROLLOFF_FACTOR, 0);
+
 				if (alGetError() != AL_NO_ERROR)
 				{
 					Console.WriteLine("Error generating :(");

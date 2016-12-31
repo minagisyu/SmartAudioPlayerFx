@@ -13,6 +13,7 @@ namespace SmartAudioPlayer.MediaProcessor
 		{
 			readonly FFMedia media;
 			bool disposed = false;
+			volatile bool paused = true;
 
 			// Video
 			const int MAX_VIDEOQ_SIZE = (5 * 256 * 1024);
@@ -29,10 +30,18 @@ namespace SmartAudioPlayer.MediaProcessor
 			// BufferFiller
 			readonly CancellationTokenSource BufferFillTask_CTS = new CancellationTokenSource();
 			readonly Task BufferFillTask;
+			volatile bool flushing = false;
+
+			// clock, seek, position
+			volatile bool seek_req = false;
+			long seek_pos = 0;
+			long external_clock_base;
+			volatile bool quit = false;
 
 			public PacketReader(FFMedia media)
 			{
 				this.media = media;
+				external_clock_base = av_gettime_impl();
 				BufferFillTask = Task.Factory.StartNew(
 					BufferFiller, BufferFillTask_CTS.Token,
 					TaskCreationOptions.LongRunning, TaskScheduler.Default);
@@ -94,11 +103,22 @@ namespace SmartAudioPlayer.MediaProcessor
 				{
 					av_free_packet(&packet);
 				}
-
 				if (mediaType == AVMediaType.AVMEDIA_TYPE_VIDEO)
-					video_sid = sid;
+				{
+					lock (video_queue)
+					{
+						video_sid = sid;
+						video_packetq_size = 0;
+					}
+				}
 				else if (mediaType == AVMediaType.AVMEDIA_TYPE_AUDIO)
-					audio_sid = sid;
+				{
+					lock (audio_queue)
+					{
+						audio_sid = sid;
+						audio_packetq_size = 0;
+					}
+				}
 			}
 			public void SelectVideoSID(int sid)
 				=> SelectSIDInternal(AVMediaType.AVMEDIA_TYPE_VIDEO, sid);
@@ -107,8 +127,61 @@ namespace SmartAudioPlayer.MediaProcessor
 
 			void BufferFiller()
 			{
-				while (true)
+				while (!quit)
 				{
+					// シーク処理
+					if(seek_req)
+					{
+						long seek_target = seek_pos;
+						// Video Stream優先でシーク処理をする
+						int sid =
+							(video_sid >= 0) ? video_sid :
+							(audio_sid >= 0) ? audio_sid :
+							-1;
+
+						var timestamp =
+							(sid >= 0) ? av_rescale_q(seek_target, AV_TIME_BASE_Q_impl, media.pFormatCtx->streams[sid]->time_base) :
+							seek_target;
+
+						if (av_seek_frame(media.pFormatCtx, sid, timestamp, 0) < 0)
+						{
+							throw new Exception("error while seeking");
+						}
+						else
+						{
+							var pkt1 = new AVPacket();
+							pkt1.data = (sbyte*)0x12345678;
+							if (audio_sid >= 0)
+							{
+								while (audio_queue?.TryDequeue(out var packet) ?? false)
+								{
+									av_free_packet(&packet);
+								}
+								lock (audio_queue)
+								{
+									audio_packetq_size = 0;
+								}
+								pkt1.pts = av_rescale_q(seek_target, AV_TIME_BASE_Q_impl, media.pFormatCtx->streams[sid]->time_base);
+								audio_queue?.Enqueue(pkt1);
+							}
+							if (video_sid >= 0)
+							{
+								while (video_queue?.TryDequeue(out var packet) ?? false)
+								{
+									av_free_packet(&packet);
+								}
+								lock (video_queue)
+								{
+									video_packetq_size = 0;
+								}
+								pkt1.pts = av_rescale_q(seek_target, AV_TIME_BASE_Q_impl, media.pFormatCtx->streams[sid]->time_base);
+								video_queue?.Enqueue(pkt1);
+							}
+							external_clock_base = av_gettime_impl() - seek_target;
+						}
+						seek_req = false;
+					}
+
 					// キャンセルされてる？
 					if (BufferFillTask_CTS.Token.IsCancellationRequested)
 					{
@@ -126,6 +199,13 @@ namespace SmartAudioPlayer.MediaProcessor
 					// バッファに空きがないなら読み込まない
 					if (video_packetq_size >= MAX_VIDEOQ_SIZE ||
 						audio_packetq_size >= MAX_AUDIOQ_SIZE)
+					{
+						Task.Delay(50).Wait();
+						continue;
+					}
+
+					// 停止状態なら読み込まない
+					if(paused)
 					{
 						Task.Delay(50).Wait();
 						continue;
@@ -165,7 +245,34 @@ namespace SmartAudioPlayer.MediaProcessor
 						av_free_packet(&reading_packet);
 					}
 				}
+
+				// all done, wait for it.
+				while(!quit)
+				{
+					if (video_queue?.Count == 0 && audio_queue?.Count == 0)
+						break;
+					Task.Delay(100).Wait();
+				}
+
+				// fail or exit
+				quit = true;
+				var pkt2 = new AVPacket();
+				pkt2.data = (sbyte*)0x12345678;
+				if (audio_sid >= 0)
+				{
+					audio_queue?.Enqueue(pkt2);
+				}
+				if (video_sid >= 0)
+				{
+					video_queue?.Enqueue(pkt2);
+				}
 			}
+
+			public void StartFill()
+				=> paused = false;
+			public void StopFill()
+				=> paused = true;
+
 
 			bool TakeFrameInternal(AVMediaType mediaType, out AVPacket? result)
 			{
@@ -199,6 +306,29 @@ namespace SmartAudioPlayer.MediaProcessor
 				=> TakeFrameInternal(AVMediaType.AVMEDIA_TYPE_VIDEO, out result);
 			public bool TakeAudioFrame(out AVPacket? result)
 				=> TakeFrameInternal(AVMediaType.AVMEDIA_TYPE_AUDIO, out result);
+
+
+			public void QuitRequest()
+				=> quit = true;
+
+			public void Seek(double incr)
+			{
+				if (seek_req) return;
+
+				var newtime = get_master_clock() + incr;
+				if (newtime <= 0.0)
+				{
+					seek_pos = 0;
+				}
+				else
+				{
+					seek_pos = (long)(newtime * AV_TIME_BASE);
+				}
+				seek_req = true;
+			}
+
+			double get_master_clock()
+				=> (av_gettime_impl() - external_clock_base) / 1000000.0; // EXTERNAL MASTER CLOCK
 
 		}
 	}

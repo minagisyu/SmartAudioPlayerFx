@@ -4,26 +4,24 @@ using System.Threading.Tasks;
 
 namespace SmartAudioPlayer.MediaProcessor
 {
-	class FFMediaPlayback : IDisposable
+	public sealed class MediaPlayback : IDisposable
 	{
 		FFMedia media;
 		FFMedia.VideoTranscoder vtrans;
 		FFMedia.AudioTranscoder atrans;
-		ALDevice alDev;
 		ALDevice.StreamingSource alStream;
-
-		public FFMediaPlayback()
-		{
-			FFMedia.LibraryInitialize();
-			alDev = new ALDevice();
-			alStream = alDev.CreateStreamingSource(8);
-		}
 
 		public async Task PlayAsync(string file, bool enableVideo = false)
 		{
+			ALDevice.Initialize();
+
 			media = new FFMedia(file);
 			vtrans = enableVideo ? new FFMedia.VideoTranscoder(media) : null;
 			atrans = new FFMedia.AudioTranscoder(media);
+			alStream = new ALDevice.StreamingSource(8);
+
+		//	media.reader.Seek(30.0);
+			media.reader.StartFill();
 
 			//	vtrans.TakeFrame();
 
@@ -39,16 +37,16 @@ namespace SmartAudioPlayer.MediaProcessor
 					await Task.Delay(100);
 				}
 			}
+
+			ALDevice.Dispose();
 		}
 
 		public void Dispose()
 		{
-			alStream.Dispose();
-			alDev.Dispose();
+			alStream?.Dispose();
 			vtrans?.Dispose();
-			atrans.Dispose();
-			media.Dispose();
+			atrans?.Dispose();
+			media?.Dispose();
 		}
-
 	}
 }
