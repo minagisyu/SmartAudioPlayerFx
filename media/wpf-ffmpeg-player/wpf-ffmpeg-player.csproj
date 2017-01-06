@@ -90,12 +90,12 @@
     <Compile Include="MediaProcessor\Audio\ALSourceFormat.cs" />
     <Compile Include="MediaProcessor\Audio\ALSource.cs" />
     <Compile Include="MediaProcessor\Audio\ALStreamingSource.cs" />
-    <Compile Include="MediaProcessor\FFMedia.AudioFrame.cs" />
-    <Compile Include="MediaProcessor\FFMedia.AudioTranscoder.cs" />
+    <Compile Include="MediaProcessor\AudioFrame.cs" />
+    <Compile Include="MediaProcessor\AudioDecoder.cs" />
     <Compile Include="MediaProcessor\FFMedia.cs" />
-    <Compile Include="MediaProcessor\FFMedia.Transcoder.cs" />
-    <Compile Include="MediaProcessor\FFMedia.VideoFrame.cs" />
-    <Compile Include="MediaProcessor\FFMedia.VideoTranscoder.cs" />
+    <Compile Include="MediaProcessor\DecoderBase.cs" />
+    <Compile Include="MediaProcessor\VideoFrame.cs" />
+    <Compile Include="MediaProcessor\VideoDecoder.cs" />
     <Compile Include="MediaProcessor\FFMedia.[implement].cs" />
     <Compile Include="MediaProcessor\FFMediaException.cs" />
     <Compile Include="MediaProcessor\MediaPlayback.cs" />

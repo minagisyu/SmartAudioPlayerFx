@@ -31,7 +31,7 @@ namespace SmartAudioPlayer.MediaProcessor
 
 			var aTask = Task.Factory.StartNew(async () =>
 			{
-				var aFrame = new FFMedia.AudioFrame();
+				var aFrame = new AudioFrame();
 				while (media.audio_dec.TakeFrame(media.packet_reader, ref aFrame))
 				{
 					if (aFrame.data_size > 0)
@@ -45,7 +45,7 @@ namespace SmartAudioPlayer.MediaProcessor
 				}
 			});
 
-			var vFrame = new FFMedia.VideoFrame();
+			var vFrame = new VideoFrame();
 			var window = new System.Windows.Window();
 			window.Loaded += delegate
 			{
@@ -67,7 +67,7 @@ namespace SmartAudioPlayer.MediaProcessor
 								}
 								image.WritePixels(new System.Windows.Int32Rect(0, 0, vFrame.width, vFrame.height), vFrame.data, vFrame.data_size, vFrame.stride);
 							}));
-							Task.Delay(20).Wait();
+							Task.Delay(14).Wait();
 						}
 						else
 						{

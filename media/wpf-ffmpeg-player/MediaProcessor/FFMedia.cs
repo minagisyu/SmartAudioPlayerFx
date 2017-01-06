@@ -76,8 +76,8 @@ namespace SmartAudioPlayer.MediaProcessor
 		string filename;
 		bool video_read_skip = true;
 		AVFormatContext* pFormatCtx = null;
-		public AudioTranscoder audio_dec = null;
-		public VideoTranscoder video_dec = null;
+		public AudioDecoder audio_dec = null;
+		public VideoDecoder video_dec = null;
 		public PacketReader packet_reader = null;
 
 		bool Open(string filename, bool video_read_skip)
@@ -97,8 +97,8 @@ namespace SmartAudioPlayer.MediaProcessor
 			// best SID
 			int audio_sid = av_find_best_stream(pFormatCtx, AVMediaType.AVMEDIA_TYPE_AUDIO, -1, -1, null, 0);
 			int video_sid = av_find_best_stream(pFormatCtx, AVMediaType.AVMEDIA_TYPE_VIDEO, -1, -1, null, 0);
-			audio_dec = AudioTranscoder.Create(pFormatCtx, audio_sid);
-			video_dec = VideoTranscoder.Create(pFormatCtx, video_sid);
+			audio_dec = AudioDecoder.Create(pFormatCtx, audio_sid);
+			video_dec = VideoDecoder.Create(pFormatCtx, video_sid);
 			packet_reader = new PacketReader(pFormatCtx, audio_dec?.sid, video_dec?.sid, video_read_skip);
 			packet_reader.FlushRequest += pts =>
 			{
