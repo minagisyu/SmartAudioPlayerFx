@@ -30,9 +30,9 @@ namespace SmartAudioPlayer.MediaProcessor
 
 		bool disposed = false;
 
-		public FFMedia(string filename)
+		public FFMedia(string filename, bool video_read_skip = true)
 		{
-			if (Open(filename) == false)
+			if (Open(filename, video_read_skip) == false)
 				throw new FFMediaException($"Failed to open: {filename}");
 		}
 
@@ -74,14 +74,16 @@ namespace SmartAudioPlayer.MediaProcessor
 		}
 
 		string filename;
+		bool video_read_skip = true;
 		AVFormatContext* pFormatCtx = null;
 		public AudioTranscoder audio_dec = null;
 		public VideoTranscoder video_dec = null;
 		public PacketReader packet_reader = null;
 
-		bool Open(string filename)
+		bool Open(string filename, bool video_read_skip)
 		{
 			this.filename = filename;
+			this.video_read_skip = video_read_skip;
 			fixed (AVFormatContext** @ref = &pFormatCtx)
 			{
 				if (avformat_open_input(@ref, filename, null, null) != 0)
@@ -97,7 +99,7 @@ namespace SmartAudioPlayer.MediaProcessor
 			int video_sid = av_find_best_stream(pFormatCtx, AVMediaType.AVMEDIA_TYPE_VIDEO, -1, -1, null, 0);
 			audio_dec = AudioTranscoder.Create(pFormatCtx, audio_sid);
 			video_dec = VideoTranscoder.Create(pFormatCtx, video_sid);
-			packet_reader = new PacketReader(pFormatCtx, audio_dec?.sid, video_dec?.sid);
+			packet_reader = new PacketReader(pFormatCtx, audio_dec?.sid, video_dec?.sid, video_read_skip);
 			packet_reader.FlushRequest += pts =>
 			{
 				// audiodec, videodec, Flush
@@ -105,9 +107,6 @@ namespace SmartAudioPlayer.MediaProcessor
 
 			return true;
 		}
-
-		//=[ PacketReader ]======
-
 
 	}
 }

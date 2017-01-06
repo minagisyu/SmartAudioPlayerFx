@@ -11,10 +11,23 @@ namespace SmartAudioPlayer.MediaProcessor
 
 		public async Task PlayAsync(string file, bool enableVideo = false)
 		{
-			media = new FFMedia(file);
+			media = new FFMedia(file, false);
 			alStream = new ALStreamingSource(8);
 
-			//	media.packet_reader.Seek(80.0);
+
+			var t1 = Task.Factory.StartNew(() =>
+			{
+				Task.Delay(10000).Wait();
+				media.packet_reader.SetVideoReadSkip(true);
+			}).ContinueWith(t=>
+			{
+				Task.Delay(10000).Wait();
+				media.packet_reader.SetVideoReadSkip(false);
+			}).ContinueWith(t=>
+			{
+				Task.Delay(10000).Wait();
+				media.packet_reader.Seek(50.0);
+			});
 
 			var aTask = Task.Factory.StartNew(async () =>
 			{

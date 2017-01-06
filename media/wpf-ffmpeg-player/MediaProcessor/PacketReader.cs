@@ -15,11 +15,12 @@ namespace SmartAudioPlayer.MediaProcessor
 		readonly int audio_sid, video_sid;
 		bool disposed = false;
 
-		public PacketReader(AVFormatContext* pFormatCtx, int? audio_sid, int? video_sid = null)
+		public PacketReader(AVFormatContext* pFormatCtx, int? audio_sid, int? video_sid, bool video_read_skip)
 		{
 			this.pFormatCtx = pFormatCtx;
 			this.audio_sid = audio_sid ?? -1;
 			this.video_sid = video_sid ?? -1;
+			this.video_read_skip = video_read_skip;
 
 			if (audio_sid < 0 && video_sid < 0)
 				throw new FFMediaException("no reading packet, invalid audio and video sid.");
@@ -97,6 +98,7 @@ namespace SmartAudioPlayer.MediaProcessor
 		volatile bool seek_req = false;
 		long seek_pos = 0;
 		volatile bool paused = false;
+		volatile bool video_read_skip = true;
 		public event CodecFlushRequestDelegate FlushRequest;
 
 		void BufferFiller()
@@ -171,7 +173,7 @@ namespace SmartAudioPlayer.MediaProcessor
 				}
 
 				// キープするSIDならキューに追加、次のフレームを読み込む
-				if (reading_packet.stream_index == video_sid)
+				if ((reading_packet.stream_index == video_sid) && (video_read_skip == false))
 				{
 					av_dup_packet(&reading_packet);
 					video_queue.Enqueue(reading_packet);
@@ -247,5 +249,7 @@ namespace SmartAudioPlayer.MediaProcessor
 			seek_req = true;
 		}
 
+		public void SetVideoReadSkip(bool value)
+			=> video_read_skip = value;
 	}
 }
