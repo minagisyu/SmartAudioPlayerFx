@@ -16,14 +16,14 @@ namespace SmartAudioPlayer.MediaProcessor
 			protected AVCodec* pCodec = null;
 			protected AVCodecContext* pCodecCtx = null;
 
-			protected Transcoder(AVFormatContext* pFormatCtx, AVMediaType mediaType)
+			protected Transcoder(AVFormatContext* pFormatCtx, int sid, AVMediaType mediaType)
 			{
 				this.pFormatCtx = pFormatCtx;
 				this.mediaType = mediaType;
 
 				fixed (AVCodec** @ref = &pCodec)
 				{
-					sid = av_find_best_stream(pFormatCtx, mediaType, -1, -1, @ref, 0);
+					this.sid = av_find_best_stream(pFormatCtx, mediaType, sid, -1, @ref, 0);
 					if(sid < 0)
 						throw new FFMediaException($"can't find beat stream. (MediaType:{mediaType})");
 				}

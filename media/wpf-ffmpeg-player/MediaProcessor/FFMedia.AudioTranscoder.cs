@@ -24,7 +24,7 @@ namespace SmartAudioPlayer.MediaProcessor
 			int buffer_len;
 			public int dstALFormat = AL_NONE;
 
-			public AudioTranscoder(AVFormatContext* pFormatCtx) : base(pFormatCtx, AVMediaType.AVMEDIA_TYPE_AUDIO)
+			public AudioTranscoder(AVFormatContext* pFormatCtx, int sid) : base(pFormatCtx, sid, AVMediaType.AVMEDIA_TYPE_AUDIO)
 			{
 				audioBuf = Marshal.AllocCoTaskMem(5120_000);
 
@@ -65,9 +65,9 @@ namespace SmartAudioPlayer.MediaProcessor
 				}
 			}
 
-			public static AudioTranscoder Create(AVFormatContext* pFormatCtx)
+			public static AudioTranscoder Create(AVFormatContext* pFormatCtx, int sid)
 			{
-				try { return new AudioTranscoder(pFormatCtx); }
+				try { return new AudioTranscoder(pFormatCtx, sid); }
 				catch { }
 				return null;
 			}

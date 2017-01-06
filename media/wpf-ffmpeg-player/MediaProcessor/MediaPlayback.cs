@@ -36,16 +36,22 @@ namespace SmartAudioPlayer.MediaProcessor
 			var window = new System.Windows.Window();
 			window.Loaded += delegate
 			{
-				var image = new System.Windows.Media.Imaging.WriteableBitmap(1920, 1080, 96, 96, System.Windows.Media.PixelFormats.Rgb24, null);
-				window.Content = new System.Windows.Controls.Image() { Source = image };
+				System.Windows.Media.Imaging.WriteableBitmap image = null;
+
 				Task.Factory.StartNew(() =>
 				{
+					if (media.video_dec == null) return;
 					while (media.video_dec.TakeFrame(media.packet_reader, ref vFrame))
 					{
 						if (vFrame.stride > 0)
 						{
 							window.Dispatcher.Invoke(new Action(() =>
 							{
+								if(image == null)
+								{
+									image = new System.Windows.Media.Imaging.WriteableBitmap(vFrame.width, vFrame.height, 96, 96, System.Windows.Media.PixelFormats.Rgb24, null);
+									window.Content = new System.Windows.Controls.Image() { Source = image };
+								}
 								image.WritePixels(new System.Windows.Int32Rect(0, 0, vFrame.width, vFrame.height), vFrame.data, vFrame.data_size, vFrame.stride);
 							}));
 							Task.Delay(20).Wait();

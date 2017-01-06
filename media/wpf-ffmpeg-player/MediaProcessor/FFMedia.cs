@@ -92,8 +92,11 @@ namespace SmartAudioPlayer.MediaProcessor
 			if (avformat_find_stream_info(pFormatCtx, null) < 0)
 				return false;
 
-			audio_dec = AudioTranscoder.Create(pFormatCtx);
-			video_dec = VideoTranscoder.Create(pFormatCtx);
+			// best SID
+			int audio_sid = av_find_best_stream(pFormatCtx, AVMediaType.AVMEDIA_TYPE_AUDIO, -1, -1, null, 0);
+			int video_sid = av_find_best_stream(pFormatCtx, AVMediaType.AVMEDIA_TYPE_VIDEO, -1, -1, null, 0);
+			audio_dec = AudioTranscoder.Create(pFormatCtx, audio_sid);
+			video_dec = VideoTranscoder.Create(pFormatCtx, video_sid);
 			packet_reader = new PacketReader(pFormatCtx, audio_dec?.sid, video_dec?.sid);
 			packet_reader.FlushRequest += pts =>
 			{

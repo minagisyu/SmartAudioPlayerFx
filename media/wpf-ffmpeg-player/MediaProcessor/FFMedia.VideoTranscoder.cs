@@ -17,7 +17,7 @@ namespace SmartAudioPlayer.MediaProcessor
 			SwsContext* pSwscaleCtx = null;
 			int buffer_size = 0;
 
-			public VideoTranscoder(AVFormatContext* pFormatCtx) : base(pFormatCtx, AVMediaType.AVMEDIA_TYPE_VIDEO)
+			public VideoTranscoder(AVFormatContext* pFormatCtx, int sid) : base(pFormatCtx, sid, AVMediaType.AVMEDIA_TYPE_VIDEO)
 			{
 				width = pCodecCtx->width;
 				height = pCodecCtx->height;
@@ -34,13 +34,13 @@ namespace SmartAudioPlayer.MediaProcessor
 				// video init
 				pFrame = av_frame_alloc();
 				pFrameRGB = av_frame_alloc();
-				buffer_size = avpicture_get_size(dstFmt, pCodecCtx->width, pCodecCtx->height);
+				buffer_size = avpicture_get_size(dstFmt, width, height);
 				pBuffer = (sbyte*)av_malloc((ulong)buffer_size * sizeof(byte));
-				avpicture_fill((AVPicture*)pFrameRGB, pBuffer, dstFmt, pCodecCtx->width, pCodecCtx->height);
+				avpicture_fill((AVPicture*)pFrameRGB, pBuffer, dstFmt, width, height);
 
 				pSwscaleCtx = sws_getContext(
 					pCodecCtx->width, pCodecCtx->height, pCodecCtx->pix_fmt,
-					pCodecCtx->width, pCodecCtx->height, dstFmt,
+					width, height, dstFmt,
 					SWS_BILINEAR, null, null, null);
 			}
 
@@ -68,9 +68,9 @@ namespace SmartAudioPlayer.MediaProcessor
 				disposed = true;
 			}
 
-			public static VideoTranscoder Create(AVFormatContext* pFormatCtx)
+			public static VideoTranscoder Create(AVFormatContext* pFormatCtx, int sid)
 			{
-				try { return new VideoTranscoder(pFormatCtx); }
+				try { return new VideoTranscoder(pFormatCtx, sid); }
 				catch { }
 				return null;
 			}
@@ -106,8 +106,8 @@ namespace SmartAudioPlayer.MediaProcessor
 							0, pCodecCtx->height,
 							&pFrameRGB->data0, pFrameRGB->linesize);
 
-						frame.width = pCodecCtx->width;
-						frame.height = pCodecCtx->height;
+						frame.width = width;
+						frame.height = height;
 						frame.format = dstFmt;
 						frame.data = (IntPtr)pFrameRGB->data0;
 						frame.data_size = pFrameRGB->linesize[0] * pCodecCtx->height;
