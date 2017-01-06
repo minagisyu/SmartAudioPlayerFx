@@ -9,30 +9,26 @@ namespace SmartAudioPlayer.MediaProcessor
 		public unsafe abstract class Transcoder : IDisposable
 		{
 			bool disposed = false;
-			protected readonly FFMedia media;
+			protected readonly AVFormatContext* pFormatCtx;
 			protected readonly AVMediaType mediaType;
-			protected readonly int sid;
+			public readonly int sid;
 			protected readonly AVStream* stream;
 			protected AVCodec* pCodec = null;
 			protected AVCodecContext* pCodecCtx = null;
 
-			public Transcoder(FFMedia media, AVMediaType mediaType)
+			protected Transcoder(AVFormatContext* pFormatCtx, AVMediaType mediaType)
 			{
-				this.media = media;
+				this.pFormatCtx = pFormatCtx;
 				this.mediaType = mediaType;
 
 				fixed (AVCodec** @ref = &pCodec)
 				{
-					sid = av_find_best_stream(media.pFormatCtx, mediaType, -1, -1, @ref, 0);
+					sid = av_find_best_stream(pFormatCtx, mediaType, -1, -1, @ref, 0);
 					if(sid < 0)
 						throw new FFMediaException($"can't find beat stream. (MediaType:{mediaType})");
 				}
 
-				if(mediaType == AVMediaType.AVMEDIA_TYPE_VIDEO)
-					media.reader.SelectVideoSID(sid);
-				else if(mediaType == AVMediaType.AVMEDIA_TYPE_AUDIO)
-					media.reader.SelectAudioSID(sid);
-				stream = media.pFormatCtx->streams[sid];
+				stream = pFormatCtx->streams[sid];
 				pCodecCtx = stream->codec;
 				pCodecCtx->codec = pCodec;
 
@@ -62,11 +58,13 @@ namespace SmartAudioPlayer.MediaProcessor
 				}
 
 				// アンマネージリソースの破棄
-				avcodec_close(pCodecCtx);
-
+				if (pCodecCtx != null)
+				{
+					avcodec_close(pCodecCtx);
+					pCodecCtx = null;
+				}
 				disposed = true;
 			}
-
 		}
 	}
 }

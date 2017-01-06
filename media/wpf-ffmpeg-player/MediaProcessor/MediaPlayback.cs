@@ -7,41 +7,63 @@ namespace SmartAudioPlayer.MediaProcessor
 	public sealed class MediaPlayback : IDisposable
 	{
 		FFMedia media;
-		FFMedia.VideoTranscoder vtrans;
-		FFMedia.AudioTranscoder atrans;
 		ALStreamingSource alStream;
 
 		public async Task PlayAsync(string file, bool enableVideo = false)
 		{
 			media = new FFMedia(file);
-			vtrans = enableVideo ? new FFMedia.VideoTranscoder(media) : null;
-			atrans = new FFMedia.AudioTranscoder(media);
-			alStream = new ALStreamingSource(80);
+			alStream = new ALStreamingSource(8);
 
-		//	media.reader.Seek(30.0);
-			media.reader.StartFill();
+			//	media.packet_reader.Seek(80.0);
 
-			//	vtrans.TakeFrame();
-
-			var aFrame = new FFMedia.AudioFrame();
-			while (atrans.TakeFrame(ref aFrame))
+			var aTask = Task.Factory.StartNew(async () =>
 			{
-				if (aFrame.data_size > 0)
+				var aFrame = new FFMedia.AudioFrame();
+				while (media.audio_dec.TakeFrame(media.packet_reader, ref aFrame))
 				{
-					await alStream.WriteDataAsync(atrans.dstALFormat, aFrame.data, aFrame.data_size, aFrame.sample_rate);
+					if (aFrame.data_size > 0)
+					{
+						await alStream.WriteDataAsync(media.audio_dec.dstALFormat, aFrame.data, aFrame.data_size, aFrame.sample_rate);
+					}
+					else
+					{
+						await Task.Delay(100);
+					}
 				}
-				else
+			});
+
+			var vFrame = new FFMedia.VideoFrame();
+			var window = new System.Windows.Window();
+			window.Loaded += delegate
+			{
+				var image = new System.Windows.Media.Imaging.WriteableBitmap(1920, 1080, 96, 96, System.Windows.Media.PixelFormats.Rgb24, null);
+				window.Content = new System.Windows.Controls.Image() { Source = image };
+				Task.Factory.StartNew(() =>
 				{
-					await Task.Delay(100);
-				}
-			}
+					while (media.video_dec.TakeFrame(media.packet_reader, ref vFrame))
+					{
+						if (vFrame.stride > 0)
+						{
+							window.Dispatcher.Invoke(new Action(() =>
+							{
+								image.WritePixels(new System.Windows.Int32Rect(0, 0, vFrame.width, vFrame.height), vFrame.data, vFrame.data_size, vFrame.stride);
+							}));
+							Task.Delay(20).Wait();
+						}
+						else
+						{
+							Task.Delay(100).Wait();
+						}
+					}
+				});
+			};
+
+			new System.Windows.Application().Run(window);
 		}
 
 		public void Dispose()
 		{
 			alStream?.Dispose();
-			vtrans?.Dispose();
-			atrans?.Dispose();
 			media?.Dispose();
 		}
 	}

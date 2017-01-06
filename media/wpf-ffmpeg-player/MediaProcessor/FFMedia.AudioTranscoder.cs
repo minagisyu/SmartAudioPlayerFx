@@ -12,10 +12,6 @@ namespace SmartAudioPlayer.MediaProcessor
 	{
 		public unsafe sealed class AudioTranscoder : Transcoder
 		{
-			const int AUDIO_BUFFER_TIME = 100; // in milliseconds, pre-buffer
-			const double AUDIO_DIFF_AVG_NB = 20;
-			readonly double diff_avg_coef = Math.Exp(Math.Log(0.01) / AUDIO_DIFF_AVG_NB);
-			readonly double diff_threshold = 2.0 * 0.050; // 50ms
 			readonly int audioFormat;
 
 			SwrContext* pSwrContext = null;
@@ -25,15 +21,12 @@ namespace SmartAudioPlayer.MediaProcessor
 			int dstNbChannels = 0;
 			int dstChLayout = AV_CH_LAYOUT_STEREO;
 			IntPtr audioBuf;
-			ALStreamingSource alStream;
 			int buffer_len;
 			public int dstALFormat = AL_NONE;
 
-
-			public AudioTranscoder(FFMedia media) : base(media, AVMediaType.AVMEDIA_TYPE_AUDIO)
+			public AudioTranscoder(AVFormatContext* pFormatCtx) : base(pFormatCtx, AVMediaType.AVMEDIA_TYPE_AUDIO)
 			{
-				audioBuf = Marshal.AllocCoTaskMem(512000);
-				alStream = new ALStreamingSource(8);
+				audioBuf = Marshal.AllocCoTaskMem(5120_000);
 
 				// Set up SWR context once you've got codec information
 				dstRate = pCodecCtx->sample_rate;
@@ -58,7 +51,6 @@ namespace SmartAudioPlayer.MediaProcessor
 				if (disposing)
 				{
 					// マネージリソースの破棄
-					alStream.Dispose();
 				}
 
 				// アンマネージリソースの破棄
@@ -73,10 +65,17 @@ namespace SmartAudioPlayer.MediaProcessor
 				}
 			}
 
-			public bool TakeFrame(ref AudioFrame frame)
+			public static AudioTranscoder Create(AVFormatContext* pFormatCtx)
+			{
+				try { return new AudioTranscoder(pFormatCtx); }
+				catch { }
+				return null;
+			}
+
+			public bool TakeFrame(PacketReader reader, ref AudioFrame frame)
 			{
 				// TakeAudioFrame() == falseはストリーム終了
-				if (media.reader.TakeAudioFrame(out var reading_packet) == false)
+				if (reader.TakeAudioFrame(out var reading_packet) == false)
 					return false;
 
 				// reading_packet == nullはデコードできないがストリーム終了ではない
@@ -91,7 +90,7 @@ namespace SmartAudioPlayer.MediaProcessor
 				}
 
 				AVPacket packet = reading_packet.Value;
-				var decoded_size = decode((byte*)audioBuf, 512000, &packet);
+				var decoded_size = decode((byte*)audioBuf, 5120_000, &packet);
 
 				frame.sample_rate = dstRate;
 				frame.channel = dstNbChannels;
@@ -195,122 +194,22 @@ namespace SmartAudioPlayer.MediaProcessor
 				if (pCodecCtx->channel_layout == 0)
 					pCodecCtx->channel_layout = (ulong)av_get_default_channel_layout(pCodecCtx->channels);
 
-				if (pCodecCtx->sample_fmt == AVSampleFormat.AV_SAMPLE_FMT_U8 ||
-					pCodecCtx->sample_fmt == AVSampleFormat.AV_SAMPLE_FMT_U8P)
+				dstSampleFmt = AVSampleFormat.AV_SAMPLE_FMT_S16;
+				frame_size = 2;
+				if (pCodecCtx->channel_layout == AV_CH_LAYOUT_MONO)
 				{
-					dstSampleFmt = AVSampleFormat.AV_SAMPLE_FMT_U8;
-					frame_size = 1;
-					if (pCodecCtx->channel_layout == AV_CH_LAYOUT_7POINT1 &&
-						alStream.SourceFormat.IsAllow_MCFORMATS &&
-						alStream.SourceFormat.MULTI_71CH_N8 > 0)
-					{
-						dstChLayout = AV_CH_LAYOUT_7POINT1;
-						dstNbChannels = 8;
-						frame_size *= 8;
-						format = alStream.SourceFormat.MULTI_71CH_N8;
-					}
-					if (pCodecCtx->channel_layout == AV_CH_LAYOUT_5POINT1 &&
-						alStream.SourceFormat.IsAllow_MCFORMATS &&
-						alStream.SourceFormat.MULTI_51CH_N8 > 0)
-					{
-						dstChLayout = AV_CH_LAYOUT_5POINT1;
-						dstNbChannels = 6;
-						frame_size *= 6;
-						format = alStream.SourceFormat.MULTI_51CH_N8;
-					}
-					if (pCodecCtx->channel_layout == AV_CH_LAYOUT_MONO)
-					{
-						dstChLayout = AV_CH_LAYOUT_MONO;
-						dstNbChannels = 1;
-						frame_size *= 1;
-						format = alStream.SourceFormat.MONO_8;
-					}
-					if (pCodecCtx->channel_layout == AV_CH_LAYOUT_STEREO)
-					{
-						dstChLayout = AV_CH_LAYOUT_STEREO;
-						dstNbChannels = 2;
-						frame_size *= 2;
-						format = alStream.SourceFormat.STEREO_8;
-					}
-				}
-				if ((pCodecCtx->sample_fmt == AVSampleFormat.AV_SAMPLE_FMT_FLT ||
-					pCodecCtx->sample_fmt == AVSampleFormat.AV_SAMPLE_FMT_FLTP) &&
-					alStream.SourceFormat.IsAllow_FLOAT32)
-				{
-					dstSampleFmt = AVSampleFormat.AV_SAMPLE_FMT_FLT;
-					frame_size = 4;
-					if (pCodecCtx->channel_layout == AV_CH_LAYOUT_7POINT1 &&
-						alStream.SourceFormat.IsAllow_MCFORMATS &&
-						alStream.SourceFormat.MULTI_71CH_N32 > 0)
-					{
-						dstChLayout = AV_CH_LAYOUT_7POINT1;
-						dstNbChannels = 8;
-						frame_size *= 8;
-						format = alStream.SourceFormat.MULTI_71CH_N32;
-					}
-					if (pCodecCtx->channel_layout == AV_CH_LAYOUT_5POINT1 &&
-						alStream.SourceFormat.IsAllow_MCFORMATS &&
-						alStream.SourceFormat.MULTI_51CH_N32 > 0)
-					{
-						dstChLayout = AV_CH_LAYOUT_5POINT1;
-						dstNbChannels = 6;
-						frame_size *= 6;
-						format = alStream.SourceFormat.MULTI_51CH_N32;
-					}
-					if (pCodecCtx->channel_layout == AV_CH_LAYOUT_MONO)
-					{
-						dstChLayout = AV_CH_LAYOUT_MONO;
-						dstNbChannels = 1;
-						frame_size *= 1;
-						format = alStream.SourceFormat.MONO_32;
-					}
-					if (pCodecCtx->channel_layout == AV_CH_LAYOUT_STEREO)
-					{
-						dstChLayout = AV_CH_LAYOUT_STEREO;
-						dstNbChannels = 2;
-						frame_size *= 2;
-						format = alStream.SourceFormat.STEREO_32;
-					}
+					dstChLayout = AV_CH_LAYOUT_MONO;
+					dstNbChannels = 1;
+					frame_size *= 1;
+					format = AL_FORMAT_MONO16;
 				}
 				if (format == AL_NONE)
 				{
-					dstSampleFmt = AVSampleFormat.AV_SAMPLE_FMT_S16;
-					frame_size = 2;
-					if (pCodecCtx->channel_layout == AV_CH_LAYOUT_7POINT1 &&
-						alStream.SourceFormat.IsAllow_MCFORMATS &&
-						alStream.SourceFormat.MULTI_71CH_N16 > 0)
-					{
-						dstChLayout = AV_CH_LAYOUT_7POINT1;
-						dstNbChannels = 8;
-						frame_size *= 8;
-						format = alStream.SourceFormat.MULTI_71CH_N16;
-					}
-					if (pCodecCtx->channel_layout == AV_CH_LAYOUT_5POINT1 &&
-						alStream.SourceFormat.IsAllow_MCFORMATS &&
-						alStream.SourceFormat.MULTI_51CH_N16 > 0)
-					{
-						dstChLayout = AV_CH_LAYOUT_5POINT1;
-						dstNbChannels = 6;
-						frame_size *= 6;
-						format = alStream.SourceFormat.MULTI_51CH_N16;
-					}
-					if (pCodecCtx->channel_layout == AV_CH_LAYOUT_MONO)
-					{
-						dstChLayout = AV_CH_LAYOUT_MONO;
-						dstNbChannels = 1;
-						frame_size *= 1;
-						format = alStream.SourceFormat.MONO_16;
-					}
-					if (format == AL_NONE)
-					{
-						dstChLayout = AV_CH_LAYOUT_STEREO;
-						dstNbChannels = 2;
-						frame_size *= 2;
-						format = alStream.SourceFormat.STEREO_16;
-					}
+					dstChLayout = AV_CH_LAYOUT_STEREO;
+					dstNbChannels = 2;
+					frame_size *= 2;
+					format = AL_FORMAT_STEREO16;
 				}
-
-				buffer_len = AUDIO_BUFFER_TIME * pCodecCtx->sample_rate / 1000 * frame_size;
 
 				av_opt_set_int(pSwrContext, "in_channel_layout", (long)pCodecCtx->channel_layout, 0);
 				av_opt_set_int(pSwrContext, "out_channel_layout", dstChLayout, 0);

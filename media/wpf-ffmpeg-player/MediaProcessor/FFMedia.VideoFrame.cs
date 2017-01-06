@@ -7,11 +7,12 @@ namespace SmartAudioPlayer.MediaProcessor
 	{
 		public sealed class VideoFrame
 		{
-			int width;
-			int height;
-			AVPixelFormat format;
-			IntPtr data;
-			int stride;
+			public int width;
+			public int height;
+			public AVPixelFormat format;
+			public IntPtr data;
+			public int data_size;
+			public int stride;
 		}
 	}
 }

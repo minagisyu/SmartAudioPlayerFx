@@ -1,4 +1,5 @@
 ﻿using FFmpeg.AutoGen;
+using System;
 using static FFmpeg.AutoGen.ffmpeg;
 
 namespace SmartAudioPlayer.MediaProcessor
@@ -7,22 +8,17 @@ namespace SmartAudioPlayer.MediaProcessor
 	{
 		public unsafe sealed class VideoTranscoder : Transcoder
 		{
-			long current_pts_time;
-			double frame_timer;
-			double frame_last_delay = 40e-3;
-
+			bool disposed = false;
 			int width, height;
 			AVFrame* pFrame = null;		// YUV-frame
 			AVFrame* pFrameRGB = null;	// RGB-frame
 			sbyte* pBuffer = null;		// RGB-frame buffer
 			AVPixelFormat dstFmt = AVPixelFormat.AV_PIX_FMT_RGB24;
 			SwsContext* pSwscaleCtx = null;
+			int buffer_size = 0;
 
-			public VideoTranscoder(FFMedia media) : base(media, AVMediaType.AVMEDIA_TYPE_VIDEO)
+			public VideoTranscoder(AVFormatContext* pFormatCtx) : base(pFormatCtx, AVMediaType.AVMEDIA_TYPE_VIDEO)
 			{
-				current_pts_time = av_gettime_impl();
-				frame_timer = (double)current_pts_time / 1000000.0;
-
 				width = pCodecCtx->width;
 				height = pCodecCtx->height;
 				if (pCodecCtx->sample_aspect_ratio.num != 0 &&
@@ -38,21 +34,21 @@ namespace SmartAudioPlayer.MediaProcessor
 				// video init
 				pFrame = av_frame_alloc();
 				pFrameRGB = av_frame_alloc();
-				var numBytes = avpicture_get_size(dstFmt, width, height);
-				pBuffer = (sbyte*)av_malloc((ulong)numBytes * sizeof(byte));
-				avpicture_fill((AVPicture*)pFrameRGB, pBuffer, dstFmt, width, height);
+				buffer_size = avpicture_get_size(dstFmt, pCodecCtx->width, pCodecCtx->height);
+				pBuffer = (sbyte*)av_malloc((ulong)buffer_size * sizeof(byte));
+				avpicture_fill((AVPicture*)pFrameRGB, pBuffer, dstFmt, pCodecCtx->width, pCodecCtx->height);
 
 				pSwscaleCtx = sws_getContext(
 					pCodecCtx->width, pCodecCtx->height, pCodecCtx->pix_fmt,
-					width, height, dstFmt,
+					pCodecCtx->width, pCodecCtx->height, dstFmt,
 					SWS_BILINEAR, null, null, null);
-
 			}
 
 			protected override void Dispose(bool disposing)
 			{
 				base.Dispose(disposing);
 
+				if (disposed) return;
 				if (disposing)
 				{
 					// マネージリソースの破棄
@@ -68,10 +64,57 @@ namespace SmartAudioPlayer.MediaProcessor
 				{
 					av_frame_free(@ref);
 				}
+
+				disposed = true;
 			}
 
-			void DecodeProcess()
+			public static VideoTranscoder Create(AVFormatContext* pFormatCtx)
 			{
+				try { return new VideoTranscoder(pFormatCtx); }
+				catch { }
+				return null;
+			}
+
+			public bool TakeFrame(PacketReader reader, ref VideoFrame frame)
+			{
+				while (true)
+				{
+					// TakeVideoFrame() == falseはストリーム終了
+					if (reader.TakeVideoFrame(out var reading_packet) == false)
+						return false;
+
+					// reading_packet == nullはデコードできないがストリーム終了ではない
+					if (reading_packet.HasValue == false)
+					{
+						frame.width = 0;
+						frame.height = 0;
+						frame.format = AVPixelFormat.AV_PIX_FMT_NONE;
+						frame.data = IntPtr.Zero;
+						frame.stride = 0;
+						return true;
+					}
+
+					AVPacket packet = reading_packet.Value;
+					int frameFinished;
+					avcodec_decode_video2(pCodecCtx, pFrame, &frameFinished, &packet);
+					av_free_packet(&packet);
+
+					if (frameFinished != 0)
+					{
+						sws_scale(pSwscaleCtx,
+							&pFrame->data0, pFrame->linesize,
+							0, pCodecCtx->height,
+							&pFrameRGB->data0, pFrameRGB->linesize);
+
+						frame.width = pCodecCtx->width;
+						frame.height = pCodecCtx->height;
+						frame.format = dstFmt;
+						frame.data = (IntPtr)pFrameRGB->data0;
+						frame.data_size = pFrameRGB->linesize[0] * pCodecCtx->height;
+						frame.stride = pFrameRGB->linesize[0];
+						return true;
+					}
+				}
 			}
 
 		}

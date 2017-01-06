@@ -8,4 +8,5 @@ namespace SmartAudioPlayer.MediaProcessor
 		public FFMediaException(string message) : base(message) { }
 		public FFMediaException(string message, Exception inner) : base(message, inner) { }
 	}
+
 }
