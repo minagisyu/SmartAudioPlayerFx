@@ -95,6 +95,16 @@ namespace SmartAudioPlayer.MediaProcessor
 				AVPacket packet = reading_packet.Value;
 				int frameFinished;
 				avcodec_decode_video2(pCodecCtx, pFrame, &frameFinished, &packet);
+
+				if ((ulong)packet.dts != AV_NOPTS_VALUE)
+				{
+					frame.pts = av_frame_get_best_effort_timestamp(pFrame);
+				}
+				else
+				{
+					frame.pts = 0;
+				}
+				frame.pts *= FFMedia.av_q2d_impl(stream->time_base);
 				av_free_packet(&packet);
 
 				if (frameFinished != 0)

@@ -1,5 +1,6 @@
 ﻿using SmartAudioPlayer.MediaProcessor.Audio;
 using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace SmartAudioPlayer.MediaProcessor
@@ -17,16 +18,16 @@ namespace SmartAudioPlayer.MediaProcessor
 
 			var t1 = Task.Factory.StartNew(() =>
 			{
-				Task.Delay(10000).Wait();
+				Task.Delay(20000).Wait();
 				media.packet_reader.SetVideoReadSkip(true);
 			}).ContinueWith(t=>
 			{
-				Task.Delay(10000).Wait();
+				Task.Delay(5000).Wait();
 				media.packet_reader.SetVideoReadSkip(false);
 			}).ContinueWith(t=>
 			{
 				Task.Delay(10000).Wait();
-				media.packet_reader.Seek(50.0);
+				media.packet_reader.Seek(30.0);
 			});
 
 			var aTask = Task.Factory.StartNew(async () =>
@@ -54,20 +55,27 @@ namespace SmartAudioPlayer.MediaProcessor
 				Task.Factory.StartNew(() =>
 				{
 					if (media.video_dec == null) return;
+
+					var sw = Stopwatch.StartNew();
 					while (media.video_dec.TakeFrame(media.packet_reader, ref vFrame))
 					{
 						if (vFrame.stride > 0)
 						{
+							var diff = sw.Elapsed.TotalSeconds - vFrame.pts;
 							window.Dispatcher.Invoke(new Action(() =>
 							{
-								if(image == null)
+								window.Title = $"{diff}";
+								if (image == null)
 								{
 									image = new System.Windows.Media.Imaging.WriteableBitmap(vFrame.width, vFrame.height, 96, 96, System.Windows.Media.PixelFormats.Rgb24, null);
 									window.Content = new System.Windows.Controls.Image() { Source = image };
 								}
 								image.WritePixels(new System.Windows.Int32Rect(0, 0, vFrame.width, vFrame.height), vFrame.data, vFrame.data_size, vFrame.stride);
 							}));
-							Task.Delay(14).Wait();
+							if (diff < 0)
+							{
+								Task.Delay(TimeSpan.FromSeconds(-diff)).Wait();
+							}
 						}
 						else
 						{

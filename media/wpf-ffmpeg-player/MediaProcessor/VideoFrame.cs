@@ -11,5 +11,6 @@ namespace SmartAudioPlayer.MediaProcessor
 		public IntPtr data;
 		public int data_size;
 		public int stride;
+		public double pts;
 	}
 }

@@ -19,7 +19,7 @@ namespace SmartAudioPlayer.MediaProcessor
 
 	// [MovieContext]
 	// FormatContext, SID決定, PacketReader, 
-	public unsafe sealed partial class FFMedia : IDisposable
+	public sealed partial class FFMedia : IDisposable
 	{
 		static FFMedia()
 		{
@@ -48,7 +48,7 @@ namespace SmartAudioPlayer.MediaProcessor
 
 		#endregion
 
-		void Dispose(bool disposing)
+		unsafe void Dispose(bool disposing)
 		{
 			if (disposed) return;
 
@@ -61,13 +61,12 @@ namespace SmartAudioPlayer.MediaProcessor
 			}
 
 			// アンマネージリソースの破棄
+			var pFormatCtx = (AVFormatContext*)formatCtx.ToPointer();
 			if (pFormatCtx != null)
 			{
-				fixed (AVFormatContext** @ref = &pFormatCtx)
-				{
-					avformat_close_input(@ref);
-				}
+				avformat_close_input(&pFormatCtx);
 				pFormatCtx = null;
+				formatCtx = IntPtr.Zero;
 			}
 
 			disposed = true;
@@ -75,20 +74,19 @@ namespace SmartAudioPlayer.MediaProcessor
 
 		string filename;
 		bool video_read_skip = true;
-		AVFormatContext* pFormatCtx = null;
+		IntPtr formatCtx = IntPtr.Zero;
 		public AudioDecoder audio_dec = null;
 		public VideoDecoder video_dec = null;
 		public PacketReader packet_reader = null;
 
-		bool Open(string filename, bool video_read_skip)
+		unsafe bool Open(string filename, bool video_read_skip)
 		{
 			this.filename = filename;
 			this.video_read_skip = video_read_skip;
-			fixed (AVFormatContext** @ref = &pFormatCtx)
-			{
-				if (avformat_open_input(@ref, filename, null, null) != 0)
-					return false;
-			}
+			var pFormatCtx = (AVFormatContext*)formatCtx.ToPointer();
+
+			if (avformat_open_input(&pFormatCtx, filename, null, null) != 0)
+				return false;
 
 			// retrive stream infomation
 			if (avformat_find_stream_info(pFormatCtx, null) < 0)

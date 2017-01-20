@@ -23,7 +23,7 @@ namespace SmartAudioPlayer.MediaProcessor
 		public int dstALFormat = AL_NONE;
 
 		public AudioDecoder(AVFormatContext* pFormatCtx, int sid) : base(pFormatCtx, sid, AVMediaType.AVMEDIA_TYPE_AUDIO)
-			{
+		{
 			audioBuf = Marshal.AllocCoTaskMem(5120_000);
 
 			// Set up SWR context once you've got codec information
